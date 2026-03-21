@@ -68,7 +68,7 @@ The Problem artifact gets audited: is the stakeholder impact clear? Are the goal
 
 1. Read [`src/framework.md`](src/framework.md) — the mechanics, rubrics, and operating model.
 2. Pick your scale: **Epic** (big initiative), **Feature** (one deliverable), or **Story** (a day's work).
-3. Open any AI chat. Load the [builder prompt](src/prompts/builder-prompt.md) and the relevant template.
+3. Open any AI chat. Load the [builder prompt](src/prompts/builder-prompt.md) — it's self-contained.
 4. Build the Problem first. Get it reviewed. Then Solution. Then Tech Design. Then Testing.
 5. Have someone who didn't build it [audit](src/prompts/auditor-prompt.md) against the rubrics and the preceding artifact.
 
@@ -79,21 +79,32 @@ That's it. No tooling to install. No platform to adopt. Markdown files, an AI, a
 ## What's in the Repo
 
 ```
+README.md                         ← You are here
+CONTRIBUTING.md                   ← How to propose rubric changes
+docs/
+└── manifesto.md                  ← The philosophy — why decision quality matters
 src/
-├── framework.md              ← The full operating model — start here
+├── framework.md                  ← The full operating model — start here
 ├── rubrics/
-│   ├── core.md               ← Universal criteria for every artifact
-│   ├── problem.md            ← Problem artifact criteria (Product lens)
-│   ├── solution.md           ← Solution artifact criteria (Analysis lens)
-│   ├── tech-design.md        ← Tech Design artifact criteria (Architecture lens)
-│   └── testing.md            ← Testing artifact criteria (Quality lens)
-├── templates/                ← Artifact templates for every scale
+│   ├── core.md                   ← Universal criteria (C1–C13) for every artifact
+│   ├── problem.md                ← Problem criteria (P1–P10) — Product lens
+│   ├── solution.md               ← Solution criteria (S1–S9) — Analysis lens
+│   ├── tech-design.md            ← Tech Design criteria (A1–A10) — Architecture lens
+│   └── testing.md                ← Testing criteria (T1–T9) — Quality lens
+├── templates/
+│   ├── problem.md                ← Problem artifact template
+│   ├── solution.md               ← Solution artifact template
+│   ├── tech-design.md            ← Tech Design artifact template
+│   ├── testing.md                ← Testing artifact template
+│   ├── issues-log.md             ← Centralised escalation register
+│   ├── meeting-minutes.md        ← Lean meeting capture
+│   └── retrospective.md          ← Rubric evolution mechanism
 └── prompts/
-    ├── builder-prompt.md     ← Drop into any AI session
-    └── auditor-prompt.md     ← Drop into any AI session
+    ├── builder-prompt.md         ← Self-contained AI builder session prompt
+    └── auditor-prompt.md         ← Self-contained AI auditor session prompt
 ```
 
-Designed to work with any AI tool that supports system prompts or persistent instructions. Also packable as a Claude Skill, and an MCP server is on the roadmap.
+Designed to work with any AI tool that supports system prompts or persistent instructions.
 
 ---
 

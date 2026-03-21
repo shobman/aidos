@@ -92,11 +92,11 @@ Every artifact is assessed against two rubric layers:
 
 **Core Rubric** — universal criteria that apply to every artifact at every scale. Alignment to goals. Simplicity. Explicit trade-offs. Failure modes. Testability. Observability. Security. Operational impact. Reversibility. Future team readiness. Unit coherence. No duplication.
 
-**Discipline Rubric** — criteria specific to each artifact type. The Problem rubric checks clarity, stakeholder identification, goal measurability, root cause confidence. The Solution rubric checks conceptual coherence, workflow completeness, edge cases, minimum viable slice. The Tech Design rubric checks component clarity, integration points, data model, coding agent readiness. The Testing rubric checks coverage, traceability, scenario completeness, exit criteria.
+**Discipline Rubric** — criteria specific to each artifact type. The Problem rubric (P1–P10) checks clarity, stakeholders, measurability, root cause confidence, scope, assumptions, constraints, impact, and alternatives. The Solution rubric (S1–S9) checks coherence, workflows, edge cases, alternatives, dependencies, migration, and minimum viable slice. The Tech Design rubric (A1–A10) checks components, integration, data model, error handling, technology choices, performance, deployment, and coding agent readiness. The Testing rubric (T1–T9) checks coverage, traceability, scenarios, exit criteria, expected results, test data, environments, regression, and prioritisation.
 
 Each criterion has a defined "what pass looks like." The auditor assesses Pass, Partial, or Fail with cited evidence. The evidence requirement is what gives rubrics teeth — you can't hand-wave a Pass. Partials are accepted or rejected by the human directing the audit, not waved through. The artifact doesn't advance until bugs are fixed.
 
-Full rubric definitions are in `rubrics/`.
+Full rubric definitions are in `src/rubrics/`.
 
 ### The Artifacts Are the Interface
 
@@ -123,7 +123,7 @@ Not every piece of work needs the full stack at every level of detail.
 | Tech Design | Tech Design (architecture) | Tech Design (implementation brief) | Technical Approach |
 | Testing | Test Strategy | Test Plan | Acceptance Criteria |
 
-The templates in `templates/` provide maximum structure. The builder scales down based on the work — keeping sections brief or skipping them, not switching to a different template. A one-line Assumptions section is better than no Assumptions section.
+The templates in `src/templates/` provide maximum structure. The builder scales down based on the work — keeping sections brief or skipping them, not switching to a different template. A one-line Assumptions section is better than no Assumptions section.
 
 Use judgment. A solo developer building a well-understood API might only need a Problem and a Tech Design. A complex multi-team initiative needs the full stack at epic and feature scale. The framework provides the structure; the human decides how much to use.
 
