@@ -37,4 +37,4 @@ The Testing Rubric is always used **alongside the Core Rubric**. The Core Rubric
 
 ## Coherence Check
 
-The Testing artifact is audited against the **Tech Design** and the **Solution** that precede it. The auditor verifies that tests verify the Tech Design against the Solution's goals — the chain of traceability runs all the way back from test cases through design decisions to stated requirements.
+The Testing artifact is audited against the **Tech Design** and the **Solution** that precede it. The auditor verifies that every test case traces to a requirement in the Solution or a technical scenario in the Tech Design. No requirement should exist without a corresponding test. No test should exist without a corresponding requirement or design constraint. If a requirement is deliberately untested, that gap is stated and justified.
