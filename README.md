@@ -82,7 +82,10 @@ That's it. No tooling to install. No platform to adopt. Markdown files, an AI, a
 README.md                         ← You are here
 CONTRIBUTING.md                   ← How to propose rubric changes
 docs/
-└── manifesto.md                  ← The philosophy — why decision quality matters
+├── manifesto.md                  ← The philosophy — why decision quality matters
+└── images/
+    ├── aidos.jpg                 ← Hero image
+    └── social.jpg                ← Social sharing image (1280×640)
 src/
 ├── framework.md                  ← The full operating model — start here
 ├── rubrics/
@@ -102,7 +105,10 @@ src/
 └── prompts/
     ├── builder-prompt.md         ← Self-contained AI builder session prompt
     └── auditor-prompt.md         ← Self-contained AI auditor session prompt
+site/                             ← Framework Explorer (GitHub Pages)
 ```
+
+The Framework Explorer is hosted at [shobman.github.io/aidos](https://shobman.github.io/aidos/). To run locally: `cd site && npm install && npm run dev`.
 
 Designed to work with any AI tool that supports system prompts or persistent instructions.
 
