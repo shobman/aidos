@@ -75,7 +75,7 @@ Coherence check:
 
 # Testing: [title]
 
-**Status:** NOT STARTED | DRAFT | STABLE | AUDITED
+**Status:** DRAFT | REVIEW | ACCEPTED
 **Tech Design:** [link to Tech Design artifact]
 **Solution:** [link to Solution artifact]
 
@@ -178,7 +178,7 @@ Coherence check:
 
 | # | Source | Issue | Status |
 |---|---|---|---|
-| I1 | | | OPEN / SOCIALISE / ESCALATE / DEFERRED |
+| I1 | | | OPEN / SOCIALISE / ESCALATE |
 
 ## Decisions
 

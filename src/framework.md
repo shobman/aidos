@@ -110,11 +110,11 @@ This is especially important for AI-assisted work, where sessions are transient.
 
 Not every piece of work needs the full stack at every level of detail.
 
-**Epic** — a large initiative spanning multiple sprints and people. Problem, Solution, Tech Design, and Test Strategy are each a separate document, plus an Issues Log. Every artifact gets thorough treatment because the cost of getting them wrong is high and many people depend on them.
+**Epic** — a large initiative spanning multiple sprints and people. Problem, Solution, Tech Design, and Test Strategy are each a separate document, plus an Issues Log and an Overflow Log. Every artifact gets thorough treatment because the cost of getting them wrong is high and many people depend on them.
 
-**Feature** — a specific deliverable, one to two sprints, typically one builder. Problem, Solution, and Tech Design are combined into one document. Testing is a separate Test Plan. The Problem section can be lightweight if the Epic Problem is strong. The Tech Design section carries the most weight — it's the brief for the coding agent.
+**Feature** — a specific deliverable, one to two sprints, typically one builder. Problem, Solution, and Tech Design are combined into one document. Testing is a separate Test Plan. An Overflow Log is optional — overflow items can go into the parent Epic's log or be tracked inline. The Problem section can be lightweight if the Epic Problem is strong. The Tech Design section carries the most weight — it's the brief for the coding agent.
 
-**Story** — a day or less of work. Everything lives in a single document. Lean artifacts that inherit heavily from the parent feature. At story scale, the artifacts compress enough that their form changes, so they take different names: Problem becomes Context, Solution becomes User Story, Tech Design becomes Technical Approach, and Testing becomes Acceptance Criteria. They map directly to the four artifact types and are still assessed against the same rubrics at lighter depth.
+**Story** — a day or less of work. Everything lives in a single document. Lean artifacts that inherit heavily from the parent feature. Overflow goes into the parent Feature's Overflow Log, not a separate document. At story scale, the artifacts compress enough that their form changes, so they take different names: Problem becomes Context, Solution becomes User Story, Tech Design becomes Technical Approach, and Testing becomes Acceptance Criteria. They map directly to the four artifact types and are still assessed against the same rubrics at lighter depth.
 
 | Artifact | Epic | Feature | Story |
 |---|---|---|---|
@@ -129,7 +129,7 @@ The scale of the work determines the document structure. This is not a suggestio
 
 | Scale | Document Structure |
 |---|---|
-| **Epic** | 4 separate documents (Problem, Solution, Tech Design, Test Strategy) + Issues Log |
+| **Epic** | 4 separate documents (Problem, Solution, Tech Design, Test Strategy) + Issues Log + Overflow Log |
 | **Feature** | 1 combined document (Problem + Solution + Tech Design) + 1 separate Test Plan |
 | **Story** | 1 document containing everything |
 
@@ -155,13 +155,15 @@ Git is the source of truth. Artifacts are authored, committed, and reviewed thro
 
 Artifacts accumulate issues and decisions as they're built.
 
-**Issues** are open questions, risks, or unknowns. They're tracked inline in the artifact with status: OPEN, SOCIALISE (needs discussion), ESCALATE (needs stakeholder decision), or DEFERRED.
+**Issues** are open questions, risks, or unknowns. They're tracked inline in the artifact with status: OPEN, SOCIALISE (needs discussion), or ESCALATE (needs stakeholder decision). Issues are closed by moving them to the Decisions table with resolution, who decided, and date.
 
 **Decisions** are resolved issues. When an issue resolves, it moves from the Issues table to the Decisions table with rationale and date. Decisions don't disappear — they're the audit trail.
 
 **Decision Packets.** When an issue needs escalation, it gets packaged with: the options available, a recommendation, downstream impact, and who needs to decide. This means a stakeholder can make an informed call without re-reading the entire artifact.
 
 **Issues Log.** Escalated items are copied to a centralised Issues Log that tracks what's waiting for a decision across the project and what's been decided. This prevents decisions from getting lost in meeting notes and Slack threads.
+
+**Overflow Log.** Content captured during sessions that can't yet be placed in an artifact — ideas, concerns, design fragments, edge cases that surfaced at the wrong time. Each item is tagged with a probable destination and a status: PARKED (active, waiting), HARVESTED (placed in an artifact or scaffolded), DISCARDED (intentionally killed, rationale recorded), or BACKLOG (out of scope for this iteration, may return). A project cannot close with PARKED items remaining — they must be harvested, discarded, or moved to the backlog.
 
 ---
 

@@ -40,7 +40,7 @@ Once you know the scale, scaffold the correct document structure immediately —
 
 **Working location.** If connected to a repo, look for or create a `.aidos/` folder as the project root. All artifacts are authored relative to this folder. If not connected to a repo, work with files as provided by the human — the `.aidos/` convention applies when git is available, not always.
 
-**Continuing?** Load the existing artifacts. Summarise the current state before proceeding: what's been done, what's the status, where did we leave off. Then pick up where the human directs.
+**Continuing?** Load the existing artifacts. Check the Overflow Log for items that can now be harvested — destination artifacts may have been created since the last session. Summarise the current state before proceeding: what's been done, what's the status, where did we leave off. Then pick up where the human directs.
 
 ---
 
@@ -175,7 +175,7 @@ You know every rubric criterion and build with them in mind so audits pass clean
 Use these structural guides when building artifacts. Every section maps to a rubric criterion — no ceremony sections, no criteria without a place to land.
 
 Each artifact has:
-- A title and status (NOT STARTED / DRAFT / STABLE / AUDITED)
+- A title and status (DRAFT / REVIEW / ACCEPTED)
 - A link to the preceding artifact or parent
 - Sections that map to rubric criteria
 - Issues table (# | Source | Issue | Status)
@@ -277,9 +277,8 @@ Track issues inline in every artifact.
 - **OPEN** — identified, not yet resolved
 - **SOCIALISE** — needs discussion with the team
 - **ESCALATE** — needs a stakeholder decision
-- **DEFERRED** — acknowledged, parked for later
 
-When an issue resolves, move it from the Issues table to the Decisions table with rationale and date. Decisions don't disappear — they're the audit trail.
+Issues are closed by moving them from the Issues table to the Decisions table with resolution, who decided, and date. The resolution can say "deferred to next iteration" — but the status is closed, not parked. Decisions don't disappear — they're the audit trail.
 
 **Decision Packets.** When an issue reaches ESCALATE, package it:
 
@@ -295,6 +294,13 @@ When an issue resolves, move it from the Issues table to the Decisions table wit
 
 The goal is that a stakeholder can make an informed call without re-reading the entire artifact.
 
+**Issues Log sync.** The Issues Log mirrors the artifact for all ESCALATE items at all times. Any status change on an ESCALATE item happens in both places:
+- **Promoted to ESCALATE** (from OPEN or SOCIALISE): add it to the Issues Log immediately with a reference to the source artifact.
+- **Resolved**: update both the artifact's Decisions table and the Issues Log. Record the resolution, who decided, and date in both places.
+- **Downgraded** (back to SOCIALISE or OPEN): remove it from the Issues Log. It's no longer cross-cutting.
+
+**Processing external inputs.** When the human brings outcomes from meetings, stakeholder decisions, or external feedback, update the relevant artifact's Issues and Decisions tables and sync to the Issues Log. The artifact is the source of truth — meeting minutes are input, not record.
+
 ---
 
 ## Scope Discipline
@@ -309,48 +315,56 @@ When the human adds something to scope, check: "Does this trace to a goal we've 
 
 ---
 
-## Overflow and Parking
+## Overflow
 
 Never stop the human's flow.
 
 When someone is working on a Problem artifact, they will naturally drift into solution design, screen ideas, technical approaches, edge cases, story-level detail. This is valuable content. Don't interrupt. Don't redirect. Don't lose it.
 
-Your job is to separate what belongs in the current artifact from what doesn't. Relevant content goes in the artifact. Everything else is captured in a structured Overflow section at the bottom of the document, tagged with where it probably belongs.
+Your job is to separate what belongs in the current artifact from what doesn't. When out-of-scope content arrives, work through this hierarchy:
+
+1. **Does it fit in an existing artifact?** Offer to place it there. "This sounds like it belongs in the Solution — want me to add it?"
+2. **Can we scaffold a new artifact from it?** Scaffold a placeholder (see below). This is the preferred outcome — content finds a home immediately.
+3. **Can't place or scaffold, but the human confirms it's worth keeping?** PARKED in the Overflow Log with a probable destination.
+4. **The human doesn't care?** Let it go. It never enters the system.
+
+Step 3 is the key gate. The human decides whether to park — not you. You present the options; they choose.
 
 Overflow works in all directions:
 - **Downward** — an epic-level session captures feature and story ideas
 - **Sideways** — a problem session captures solution and design thinking
 - **Upward** — a story-level session surfaces a feature-level concern or an epic-level assumption gap
 
-Add an Overflow section to any artifact that accumulates out-of-scope content:
+### The Overflow Log
 
-```
-## Overflow
+The Overflow Log is a project-level document (see `src/templates/overflow-log.md`). Each item has a status:
 
-| # | Content | Probable Destination | Level | Notes |
-|---|---|---|---|---|
-| O1 | [captured content] | Solution | Feature | [context] |
-| O2 | [captured content] | Tech Design | Story | [which story] |
-| O3 | [captured content] | Problem | Epic | [assumption gap] |
-```
+- **PARKED** — waiting for something. Active. Must be resolved before project closure.
+- **HARVESTED** — went into an artifact or became scaffolded work. Done.
+- **DISCARDED** — intentionally killed. Rationale recorded. Done.
+- **BACKLOG** — out of scope for this iteration. May return. Intentionally deferred.
 
-At the end of a session, or when starting the next artifact, surface parked items: "We captured these during the Problem session — here's where I think each one belongs." The human decides what to do with them.
+At Epic scale, the Overflow Log is a separate document alongside the Issues Log. At Feature scale it's optional — overflow can go into the parent Epic's log. At Story scale, overflow goes into the parent Feature's log.
 
----
+A project cannot close with PARKED items. They must be harvested, discarded, or moved to the backlog.
 
-## Scaffolding from Overflow
+### Resuming a Session
 
-When overflow items reveal the shape of downstream work — candidate features within an epic, stories within a feature — scaffold placeholder artifacts. Not full documents. Just enough to capture the intent:
+When continuing work, check the Overflow Log for items whose destination artifact now exists. Offer to harvest them: "These overflow items were tagged for the Solution, which we've now started — want me to place them?"
+
+### Scaffolding from Overflow
+
+Scaffolding is the preferred outcome for overflow. When items reveal the shape of downstream work — candidate features within an epic, stories within a feature — scaffold placeholder artifacts. Not full documents. Just enough to capture the intent:
 
 - A title
 - A one-line description
 - The overflow content that spawned it
-- A NOT STARTED status
+- A DRAFT status
 
 ```
 # [Feature/Story title]
 
-**Status:** NOT STARTED
+**Status:** DRAFT
 **Source:** [Parent artifact] overflow items O2, O5
 
 [One-line description of what this work is about.]
@@ -359,7 +373,7 @@ When overflow items reveal the shape of downstream work — candidate features w
 - [Overflow content that surfaced this]
 ```
 
-This is breakdown-by-discovery. The work structure emerges from conversations, not from a decomposition exercise done in isolation. The human decides whether to pursue scaffolded items or discard them.
+When you scaffold, mark the source overflow items as HARVESTED. The work structure emerges from conversations, not from a decomposition exercise done in isolation. The human decides whether to pursue scaffolded items or discard them.
 
 ---
 
@@ -378,10 +392,10 @@ This is breakdown-by-discovery. The work structure emerges from conversations, n
 When wrapping up a session, provide a clear handoff:
 
 - **What was built or changed** in this session
-- **Current status** of each artifact touched (NOT STARTED / DRAFT / STABLE)
-- **Overflow items** parked and their probable destinations
+- **Current status** of each artifact touched (DRAFT / REVIEW / ACCEPTED)
+- **Overflow items** added to the Overflow Log, with statuses and probable destinations
 - **Scaffolded items** created, if any
-- **What's ready for audit** — which artifacts are STABLE and should go to an auditor
+- **What's ready for audit** — which artifacts are REVIEW and should go to an auditor
 - **What needs the next human checkpoint** — decisions pending, issues at SOCIALISE or ESCALATE
 - **Suggested next session focus** — what to work on next based on where things stand
 

@@ -52,7 +52,7 @@ Scaling depth:
 
 # Tech Design: [title]
 
-**Status:** NOT STARTED | DRAFT | STABLE | AUDITED
+**Status:** DRAFT | REVIEW | ACCEPTED
 **Solution:** [link to Solution artifact]
 
 ---
@@ -163,7 +163,7 @@ Backward compatibility window. Data migration steps if applicable.]
 
 | # | Source | Issue | Status |
 |---|---|---|---|
-| I1 | | | OPEN / SOCIALISE / ESCALATE / DEFERRED |
+| I1 | | | OPEN / SOCIALISE / ESCALATE |
 
 ## Decisions
 

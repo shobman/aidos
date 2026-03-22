@@ -12,15 +12,15 @@
 
 ## Decisions
 
-| # | Decision | Rationale | Owner |
-|---|---|---|---|
-| D1 | | | |
+| # | Decision | Rationale | Owner | Harvested To |
+|---|---|---|---|---|
+| D1 | | | | — |
 
 ## Actions
 
-| # | Action | Owner | Due |
-|---|---|---|---|
-| A1 | | | |
+| # | Action | Owner | Due | Harvested To |
+|---|---|---|---|---|
+| A1 | | | | — |
 
 ## Items to Feed Back
 

@@ -51,7 +51,7 @@ Scaling depth:
 
 # Solution: [title]
 
-**Status:** NOT STARTED | DRAFT | STABLE | AUDITED
+**Status:** DRAFT | REVIEW | ACCEPTED
 **Problem:** [link to Problem artifact]
 
 ---
@@ -139,7 +139,7 @@ reversed.]
 
 | # | Source | Issue | Status |
 |---|---|---|---|
-| I1 | | | OPEN / SOCIALISE / ESCALATE / DEFERRED |
+| I1 | | | OPEN / SOCIALISE / ESCALATE |
 
 ## Decisions
 

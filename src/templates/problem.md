@@ -56,7 +56,7 @@ Scaling depth:
 
 # Problem: [title]
 
-**Status:** NOT STARTED | DRAFT | STABLE | AUDITED
+**Status:** DRAFT | REVIEW | ACCEPTED
 **Parent:** [link to Epic problem, if this is Feature or Story scale]
 
 ---
@@ -149,7 +149,7 @@ Why this needs addressing now. What happens if it isn't.]
 
 | # | Source | Issue | Status |
 |---|---|---|---|
-| I1 | | | OPEN / SOCIALISE / ESCALATE / DEFERRED |
+| I1 | | | OPEN / SOCIALISE / ESCALATE |
 
 ## Decisions
 

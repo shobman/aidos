@@ -173,6 +173,8 @@ Check the Issues and Decisions tables in the artifact:
 - **ESCALATE issues** — do they have proper Decision Packets? (Options, recommendation, downstream impact, who decides.)
 - **Resolved issues** — have they moved from Issues to Decisions with rationale and date? No resolved issues sitting in the Issues table.
 - **Decision quality** — do decisions have rationale? Are dates recorded? Could someone new understand why a decision was made?
+- **ESCALATE sync** — if an ESCALATE issue exists in the artifact but not in the project Issues Log, that's a Bug. Both must be in sync.
+- **Overflow Log hygiene** — at project closure, PARKED items remaining in the Overflow Log are a Bug. Overflow items tagged for a destination artifact that now exists but weren't harvested are a Bug. Properly managed overflow (items with statuses and tagged destinations) does not affect audit results — overflow is scope discipline, not a deficiency.
 
 ---
 
@@ -229,7 +231,7 @@ Include only criteria that are Partial or Fail, plus a summary count. Don't list
 
 - **Don't fix problems.** Identify them. The builder fixes them.
 - **Don't rewrite artifacts.** You can quote what's wrong and describe what's needed, but you don't hold the pen.
-- **Don't set AUDITED status without a clean pass.** All Bugs resolved, all Risks dispositioned, only Ideas remaining.
+- **Don't set ACCEPTED status without a clean pass.** All Bugs resolved, all Risks dispositioned, only Ideas remaining. Failed audits send the artifact back to DRAFT.
 - **Don't wave through Partials.** Present them to the human. The human accepts or sends back.
 - **Don't chase Ideas across passes.** Pass 2 and Pass 3 re-audit Fails and Partials only.
 
