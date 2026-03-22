@@ -1,0 +1,106 @@
+name: Publish Skills
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - src/**
+      - skills/**
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Build site
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+      - run: npm ci
+        working-directory: site
+      - run: npm run build
+        working-directory: site
+
+      # Assemble builder skill
+      - name: Assemble builder skill
+        run: |
+          mkdir -p _staging/aidos-builder/{rubrics,templates}
+          cp skills/builder/SKILL.md _staging/aidos-builder/
+          cp src/prompts/builder-prompt.md _staging/aidos-builder/
+          cp src/framework.md _staging/aidos-builder/
+          cp src/rubrics/core.md _staging/aidos-builder/rubrics/
+          cp src/templates/problem.md _staging/aidos-builder/templates/
+          cp src/templates/solution.md _staging/aidos-builder/templates/
+          cp src/templates/tech-design.md _staging/aidos-builder/templates/
+          cp src/templates/testing.md _staging/aidos-builder/templates/
+          cp src/templates/issues-log.md _staging/aidos-builder/templates/
+          cp src/templates/overflow-log.md _staging/aidos-builder/templates/
+          cp src/templates/meeting-minutes.md _staging/aidos-builder/templates/
+          cp src/templates/retrospective.md _staging/aidos-builder/templates/
+          sed -i 's|`src/rubrics/|`rubrics/|g; s|`src/templates/|`templates/|g; s|`src/framework\.md`|`framework.md`|g' _staging/aidos-builder/builder-prompt.md
+
+      # Assemble auditor skill
+      - name: Assemble auditor skill
+        run: |
+          mkdir -p _staging/aidos-auditor/{rubrics,templates}
+          cp skills/auditor/SKILL.md _staging/aidos-auditor/
+          cp src/prompts/auditor-prompt.md _staging/aidos-auditor/
+          cp src/framework.md _staging/aidos-auditor/
+          cp src/rubrics/core.md _staging/aidos-auditor/rubrics/
+          cp src/rubrics/problem.md _staging/aidos-auditor/rubrics/
+          cp src/rubrics/solution.md _staging/aidos-auditor/rubrics/
+          cp src/rubrics/tech-design.md _staging/aidos-auditor/rubrics/
+          cp src/rubrics/testing.md _staging/aidos-auditor/rubrics/
+          cp src/templates/retrospective.md _staging/aidos-auditor/templates/
+          sed -i 's|`src/rubrics/|`rubrics/|g; s|`src/templates/|`templates/|g; s|`src/framework\.md`|`framework.md`|g' _staging/aidos-auditor/auditor-prompt.md
+
+      # Create ZIPs with folder at root
+      - name: Create ZIP files
+        run: |
+          mkdir -p skills/dist
+          cd _staging
+          zip -r ../skills/dist/aidos-builder.zip aidos-builder/
+          zip -r ../skills/dist/aidos-auditor.zip aidos-auditor/
+          cd ..
+          echo "Build complete:"
+          ls -lh skills/dist/*.zip
+
+      # Upload as workflow artifacts
+      - name: Upload skill ZIPs as artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: aidos-skills
+          path: skills/dist/*.zip
+
+      # Copy ZIPs into Pages output
+      - name: Add ZIPs to Pages deployment
+        run: |
+          mkdir -p site/dist/skills
+          cp skills/dist/*.zip site/dist/skills/
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

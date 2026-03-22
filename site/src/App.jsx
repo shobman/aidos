@@ -125,13 +125,22 @@ export default function App() {
     summary = { type: "doc", label: DOCS[selDoc].label, contents: DOCS[selDoc].cells.map(([a, s]) => NAMES[`${a}-${s}`]) };
   }
 
-  const footerLinks = [
+  const footerDocs = [
     { label: "Repository", href: "https://github.com/shobman/aidos" },
     { label: "Framework", href: "https://github.com/shobman/aidos/blob/main/src/framework.md" },
     { label: "Rubrics", href: "https://github.com/shobman/aidos/tree/main/src/rubrics" },
-    { label: "Templates", href: "https://github.com/shobman/aidos/tree/main/src/templates" },
     { label: "Prompts", href: "https://github.com/shobman/aidos/tree/main/src/prompts" },
     { label: "Manifesto", href: "https://github.com/shobman/aidos/blob/main/docs/manifesto.md" },
+  ];
+  const footerTemplates = [
+    { label: "Problem", href: "https://github.com/shobman/aidos/blob/main/src/templates/problem.md" },
+    { label: "Solution", href: "https://github.com/shobman/aidos/blob/main/src/templates/solution.md" },
+    { label: "Tech Design", href: "https://github.com/shobman/aidos/blob/main/src/templates/tech-design.md" },
+    { label: "Testing", href: "https://github.com/shobman/aidos/blob/main/src/templates/testing.md" },
+    { label: "Issues Log", href: "https://github.com/shobman/aidos/blob/main/src/templates/issues-log.md" },
+    { label: "Overflow Log", href: "https://github.com/shobman/aidos/blob/main/src/templates/overflow-log.md" },
+    { label: "Meeting Minutes", href: "https://github.com/shobman/aidos/blob/main/src/templates/meeting-minutes.md" },
+    { label: "Retrospective", href: "https://github.com/shobman/aidos/blob/main/src/templates/retrospective.md" },
   ];
 
   const base = import.meta.env.BASE_URL;
@@ -235,13 +244,13 @@ export default function App() {
             <span style={{ fontFamily: "'Merriweather', Georgia, serif", fontSize: 13, fontWeight: 700, color: sel?.scale === "Feature" ? green : "#c0beb8", transition: "color 0.2s" }}>Feature</span>
           </div>
           <div style={{ gridColumn: "2 / 5" }}>
-            <DocWrap label="Feature Document" active={isDA("feature-combined")} onClick={() => hDoc("feature-combined")}>
+            <DocWrap label="Feature Document ×N" active={isDA("feature-combined")} onClick={() => hDoc("feature-combined")}>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>
                 {["Problem", "Solution", "Tech Design"].map(a => <Cell key={a} artifact={a} scale="Feature" state={cState(a, "Feature")} onClick={() => hCell(a, "Feature")} />)}
               </div>
             </DocWrap>
           </div>
-          <DocWrap label="Test Plan" active={isDA("feature-testing")} onClick={() => hDoc("feature-testing")}>
+          <DocWrap label="Test Plan ×N" active={isDA("feature-testing")} onClick={() => hDoc("feature-testing")}>
             <Cell artifact="Testing" scale="Feature" state={cState("Testing", "Feature")} onClick={() => hCell("Testing", "Feature")} />
           </DocWrap>
         </div>
@@ -252,7 +261,7 @@ export default function App() {
             <span style={{ fontFamily: "'Merriweather', Georgia, serif", fontSize: 13, fontWeight: 700, color: sel?.scale === "Story" ? green : "#c0beb8", transition: "color 0.2s" }}>Story</span>
           </div>
           <div style={{ gridColumn: "2 / 6" }}>
-            <DocWrap label="Story Document" active={isDA("story-all")} onClick={() => hDoc("story-all")}>
+            <DocWrap label="Story Document ×N" active={isDA("story-all")} onClick={() => hDoc("story-all")}>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
                 {ARTIFACTS.map(a => <Cell key={a} artifact={a} scale="Story" state={cState(a, "Story")} onClick={() => hCell(a, "Story")} />)}
               </div>
@@ -310,7 +319,22 @@ export default function App() {
               Docs
             </div>
             <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
-              {footerLinks.map(link => (
+              {footerDocs.map(link => (
+                <a key={link.label} href={link.href} target="_blank" rel="noopener noreferrer"
+                  style={{ fontSize: 13, color: "#b0aca4", textDecoration: "none", borderBottom: "1px solid #4a5a4e60", paddingBottom: 1, transition: "all 0.2s" }}
+                  onMouseEnter={e => { e.target.style.color = "#e8e6e1"; e.target.style.borderColor = "#8cb893"; }}
+                  onMouseLeave={e => { e.target.style.color = "#b0aca4"; e.target.style.borderColor = "#4a5a4e60"; }}
+                >{link.label}</a>
+              ))}
+            </div>
+          </div>
+          {/* Template links */}
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ fontSize: 10, color: muted, textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 600, marginBottom: 8 }}>
+              Templates
+            </div>
+            <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
+              {footerTemplates.map(link => (
                 <a key={link.label} href={link.href} target="_blank" rel="noopener noreferrer"
                   style={{ fontSize: 13, color: "#b0aca4", textDecoration: "none", borderBottom: "1px solid #4a5a4e60", paddingBottom: 1, transition: "all 0.2s" }}
                   onMouseEnter={e => { e.target.style.color = "#e8e6e1"; e.target.style.borderColor = "#8cb893"; }}

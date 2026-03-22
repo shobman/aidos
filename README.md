@@ -64,7 +64,38 @@ The Problem artifact gets audited: is the stakeholder impact clear? Are the goal
 
 ---
 
-## Quick Start
+## Get Started
+
+AIDOS ships as two AI skills — **Builder** and **Auditor** — packaged for Claude.
+
+| Skill | What It Does |
+|---|---|
+| **AIDOS Builder** | Runs a builder session. Scaffolds the right document structure for your scale, builds artifacts iteratively, captures decisions and issues inline. |
+| **AIDOS Auditor** | Runs an audit session. Assesses artifacts against Core and discipline rubrics, checks coherence with preceding artifacts, classifies findings as Bug / Risk / Idea. |
+
+### Download
+
+Download the latest skill ZIPs from [shobman.github.io/aidos/skills/](https://shobman.github.io/aidos/skills/):
+
+- [`aidos-builder.zip`](https://shobman.github.io/aidos/skills/aidos-builder.zip)
+- [`aidos-auditor.zip`](https://shobman.github.io/aidos/skills/aidos-auditor.zip)
+
+### Install on Claude.ai
+
+1. Go to **Settings → Customize → Skills**
+2. Click **Upload** and select the ZIP file
+3. The skill appears in your skill list — Claude will use it when relevant
+
+### Install in Claude Code
+
+Copy the skill folder into your project:
+
+```
+.claude/skills/aidos-builder/    ← contents of the builder ZIP
+.claude/skills/aidos-auditor/    ← contents of the auditor ZIP
+```
+
+### Manual use (no skill install)
 
 1. Read [`src/framework.md`](src/framework.md) — the mechanics, rubrics, and operating model.
 2. Pick your scale: **Epic** (big initiative), **Feature** (one deliverable), or **Story** (a day's work).
@@ -72,7 +103,7 @@ The Problem artifact gets audited: is the stakeholder impact clear? Are the goal
 4. Build the Problem first. Get it reviewed. Then Solution. Then Tech Design. Then Testing.
 5. Have someone who didn't build it [audit](src/prompts/auditor-prompt.md) against the rubrics and the preceding artifact.
 
-That's it. No tooling to install. No platform to adopt. Markdown files, an AI, and discipline.
+No tooling to install. No platform to adopt. Markdown files, an AI, and discipline.
 
 ---
 
@@ -105,6 +136,10 @@ src/
 └── prompts/
     ├── builder-prompt.md         ← Self-contained AI builder session prompt
     └── auditor-prompt.md         ← Self-contained AI auditor session prompt
+skills/
+├── builder/SKILL.md              ← AIDOS Builder skill for Claude
+├── auditor/SKILL.md              ← AIDOS Auditor skill for Claude
+└── build.ps1                     ← Assembles and ZIPs skills for distribution
 site/                             ← Framework Explorer (GitHub Pages)
 ```
 
