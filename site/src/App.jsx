@@ -134,27 +134,41 @@ export default function App() {
     { label: "Manifesto", href: "https://github.com/shobman/aidos/blob/main/docs/manifesto.md" },
   ];
 
+  const base = import.meta.env.BASE_URL;
+
   return (
-    <div style={{ minHeight: "100vh", background: "#1a1f1c", color: "#e8e6e1", fontFamily: "'Source Sans 3', sans-serif" }}>
+    <div style={{ minHeight: "100vh", background: "#1a1f1c", color: "#e8e6e1", fontFamily: "'Source Sans 3', sans-serif", position: "relative" }}>
+      <div style={{
+        position: "fixed", inset: 0, zIndex: 0,
+        backgroundImage: `url(${base}aidos.jpg)`,
+        backgroundSize: "80%", backgroundPosition: "center top", backgroundRepeat: "no-repeat",
+        opacity: 0.15, pointerEvents: "none",
+        maskImage: "linear-gradient(to right, transparent 5%, black 20%, black 82%, transparent 88%)",
+        WebkitMaskImage: "linear-gradient(to right, transparent 5%, black 20%, black 82%, transparent 88%)",
+      }} />
+      <div style={{ position: "relative", zIndex: 1 }}>
       <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet" />
 
       {/* Header */}
       <div style={{ borderBottom: `1px solid ${border}`, background: "linear-gradient(180deg, #1e2420, #1a1f1c)" }}>
-        <div style={{ maxWidth: 960, margin: "0 auto", padding: "28px 24px 20px" }}>
-          <div style={{ display: "flex", alignItems: "baseline", gap: 12, marginBottom: 6 }}>
-            <h1 style={{ fontFamily: "'Merriweather', Georgia, serif", fontSize: 26, fontWeight: 700, letterSpacing: "0.12em", fontVariant: "small-caps", margin: 0 }}>aidos</h1>
-            <span style={{ fontSize: 13, color: muted }}>AI Delivery Operating System</span>
-          </div>
-          <p style={{ fontSize: 14, color: "#b0aca4", margin: 0, lineHeight: 1.5, maxWidth: 600 }}>
-            An AI-era delivery assurance framework. Think clearly, decide well, audit before you build.
-          </p>
-          <div style={{ fontSize: 10, color: "#b0aca4", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 600, marginTop: 14 }}>
-            Framework Explorer
+        <div style={{ maxWidth: 960, margin: "0 auto", padding: "28px 24px 20px", display: "flex", alignItems: "center", gap: 18 }}>
+          <img src={`${base}aidos.jpg`} alt="Aidos" style={{ width: 52, height: 52, borderRadius: 8, objectFit: "cover", objectPosition: "center 20%", opacity: 0.85, flexShrink: 0 }} />
+          <div>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 12, marginBottom: 6 }}>
+              <h1 style={{ fontFamily: "'Merriweather', Georgia, serif", fontSize: 26, fontWeight: 700, letterSpacing: "0.12em", fontVariant: "small-caps", margin: 0 }}>aidos</h1>
+              <span style={{ fontSize: 13, color: muted }}>AI Delivery Operating System</span>
+            </div>
+            <p style={{ fontSize: 14, color: "#b0aca4", margin: 0, lineHeight: 1.5, maxWidth: 600 }}>
+              An AI-era delivery assurance framework. Think clearly, decide well, audit before you build.
+            </p>
           </div>
         </div>
       </div>
 
       <div style={{ maxWidth: 960, margin: "0 auto", padding: "24px 24px 48px" }}>
+        <div style={{ fontSize: 10, color: muted, textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 600, marginBottom: 16 }}>
+          Framework Explorer
+        </div>
 
         {/* Column headers */}
         <div style={{ display: "grid", gridTemplateColumns: GRID, gap: 6, marginBottom: 6 }}>
@@ -248,7 +262,7 @@ export default function App() {
 
         {/* Summary */}
         {summary && (
-          <div style={{ marginTop: 20, padding: "14px 18px", borderRadius: 8, background: card, border: `1px solid ${border}` }}>
+          <div style={{ marginTop: 20, padding: "14px 18px", borderRadius: 8, background: "#4A635012", border: `1px solid ${border}` }}>
             {summary.type === "audit" && (
               <>
                 <div style={{ fontFamily: "'Merriweather', Georgia, serif", fontSize: 15, fontWeight: 700, color: green, marginBottom: 6 }}>
@@ -306,6 +320,7 @@ export default function App() {
             </div>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );
