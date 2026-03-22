@@ -143,6 +143,11 @@ export default function App() {
     { label: "Retrospective", href: "https://github.com/shobman/aidos/blob/main/src/templates/retrospective.md" },
   ];
 
+  const footerSkills = [
+    { label: "Builder (.zip)", href: "https://shobman.github.io/aidos/skills/aidos-builder.zip" },
+    { label: "Auditor (.zip)", href: "https://shobman.github.io/aidos/skills/aidos-auditor.zip" },
+  ];
+
   const base = import.meta.env.BASE_URL;
 
   return (
@@ -336,6 +341,21 @@ export default function App() {
             <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
               {footerTemplates.map(link => (
                 <a key={link.label} href={link.href} target="_blank" rel="noopener noreferrer"
+                  style={{ fontSize: 13, color: "#b0aca4", textDecoration: "none", borderBottom: "1px solid #4a5a4e60", paddingBottom: 1, transition: "all 0.2s" }}
+                  onMouseEnter={e => { e.target.style.color = "#e8e6e1"; e.target.style.borderColor = "#8cb893"; }}
+                  onMouseLeave={e => { e.target.style.color = "#b0aca4"; e.target.style.borderColor = "#4a5a4e60"; }}
+                >{link.label}</a>
+              ))}
+            </div>
+          </div>
+          {/* Skill downloads */}
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ fontSize: 10, color: muted, textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 600, marginBottom: 8 }}>
+              Skills
+            </div>
+            <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
+              {footerSkills.map(link => (
+                <a key={link.label} href={link.href} download rel="noopener noreferrer"
                   style={{ fontSize: 13, color: "#b0aca4", textDecoration: "none", borderBottom: "1px solid #4a5a4e60", paddingBottom: 1, transition: "all 0.2s" }}
                   onMouseEnter={e => { e.target.style.color = "#e8e6e1"; e.target.style.borderColor = "#8cb893"; }}
                   onMouseLeave={e => { e.target.style.color = "#b0aca4"; e.target.style.borderColor = "#4a5a4e60"; }}

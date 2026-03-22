@@ -1,4 +1,4 @@
-name: Publish Skills
+name: Deploy Pages & Skills
 
 on:
   push:
@@ -6,6 +6,7 @@ on:
     paths:
       - src/**
       - skills/**
+      - site/**
   workflow_dispatch:
 
 permissions:
