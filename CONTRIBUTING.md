@@ -23,7 +23,7 @@ The rubrics preserve lineage — not just what changed, but what pain the change
 Open an issue first. Include:
 
 1. **What burned you.** The project situation — what went wrong, when it was discovered, what it cost. This can be a direct experience, a near miss, a repeated friction pattern across teams, or a lesson from a public postmortem. The standard is: grounded in real delivery pain, not abstract preference.
-2. **Which rubric it belongs to.** Core (universal), or a discipline rubric (Problem, Solution, Tech Design, Testing).
+2. **Which rubric it belongs to.** Core (universal), or a discipline rubric (Problem, Solution, Tech Design, Testing, Definition).
 3. **The proposed criterion.** A short name and a clear "What Pass Looks Like" description.
 4. **Why the current rubric didn't catch it.** What gap this fills.
 5. **Example evidence.** What a reviewer would look for when assessing this criterion.
@@ -49,6 +49,8 @@ Open an issue first. Include:
 - **Non-redundant.** It catches something no other criterion covers.
 - **Grounded.** It comes from real delivery pain — direct experience, observed patterns, or documented failures — not theoretical concern.
 - **Actionable.** If it fails, the builder knows what to fix.
+
+Sharper criteria enable safer delegation — a criterion that two humans would mostly agree on is also a criterion that an AI auditor can assess reliably. Rubric quality today is the contract that enables agent autonomy tomorrow.
 
 ### Modifying an Existing Criterion
 
@@ -78,7 +80,7 @@ Include:
 
 ## Worked Examples
 
-End-to-end examples showing AIDOS applied to a real or realistic project are valuable contributions. A good example shows:
+End-to-end examples showing AIDOS applied to a real or realistic project are valuable contributions. See [Worked Example: Deployment Notifications](docs/worked-example.md) for the canonical format — a narrative walkthrough showing the human–AI interaction, not just the finished artifacts. A good example shows:
 
 - The artifact stack (Problem → Solution → Tech Design → Testing) at any scale.
 - At least one audit finding and how it was resolved.

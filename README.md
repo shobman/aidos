@@ -16,9 +16,9 @@ But the thinking hasn't got cheaper. Humans still need to understand problems, a
 
 ## What This Actually Is
 
-Four artifacts that build on each other:
+Four delivery artifacts that build on each other, plus one that outlasts the project:
 
-**Problem** → **Solution** → **Tech Design** → **Testing**
+**Problem** → **Solution** → **Tech Design** → **Testing** → *Definition*
 
 | Artifact | Question It Answers |
 |---|---|
@@ -26,6 +26,9 @@ Four artifacts that build on each other:
 | **Solution** | How the proposed response works as a system, including options and trade-offs |
 | **Tech Design** | How the solution will be implemented — components, interfaces, data, constraints |
 | **Testing** | How we verify it works and trace results back to requirements |
+| **Definition** | What was built, why it works this way, and what a maintainer needs to know |
+
+The first four are delivery artifacts. The Definition is created after the work ships — the living, authoritative description of the feature, maintained as it evolves. Delivery artifacts archive; the Definition persists.
 
 Each artifact is checked against its own quality rubric **and** against the artifact before it. The Solution has to actually solve the Problem. The Tech Design has to actually implement the Solution. The Testing has to actually verify the Tech Design against the Solution's goals. If the chain breaks, you find out in a review — not in production.
 
@@ -61,6 +64,8 @@ A team needs to improve how warehouse staff track inventory across multiple loca
 | **Testing** | Validate data freshness, permissions, rendering across devices, fallback states. Every test traces to a requirement in the Solution. |
 
 The Problem artifact gets audited: is the stakeholder impact clear? Are the goals measurable? Is the scope bounded? Then the Solution gets audited against the Problem: does it actually address the stated goals? Then the Tech Design against the Solution. The chain holds or it breaks at an identifiable point.
+
+> For a full walkthrough showing the human–AI interaction pattern — assumption surfacing, audit findings, fix cycles, and escalated decisions — see [Worked Example: Deployment Notifications](docs/worked-example.md).
 
 ---
 
@@ -102,12 +107,13 @@ Copy the skill folder into your project:
 3. Open any AI chat. Load the [builder prompt](src/prompts/builder-prompt.md) — it's self-contained.
 4. Build through the stack in order — Problem, then Solution, then Tech Design, then Testing — using the document structure for your scale. At Feature and Story scale, multiple artifacts combine into one document.
 5. Have someone who didn't build it [audit](src/prompts/auditor-prompt.md) against the rubrics and the preceding artifact.
+6. After the work ships, write the [Definition](src/templates/definition.md) — the living description that persists. Archive the delivery artifacts.
 
 No tooling to install. No platform to adopt. Markdown files, an AI, and discipline.
 
 ### Using with Claude
 
-AIDOS is agent-agnostic. The builder and auditor prompts work with any AI that accepts a system prompt.
+AIDOS is agent-agnostic. The builder and auditor prompts work with any AI that accepts a system prompt. The framework is designed so that the quality mechanism scales from human-directed to fully autonomous delivery — see [Agent Autonomy Spectrum](docs/maturity-model.md).
 
 For Claude-specific setup — how to connect GitHub, invoke skills, and configure the MCP connector — see [CLAUDE.md](CLAUDE.md).
 
@@ -120,6 +126,8 @@ README.md                         ← You are here
 CONTRIBUTING.md                   ← How to propose rubric changes
 docs/
 ├── manifesto.md                  ← The philosophy — why decision quality matters
+├── worked-example.md             ← Full walkthrough — the human–AI workflow in action
+├── maturity-model.md             ← Agent autonomy spectrum — how the quality model scales
 └── images/
     ├── aidos.jpg                 ← Hero image
     └── social.jpg                ← Social sharing image (1280×640)
@@ -130,12 +138,14 @@ src/
 │   ├── problem.md                ← Problem criteria (P1–P10) — Product lens
 │   ├── solution.md               ← Solution criteria (S1–S9) — Analysis lens
 │   ├── tech-design.md            ← Tech Design criteria (A1–A10) — Architecture lens
-│   └── testing.md                ← Testing criteria (T1–T9) — Quality lens
+│   ├── testing.md                ← Testing criteria (T1–T9) — Quality lens
+│   └── definition.md             ← Definition criteria (F1–F8) — Maintenance lens
 ├── templates/
 │   ├── problem.md                ← Problem artifact template
 │   ├── solution.md               ← Solution artifact template
 │   ├── tech-design.md            ← Tech Design artifact template
 │   ├── testing.md                ← Testing artifact template
+│   ├── definition.md             ← Definition artifact template
 │   ├── issues-log.md             ← Centralised escalation register
 │   ├── overflow-log.md           ← Captures ideas, risks, and insights that don't belong in the current artifact
 │   ├── meeting-minutes.md        ← Lean meeting capture

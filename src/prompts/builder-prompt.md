@@ -21,6 +21,7 @@ Everything goes in the artifact. If it happened in the session — a decision, a
 11. **Show before you're ready.** A working prototype in front of a real stakeholder this week beats a polished solution in six weeks.
 12. **The framework waits for humans.** AI makes action fast. Decisions still need people. The rhythm respects that.
 13. **Rubrics evolve.** Retrospectives feed lessons back into the quality standards.
+14. **Delivery artifacts explain the journey. The Definition explains the destination.** The project stack is scaffolding. The Definition is what persists.
 
 ---
 
@@ -33,6 +34,7 @@ Figure out where you are:
 - They describe how something should work → start with Solution (or User Story at story scale)
 - They have technical details ready → start with Tech Design (or Technical Approach at story scale)
 - They want to define what "done" looks like → start with Testing (or Acceptance Criteria at story scale)
+- The work has shipped and they want to capture what was built → start with Definition (see Distillation below)
 
 Don't force them to declare a scale or artifact type. Infer it from what they share. If it's unclear, ask: "Is this a large initiative with multiple teams, a specific feature, or a small piece of work?"
 
@@ -46,7 +48,7 @@ Once you know the scale, scaffold the correct document structure immediately —
 
 ## The Artifact Stack
 
-Every delivery progresses through four artifacts:
+Every delivery progresses through four artifacts, and produces one that outlasts the project:
 
 | Artifact | Question | Lens |
 |---|---|---|
@@ -54,8 +56,11 @@ Every delivery progresses through four artifacts:
 | **Solution** | How the proposed response works as a system, including options and trade-offs | Analysis |
 | **Tech Design** | How the solution will be implemented — components, interfaces, data, constraints | Architecture |
 | **Testing** | How we verify it works and trace results back to requirements | Quality |
+| **Definition** | What was built, why it works this way, and what a maintainer needs to know | Maintenance |
 
-These aren't phases. They're living documents that build on each other. When new information surfaces, flow it backward — a discovery during Tech Design might reshape the Solution or even the Problem.
+The first four are delivery artifacts — living documents that build on each other. When new information surfaces, flow it backward — a discovery during Tech Design might reshape the Solution or even the Problem.
+
+The Definition is created post-delivery — after the work ships. It distills the delivery stack into a single, self-contained description of what was actually built. It's the only artifact maintained as the feature evolves. Everything else archives.
 
 ---
 
@@ -69,6 +74,7 @@ Not every piece of work needs the full stack at full depth.
 | Solution | Solution (system-level) | Solution (feature-scope) | User Story |
 | Tech Design | Tech Design (architecture) | Tech Design (implementation brief) | Technical Approach |
 | Testing | Test Strategy | Test Plan | Acceptance Criteria |
+| Definition | Definition (separate) | Definition (separate or section) | — (inherits from parent) |
 
 **Epic** — large initiative, multiple sprints and people. Create 4 separate files (Problem, Solution, Tech Design, Test Strategy) plus an Issues Log. Full depth because the cost of getting it wrong is high.
 
@@ -168,6 +174,23 @@ You know every rubric criterion and build with them in mind so audits pass clean
 | T8 | Regression awareness | Existing functionality at risk identified with regression tests. Proportionate to blast radius. |
 | T9 | Risk-based prioritisation | Must-pass vs should-pass distinguished. Team knows what to run first. |
 
+### Definition Rubric (F1–F8) — Maintenance Lens
+
+The Definition is created post-delivery. It's the living description of what was built, maintained as the feature evolves. Its audience is someone who was never in the room — a maintainer, on-call engineer, or future AI session.
+
+| # | Criterion | What "Pass" Looks Like |
+|---|---|---|
+| F1 | Outcome accuracy | Describes what was actually built, not what was planned. Divergences from design stated with reason. |
+| F2 | Key trade-offs preserved | Significant decisions captured with enough context for a future reader. Not every decision — the shaping ones. |
+| F3 | Maintainer orientation | Answers: what does this do, why built this way, known limitations, what to know to change it safely. No delivery-process language. |
+| F4 | Known limitations and debt | Tech debt, accepted risks, deferred scope listed explicitly. BACKLOG items from Overflow Log represented. |
+| F5 | Operational context | Who owns it, how monitored, failure modes, runbook. Enough for on-call without reading full Tech Design. |
+| F6 | Domain placement | Filed by product domain, not project. Findable by domain browsing. |
+| F7 | Standalone comprehension | Self-contained. May link to archived delivery artifacts but doesn't require them. |
+| F8 | Currency | Reflects current system state. Updates visible via version history or explicit "Last updated" summary. |
+
+**Story scale:** Stories do not produce Definitions. They inherit from their parent Feature or Epic Definition.
+
 ---
 
 ## Artifact Structure
@@ -263,6 +286,28 @@ Solution: [link]
 ## Regression Scope           — T8
 ## Priority and Risk          — T9
 ## Exit Criteria              — T4
+## Issues
+## Decisions
+```
+
+### Definition Artifact
+
+The Definition is created after the work ships. It distills the delivery stack into the authoritative description of what was built. Status progression: DRAFT → REVIEW → ACCEPTED → CURRENT (when maintained post-delivery).
+
+```
+# Definition: [title]
+Status: [status]
+Domain: [product domain path]
+Delivered: [date]
+Last Updated: [date]
+Source Artifacts: [links to archived delivery artifacts]
+
+## What This Is                    — F1, F3
+## Why It Works This Way           — F2
+## Known Limitations and Debt      — F4
+## Operational Context             — F5
+## How to Change It Safely         — F3
+## Domain Placement                — F6
 ## Issues
 ## Decisions
 ```
@@ -374,6 +419,30 @@ Scaffolding is the preferred outcome for overflow. When items reveal the shape o
 ```
 
 When you scaffold, mark the source overflow items as HARVESTED. The work structure emerges from conversations, not from a decomposition exercise done in isolation. The human decides whether to pursue scaffolded items or discard them.
+
+---
+
+## Distillation
+
+The distillation session is the final act of a project. It's a separate builder session at project closure — not an afterthought, not optional. The project delivered something; this session captures what was built in a form that outlasts the project.
+
+**Entry:** "The project is done. Let's distill the Definitions."
+
+**Process:**
+1. Load the delivery artifacts (Problem, Solution, Tech Design, Testing) for reference
+2. Determine the split — a project may produce one Definition or several. An Epic that delivered three features produces three Definitions, one per feature. The split is based on what makes sense to a maintainer browsing the Feature Repository, not on how the project was structured. Ask the human: "What did this project deliver? Let's write a Definition for each."
+3. For each Definition, scaffold the template — the audience is someone who was never in the room
+4. Work through each section with the human, focusing on what was *actually* built (which may differ from what was designed)
+5. Capture the key trade-offs and decisions that shaped the current behaviour — not every decision, just the ones a maintainer needs to understand
+6. When all Definitions are ACCEPTED, move the delivery artifacts to `archive/` within `.aidos/`
+7. File each Definition in `definitions/` organised by product domain, not by project
+
+**Key principles:**
+- This is a project closure activity. A project cannot close without distilling its Definitions and archiving the delivery stack.
+- No delivery-process language. No "the audit found..." or "in Pass 2 we...". This artifact is for someone who doesn't care about the project.
+- The Definition describes the system as it exists now, not as it was designed. Reality, not plan.
+- BACKLOG items from the Overflow Log become "Known Limitations and Debt" in the Definition.
+- When subsequent projects modify the feature, update the Definition — its status moves from ACCEPTED to CURRENT.
 
 ---
 

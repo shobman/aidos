@@ -44,7 +44,7 @@ It's an AI-era delivery assurance framework: a structured way to think, decide, 
 
 Four things make it work:
 
-**Artifacts that build on each other.** Problem, Solution, Tech Design, Testing. Each one answers a question. Each one is checked against the one before it. The Solution has to actually solve the Problem. The Tech Design has to actually implement the Solution. If the chain breaks, you find out during a review, not in production.
+**Artifacts that build on each other.** Problem, Solution, Tech Design, Testing — and after delivery, the Definition: the living description of what was built, maintained as the feature evolves. Each artifact answers a question. Each is checked against the one before it. The Solution has to actually solve the Problem. The Tech Design has to actually implement the Solution. If the chain breaks, you find out during a review, not in production.
 
 **Rubrics with teeth.** Not "is this good?" but "can someone unfamiliar with this project understand the problem without prior conversation?" Not "did we consider testing?" but "does every test trace back to a requirement, and does every requirement have a test?" Pass, Partial, or Fail — with cited evidence. The auditor scores. The artifact doesn't advance until bugs are fixed. Partials are accepted or rejected by the human, not waved through.
 
@@ -75,3 +75,13 @@ That's the contribution model. That's what makes the rubrics get better over tim
 Coding isn't the hard part. Now everyone knows it.
 
 The Greeks understood something we forgot. Power without restraint isn't strength — it's recklessness. AI gave us the power. Aidos is the restraint.
+
+---
+
+There's one more thing the rubrics do that isn't obvious yet.
+
+Today, a human directs every builder session and reviews every audit finding. The rubrics are a checklist — useful, but the human is the real quality mechanism. If a criterion is vague, the human fills in the gap with judgment.
+
+But the rubrics aren't just a checklist. They're a contract. A contract between whoever builds and whoever audits — regardless of whether those roles are filled by humans, AI agents, or a mix. The more precise the criteria, the more reliably the contract holds. The more reliably it holds, the more safely you can delegate.
+
+Better rubrics today don't just make today's reviews more consistent. They're the foundation that makes tomorrow's delegation safe rather than reckless. Every criterion sharpened by real delivery pain is a step toward a world where the quality mechanism works without a human in every loop — not because humans aren't needed, but because their judgment is captured in the rubrics themselves.

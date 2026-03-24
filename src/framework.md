@@ -24,6 +24,12 @@ AIDOS exists to improve decision quality before implementation speed compounds m
 │                                                         │
 │   Each artifact is checked against its own rubric       │
 │   AND against the artifact before it.                   │
+│                                                         │
+│   ── post-delivery ──────────────────────────────────   │
+│                                                         │
+│   Definition    the living description of what was      │
+│                 built — maintained as the feature        │
+│                 evolves. Everything else archives.       │
 ├─────────────────────────────────────────────────────────┤
 │                                                         │
 │   BUILDER          creates artifacts with AI assistance │
@@ -53,7 +59,7 @@ AIDOS exists to improve decision quality before implementation speed compounds m
 
 ### The Artifact Stack
 
-Every delivery progresses through four questions:
+Every delivery progresses through four questions, and produces one artifact that outlasts the project:
 
 | Artifact | Question | Lens |
 |---|---|---|
@@ -61,14 +67,17 @@ Every delivery progresses through four questions:
 | **Solution** | How the proposed response works as a system, including options and trade-offs | Analysis |
 | **Tech Design** | How the solution will be implemented — components, interfaces, data, constraints | Architecture |
 | **Testing** | How we verify it works and trace results back to requirements | Quality |
+| **Definition** | What was built, why it works this way, and what a maintainer needs to know | Maintenance |
 
-These aren't phases. They're living documents that build on each other progressively. When new information arrives, it flows backward too — a discovery during Tech Design might reshape the Solution.
+The first four are delivery artifacts — living documents that build on each other progressively. When new information arrives, it flows backward too — a discovery during Tech Design might reshape the Solution.
+
+The Definition is different. It's created after the work ships, not during delivery. It distills the delivery stack into a single, self-contained description of what was actually built — the authoritative reference maintained as the feature evolves. Everything else archives. See [Post-Delivery Distillation](#post-delivery-distillation) for details.
 
 ### The Coherence Rule
 
 Each artifact is audited against its own quality rubric **and** against the artifact that precedes it.
 
-The Solution must visibly solve the Problem. The Tech Design must implement the Solution. The Testing must verify the Tech Design against the Solution's goals. If the chain breaks, you find out during a review — not in production.
+The Solution must visibly solve the Problem. The Tech Design must implement the Solution. The Testing must verify the Tech Design against the Solution's goals. The Definition must accurately describe what was actually built — checked against the Solution and Tech Design, and against the running system itself. If the chain breaks, you find out during a review — not in production.
 
 This isn't bureaucracy. It's traceability. When something goes wrong, you can trace backward through the chain. It either holds or it breaks at an identifiable point.
 
@@ -92,7 +101,7 @@ Every artifact is assessed against two rubric layers:
 
 **Core Rubric** — universal criteria that apply to every artifact at every scale. Alignment to goals. Simplicity. Explicit trade-offs. Failure modes. Testability. Observability. Security. Operational impact. Reversibility. Future team readiness. Unit coherence. No duplication.
 
-**Discipline Rubric** — criteria specific to each artifact type. The Problem rubric (P1–P10) checks clarity, stakeholders, measurability, root cause confidence, scope, assumptions, constraints, impact, and alternatives. The Solution rubric (S1–S9) checks coherence, workflows, edge cases, alternatives, dependencies, migration, and minimum viable slice. The Tech Design rubric (A1–A10) checks components, integration, data model, error handling, technology choices, performance, deployment, and coding agent readiness. The Testing rubric (T1–T9) checks coverage, traceability, scenarios, exit criteria, expected results, test data, environments, regression, and prioritisation.
+**Discipline Rubric** — criteria specific to each artifact type. The Problem rubric (P1–P10) checks clarity, stakeholders, measurability, root cause confidence, scope, assumptions, constraints, impact, and alternatives. The Solution rubric (S1–S9) checks coherence, workflows, edge cases, alternatives, dependencies, migration, and minimum viable slice. The Tech Design rubric (A1–A10) checks components, integration, data model, error handling, technology choices, performance, deployment, and coding agent readiness. The Testing rubric (T1–T9) checks coverage, traceability, scenarios, exit criteria, expected results, test data, environments, regression, and prioritisation. The Definition rubric (F1–F8) checks outcome accuracy, key trade-offs, maintainer orientation, known limitations, operational context, domain placement, standalone comprehension, and currency.
 
 Each criterion has a defined "what pass looks like." The auditor assesses Pass, Partial, or Fail with cited evidence. The evidence requirement is what gives rubrics teeth — you can't hand-wave a Pass. Partials are accepted or rejected by the human directing the audit, not waved through. The artifact doesn't advance until bugs are fixed.
 
@@ -122,6 +131,7 @@ Not every piece of work needs the full stack at every level of detail.
 | Solution | Solution (system-level) | Solution (feature-scope) | User Story |
 | Tech Design | Tech Design (architecture) | Tech Design (implementation brief) | Technical Approach |
 | Testing | Test Strategy | Test Plan | Acceptance Criteria |
+| Definition | Definition (separate) | Definition (separate or section) | — (inherits from parent) |
 
 ### Document Structure by Scale
 
@@ -129,9 +139,9 @@ The scale of the work determines the document structure. This is not a suggestio
 
 | Scale | Document Structure |
 |---|---|
-| **Epic** | 4 separate documents (Problem, Solution, Tech Design, Test Strategy) + Issues Log + Overflow Log |
-| **Feature** | 1 combined document (Problem + Solution + Tech Design) + 1 separate Test Plan |
-| **Story** | 1 document containing everything |
+| **Epic** | 4 separate documents (Problem, Solution, Tech Design, Test Strategy) + Issues Log + Overflow Log. Post-delivery: separate Definition. |
+| **Feature** | 1 combined document (Problem + Solution + Tech Design) + 1 separate Test Plan. Post-delivery: separate Definition if independently deployed; otherwise Definition section in the combined document. |
+| **Story** | 1 document containing everything. No Definition — inherits from parent Feature or Epic. |
 
 ### Artifact Naming
 
@@ -150,6 +160,24 @@ Use judgment. A solo developer building a well-understood API might only need a 
 An AIDOS project root is identified by a `.aidos/` folder. This is where artifacts live. The folder can sit at a repo root, inside a monorepo package, or anywhere the user needs to anchor their delivery work.
 
 Git is the source of truth. Artifacts are authored, committed, and reviewed through the repository — the same way as code. Publishing to other systems (Confluence, GitHub Pages, etc.) is optional and outbound. The `.aidos/` folder and the repo's version history are the canonical record.
+
+Post-delivery, the `.aidos/` folder gains two additional directories:
+
+- **`definitions/`** — the Feature Repository. Definitions are organised by product domain, not by the project that created them. A reader browsing by domain finds the authoritative description of each feature without knowing which project, sprint, or team built it.
+- **`archive/`** — delivery artifacts move here when the Definition is accepted. They're the forensic trail, not the maintained reference.
+
+```
+.aidos/
+  definitions/
+    warehouse/
+      stock-dashboard.md
+    ci-cd/
+      deploy-notifications.md
+  archive/
+    2026-q1-deploy-notifications/
+      problem-solution-tech-design.md
+      test-plan.md
+```
 
 ---
 
@@ -245,9 +273,25 @@ The Tech Design artifact is explicitly designed as a coding agent brief. Compone
 
 The full artifact chain — Problem through Solution through Tech Design — gives an agent something rare: *why* the code exists, not just what it should do. When an agent understands the Problem, it makes better implementation decisions. When it can reference the Solution, it resolves ambiguities without asking.
 
+The Definition artifact extends this further. When an agent picks up work on an existing feature months later, the Definition provides the authoritative context: what the feature does, why it works this way, what the known limitations are, and what to watch out for when making changes. It's the starting point for any future AI session on the same codebase.
+
+### Agent Autonomy Spectrum
+
+The rubric-based quality model is deliberately agent-agnostic. The artifact stack, the coherence chain, and the builder/auditor separation work the same way whether both roles are human-directed, AI-driven with human oversight, or fully autonomous.
+
+This isn't a future aspiration — it's a current design property. The rubrics define the quality bar. The audit checks against it. The three-pass rule and escalation mechanism are the safety valves. None of these depend on a human being in the loop for every pass. They depend on the rubric criteria being precise enough to assess consistently.
+
+What changes across the spectrum is who initiates the forward pass, how much human oversight each pass gets, and the precision required from rubric criteria. At the human-directed level, a vague criterion is survivable — the human compensates. At the autonomous level, a vague criterion is a system failure. This is why rubric quality matters now: sharper criteria today are the contract that enables safer delegation tomorrow.
+
+For the full treatment — including what changes, what doesn't, and the practical implications — see [Agent Autonomy Spectrum](../docs/maturity-model.md).
+
 ---
 
 ## Worked Example
+
+> For a full walkthrough showing the human–AI interaction pattern — including assumption surfacing, audit findings, fix cycles, and escalated decisions — see [Worked Example: Deployment Notifications](../docs/worked-example.md).
+
+The condensed example below shows what AIDOS artifacts contain. The full walkthrough shows how they're built.
 
 **Scenario:** A team needs to improve how warehouse staff track inventory across multiple locations.
 
@@ -293,6 +337,28 @@ Stakeholder decided Option B. Issue moved to Decisions table.
 
 ---
 
+## Post-Delivery Distillation
+
+The delivery stack — Problem, Solution, Tech Design, Testing — serves the team building the feature. Once the work ships, those artifacts become archaeology: valuable for audit trail but not for the people maintaining the software six months later.
+
+The **Definition** is the artifact that survives. It's the final act of a project: a deliberate distillation session at project closure where the builder reviews what was actually built and captures it in a form that's useful to someone who wasn't in the room. This is a separate builder session — not an afterthought or a box to tick, but a distinct step in the project lifecycle.
+
+A project may produce a single Definition or several, depending on what was delivered. An Epic that delivered three features produces three Definitions, one per feature, each filed by its domain. The builder decides the split based on what would make sense to a maintainer browsing the Feature Repository — not based on how the project was structured. The project stack is scaffolding; the Definitions are what persist.
+
+The Definition lives in the Feature Repository (`definitions/`), organised by product domain rather than by project. When someone asks "why does the stock dashboard cache for 15 minutes?" or "what are the known limitations of the notification service?", the Definition is where they look — not the project's Problem or Tech Design documents.
+
+**Why this matters in an AI-assisted world.** Delivery artifacts are co-created with AI sessions that no longer exist. The reasoning that shaped the solution — the assumptions surfaced, the alternatives rejected, the trade-offs weighed — lives in those sessions. If it's not distilled into something that persists, it's gone. Code tells you *what*. The Definition tells you *why*.
+
+**What gets maintained.** Only the Definition. When a subsequent project modifies the feature, the Definition is updated to reflect the new reality. Its status moves from ACCEPTED to CURRENT. The delivery artifacts stay in the archive — they're the forensic trail if anyone needs to understand the original reasoning, but they're not kept current.
+
+**What gets archived.** When the Definition is accepted, the delivery artifacts (Problem, Solution, Tech Design, Testing) move to `archive/` within the `.aidos/` folder. They're not deleted — they're the full decision history. But they're no longer the reference anyone maintains.
+
+**A project cannot close with delivery artifacts unarchived.** Just as a project cannot close with PARKED overflow items, it cannot close without distilling its outcome into Definitions and archiving the delivery stack. The distillation session is how a project ends.
+
+The Definition rubric (F1–F8) is assessed through the Maintenance lens. Full criteria are in `src/rubrics/definition.md`.
+
+---
+
 ## Principles
 
 1. **Human directs, AI holds the pen.** AI creates and modifies. The human steers and decides.
@@ -308,3 +374,4 @@ Stakeholder decided Option B. Issue moved to Decisions table.
 11. **Show before you're ready.** A working prototype in front of a real stakeholder this week beats a polished solution in six weeks.
 12. **The framework waits for humans.** AI makes action fast. Decisions still need people. The rhythm respects that.
 13. **Rubrics evolve.** Retrospectives feed lessons back into the quality standards. The framework improves with use.
+14. **Delivery artifacts explain the journey. The Definition explains the destination.** The project stack is scaffolding. The Definition is what persists — a living description of what was built, maintained as the feature evolves.

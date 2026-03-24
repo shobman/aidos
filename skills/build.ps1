@@ -59,6 +59,8 @@ try {
     Copy-To (Join-Path $root "src\templates\solution.md")            (Join-Path $b "templates\solution.md")
     Copy-To (Join-Path $root "src\templates\tech-design.md")         (Join-Path $b "templates\tech-design.md")
     Copy-To (Join-Path $root "src\templates\testing.md")             (Join-Path $b "templates\testing.md")
+    Copy-To (Join-Path $root "src\templates\definition.md")          (Join-Path $b "templates\definition.md")
+    Copy-To (Join-Path $root "src\rubrics\definition.md")            (Join-Path $b "rubrics\definition.md")
     Copy-To (Join-Path $root "src\templates\issues-log.md")          (Join-Path $b "templates\issues-log.md")
     Copy-To (Join-Path $root "src\templates\overflow-log.md")       (Join-Path $b "templates\overflow-log.md")
     Copy-To (Join-Path $root "src\templates\meeting-minutes.md")    (Join-Path $b "templates\meeting-minutes.md")
@@ -80,6 +82,7 @@ try {
     Copy-To (Join-Path $root "src\rubrics\solution.md")             (Join-Path $a "rubrics\solution.md")
     Copy-To (Join-Path $root "src\rubrics\tech-design.md")          (Join-Path $a "rubrics\tech-design.md")
     Copy-To (Join-Path $root "src\rubrics\testing.md")              (Join-Path $a "rubrics\testing.md")
+    Copy-To (Join-Path $root "src\rubrics\definition.md")          (Join-Path $a "rubrics\definition.md")
     Copy-To (Join-Path $root "src\templates\retrospective.md")     (Join-Path $a "templates\retrospective.md")
     Copy-To (Join-Path $root "CONTRIBUTING.md")                   (Join-Path $a "CONTRIBUTING.md")
 

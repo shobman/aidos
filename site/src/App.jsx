@@ -1,20 +1,22 @@
 import { useState } from "react";
 
-const ARTIFACTS = ["Problem", "Solution", "Tech Design", "Testing"];
-const LENSES = ["Product", "Analysis", "Architecture", "Quality"];
-const GRID = "72px repeat(4, 1fr)";
+const ARTIFACTS = ["Problem", "Solution", "Tech Design", "Testing", "Definition"];
+const LENSES = ["Product", "Analysis", "Architecture", "Quality", "Maintenance"];
+const GRID = "72px repeat(5, 1fr)";
 
 const NAMES = {
   "Problem-Epic": "Problem", "Problem-Feature": "Problem", "Problem-Story": "Context",
   "Solution-Epic": "Solution", "Solution-Feature": "Solution", "Solution-Story": "User Story",
   "Tech Design-Epic": "Tech Design", "Tech Design-Feature": "Tech Design", "Tech Design-Story": "Technical Approach",
   "Testing-Epic": "Test Strategy", "Testing-Feature": "Test Plan", "Testing-Story": "Acceptance Criteria",
+  "Definition-Epic": "Definition", "Definition-Feature": "Definition",
 };
 const DEPTHS = {
   "Problem-Epic": "Full depth", "Problem-Feature": "Focused", "Problem-Story": "A few sentences",
   "Solution-Epic": "System-level", "Solution-Feature": "Feature-scope", "Solution-Story": "As a / I want / So that",
   "Tech Design-Epic": "Architecture", "Tech Design-Feature": "Implementation brief", "Tech Design-Story": "Guardrails",
   "Testing-Epic": "Approach & priorities", "Testing-Feature": "Full scenarios", "Testing-Story": "What done looks like",
+  "Definition-Epic": "Post-delivery", "Definition-Feature": "Post-delivery",
 };
 
 const DOCS = {
@@ -22,14 +24,16 @@ const DOCS = {
   "epic-Solution": { label: "Solution", cells: [["Solution", "Epic"]] },
   "epic-Tech Design": { label: "Tech Design", cells: [["Tech Design", "Epic"]] },
   "epic-Testing": { label: "Test Strategy", cells: [["Testing", "Epic"]] },
+  "epic-Definition": { label: "Definition", cells: [["Definition", "Epic"]] },
   "feature-combined": { label: "Feature Document", cells: [["Problem", "Feature"], ["Solution", "Feature"], ["Tech Design", "Feature"]] },
   "feature-testing": { label: "Test Plan", cells: [["Testing", "Feature"]] },
+  "feature-Definition": { label: "Definition", cells: [["Definition", "Feature"]] },
   "story-all": { label: "Story Document", cells: [["Problem", "Story"], ["Solution", "Story"], ["Tech Design", "Story"], ["Testing", "Story"]] },
 };
 
 function docGroupId(a, s) {
   if (s === "Epic") return `epic-${a}`;
-  if (s === "Feature") return a === "Testing" ? "feature-testing" : "feature-combined";
+  if (s === "Feature") return a === "Testing" ? "feature-testing" : a === "Definition" ? "feature-Definition" : "feature-combined";
   return "story-all";
 }
 
@@ -38,12 +42,14 @@ function getAuditTargets(a, s) {
   const ai = ARTIFACTS.indexOf(a), si = ["Epic", "Feature", "Story"].indexOf(s);
   if (si > 0) t.cells.push({ artifact: a, scale: ["Epic", "Feature", "Story"][si - 1], relation: "parent" });
   if (a === "Testing") { t.cells.push({ artifact: "Tech Design", scale: s, relation: "preceding" }); t.cells.push({ artifact: "Solution", scale: s, relation: "preceding" }); }
+  else if (a === "Definition") { t.cells.push({ artifact: "Tech Design", scale: s, relation: "preceding" }); t.cells.push({ artifact: "Solution", scale: s, relation: "preceding" }); }
   else if (ai > 0) t.cells.push({ artifact: ARTIFACTS[ai - 1], scale: s, relation: "preceding" });
   return t;
 }
 
 function getRubricGoverns(r) {
-  if (r === "Core") return ["Epic", "Feature", "Story"].flatMap(s => ARTIFACTS.map(a => ({ artifact: a, scale: s })));
+  if (r === "Core") return ["Epic", "Feature", "Story"].flatMap(s => ARTIFACTS.filter(a => !(a === "Definition" && s === "Story")).map(a => ({ artifact: a, scale: s })));
+  if (r === "Definition") return ["Epic", "Feature"].map(s => ({ artifact: r, scale: s }));
   return ["Epic", "Feature", "Story"].map(s => ({ artifact: r, scale: s }));
 }
 
@@ -131,12 +137,15 @@ export default function App() {
     { label: "Rubrics", href: "https://github.com/shobman/aidos/tree/main/src/rubrics" },
     { label: "Prompts", href: "https://github.com/shobman/aidos/tree/main/src/prompts" },
     { label: "Manifesto", href: "https://github.com/shobman/aidos/blob/main/docs/manifesto.md" },
+    { label: "Worked Example", href: "https://github.com/shobman/aidos/blob/main/docs/worked-example.md" },
+    { label: "Autonomy Spectrum", href: "https://github.com/shobman/aidos/blob/main/docs/maturity-model.md" },
   ];
   const footerTemplates = [
     { label: "Problem", href: "https://github.com/shobman/aidos/blob/main/src/templates/problem.md" },
     { label: "Solution", href: "https://github.com/shobman/aidos/blob/main/src/templates/solution.md" },
     { label: "Tech Design", href: "https://github.com/shobman/aidos/blob/main/src/templates/tech-design.md" },
     { label: "Testing", href: "https://github.com/shobman/aidos/blob/main/src/templates/testing.md" },
+    { label: "Definition", href: "https://github.com/shobman/aidos/blob/main/src/templates/definition.md" },
     { label: "Issues Log", href: "https://github.com/shobman/aidos/blob/main/src/templates/issues-log.md" },
     { label: "Overflow Log", href: "https://github.com/shobman/aidos/blob/main/src/templates/overflow-log.md" },
     { label: "Meeting Minutes", href: "https://github.com/shobman/aidos/blob/main/src/templates/meeting-minutes.md" },
@@ -258,6 +267,9 @@ export default function App() {
           <DocWrap label="Test Plan ×N" active={isDA("feature-testing")} onClick={() => hDoc("feature-testing")}>
             <Cell artifact="Testing" scale="Feature" state={cState("Testing", "Feature")} onClick={() => hCell("Testing", "Feature")} />
           </DocWrap>
+          <DocWrap label="Definition" active={isDA("feature-Definition")} onClick={() => hDoc("feature-Definition")}>
+            <Cell artifact="Definition" scale="Feature" state={cState("Definition", "Feature")} onClick={() => hCell("Definition", "Feature")} />
+          </DocWrap>
         </div>
 
         {/* Story */}
@@ -268,9 +280,12 @@ export default function App() {
           <div style={{ gridColumn: "2 / 6" }}>
             <DocWrap label="Story Document ×N" active={isDA("story-all")} onClick={() => hDoc("story-all")}>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
-                {ARTIFACTS.map(a => <Cell key={a} artifact={a} scale="Story" state={cState(a, "Story")} onClick={() => hCell(a, "Story")} />)}
+                {ARTIFACTS.filter(a => a !== "Definition").map(a => <Cell key={a} artifact={a} scale="Story" state={cState(a, "Story")} onClick={() => hCell(a, "Story")} />)}
               </div>
             </DocWrap>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <span style={{ fontSize: 11, color: muted, fontStyle: "italic" }}>inherits</span>
           </div>
         </div>
 

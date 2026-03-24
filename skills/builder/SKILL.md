@@ -1,6 +1,6 @@
 ---
 name: AIDOS Builder
-description: Build delivery artifacts using the AIDOS framework. Scaffolds Problem, Solution, Tech Design, and Testing documents at Epic, Feature, or Story scale with structured rubric-ready output.
+description: Build delivery artifacts using the AIDOS framework. Scaffolds Problem, Solution, Tech Design, Testing, and Definition documents at Epic, Feature, or Story scale with structured rubric-ready output.
 ---
 
 # AIDOS Builder
@@ -30,6 +30,8 @@ When the user describes work they want to deliver, you:
 | `templates/issues-log.md` | Issues Log template for tracking escalations across the project. |
 | `templates/overflow-log.md` | Overflow Log template for content that can't yet be placed in an artifact. |
 | `templates/meeting-minutes.md` | Lean meeting capture template. |
+| `rubrics/definition.md` | Definition rubric (F1–F8). Maintenance lens criteria for post-delivery Definitions. |
+| `templates/definition.md` | Definition artifact template with section-to-rubric mapping. |
 | `templates/retrospective.md` | Retrospective template for rubric evolution. |
 | `CONTRIBUTING.md` | How to propose rubric changes — the contribution model for evolving the framework. |
 

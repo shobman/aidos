@@ -36,5 +36,6 @@ The Core Rubric is used on **every artifact** at **every scale** — Epic, Featu
 | Solution | Core | Solution |
 | Tech Design | Core | Tech Design |
 | Testing | Core | Testing |
+| Definition | Core | Definition |
 
 At Story scale, assessment can be lighter — but the criteria still apply. A Story that ignores failure modes or hides trade-offs fails the same way an Epic does, just with smaller blast radius.
