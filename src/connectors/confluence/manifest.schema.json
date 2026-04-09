@@ -23,6 +23,11 @@
             "rootPageId": {
               "type": "string",
               "description": "ID of the parent page — all artifacts become child pages under this"
+            },
+            "titleTemplate": {
+              "type": "string",
+              "description": "Template for Confluence page titles. Use %title% as placeholder for the artifact name. e.g. '(CW) %title%' → '(CW) Problem'",
+              "default": "%title%"
             }
           }
         }

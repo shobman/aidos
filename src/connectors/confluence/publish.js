@@ -47,6 +47,9 @@ const CHILDREN_MACRO = `\n<ac:structured-macro ac:name="children">
 // Scale labels: epic (root files), feature (folder pages), story (files inside features)
 // Passed explicitly through the recursion — not derived from depth.
 
+// Title template — set from manifest config in main(). %title% is replaced with the raw title.
+let titleTemplate = "%title%";
+
 // ---------------------------------------------------------------------------
 // Auth
 // ---------------------------------------------------------------------------
@@ -186,11 +189,12 @@ function deriveLabels(name, scale) {
 // ---------------------------------------------------------------------------
 
 function titleFromName(name) {
-  return name
+  const raw = name
     .replace(/\.md$/i, "")
     .split("-")
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(" ");
+  return titleTemplate.replace("%title%", raw);
 }
 
 function statusColour(status) {
@@ -532,6 +536,13 @@ async function main() {
   const { baseUrl, rootPageId } = config;
   if (!baseUrl || !rootPageId) {
     throw new Error("publish.confluence must include baseUrl and rootPageId");
+  }
+
+  if (config.titleTemplate) {
+    if (!config.titleTemplate.includes("%title%")) {
+      throw new Error("titleTemplate must contain %title% placeholder");
+    }
+    titleTemplate = config.titleTemplate;
   }
 
   if (!dryRun) {
