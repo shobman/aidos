@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { createHash } from "node:crypto";
 import { readFile, readdir } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { marked } from "marked";
@@ -41,6 +42,19 @@ const STORIES_SECTION = `<h2>Stories</h2>
 </ac:structured-macro>`;
 
 const CHILDREN_MACRO = `\n<ac:structured-macro ac:name="children" />`;
+
+// Bump this to force republish of all pages (e.g. after a connector change
+// that alters output but not source content — label changes, macro format, etc.)
+const CONNECTOR_VERSION = "1";
+
+const HASH_PROPERTY_KEY = "aidos-content-hash";
+
+function contentHash(body) {
+  return createHash("sha256")
+    .update(CONNECTOR_VERSION + body)
+    .digest("hex")
+    .slice(0, 16);
+}
 
 // Scale labels: epic (root files), feature (folder pages), story (files inside features)
 // Passed explicitly through the recursion — not derived from depth.
@@ -175,6 +189,65 @@ async function addLabels(baseUrl, pageId, labels) {
     },
     `addLabels ${pageId} [${labels.join(", ")}]`,
   );
+}
+
+/** Read the stored content hash from a page property. Returns null if not set. */
+async function getStoredHash(baseUrl, pageId) {
+  try {
+    const data = await confluenceFetch(
+      `${baseUrl}/wiki/rest/api/content/${pageId}/property/${HASH_PROPERTY_KEY}`,
+      {},
+      `getHash ${pageId}`,
+    );
+    return data.value?.hash ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/** Write the content hash as a page property. Creates or updates. */
+async function setStoredHash(baseUrl, pageId, hash) {
+  // Try to read existing property for its version number
+  let version = null;
+  try {
+    const data = await confluenceFetch(
+      `${baseUrl}/wiki/rest/api/content/${pageId}/property/${HASH_PROPERTY_KEY}`,
+      {},
+      `getHash ${pageId}`,
+    );
+    version = data.version?.number;
+  } catch {
+    // Property doesn't exist yet
+  }
+
+  if (version) {
+    // Update existing property
+    await confluenceFetch(
+      `${baseUrl}/wiki/rest/api/content/${pageId}/property/${HASH_PROPERTY_KEY}`,
+      {
+        method: "PUT",
+        body: JSON.stringify({
+          key: HASH_PROPERTY_KEY,
+          value: { hash },
+          version: { number: version + 1 },
+        }),
+      },
+      `setHash ${pageId}`,
+    );
+  } else {
+    // Create new property
+    await confluenceFetch(
+      `${baseUrl}/wiki/rest/api/content/${pageId}/property`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          key: HASH_PROPERTY_KEY,
+          value: { hash },
+        }),
+      },
+      `setHash ${pageId}`,
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -357,6 +430,7 @@ function buildFeaturePageBody(markdown, meta) {
 
 async function publishPage(ctx, parentId, childPages, title, body, labels) {
   const { baseUrl, spaceKey, dryRun } = ctx;
+  const hash = contentHash(body);
 
   if (dryRun) {
     const existing = childPages.get(title);
@@ -371,9 +445,18 @@ async function publishPage(ctx, parentId, childPages, title, body, labels) {
   }
 
   if (pageId) {
+    // Check if content has changed via stored hash
+    const storedHash = await getStoredHash(baseUrl, pageId);
+    if (storedHash === hash) {
+      console.log("  Unchanged: %s (page %s)", title, pageId);
+      ctx.stats.unchanged++;
+      return pageId;
+    }
+
     const page = await getPage(baseUrl, pageId);
     await updatePage(baseUrl, pageId, title, body, page.version);
     await addLabels(baseUrl, pageId, labels);
+    await setStoredHash(baseUrl, pageId, hash);
     console.log("  Updated: %s (page %s, v%d → v%d)", title, pageId, page.version, page.version + 1);
     ctx.stats.updated++;
     return pageId;
@@ -384,6 +467,7 @@ async function publishPage(ctx, parentId, childPages, title, body, labels) {
   const created = await createPage(baseUrl, spaceKey, parentId, title, "<p></p>");
   await updatePage(baseUrl, created.id, title, body, 1);
   await addLabels(baseUrl, created.id, labels);
+  await setStoredHash(baseUrl, created.id, hash);
   console.log("  Created: %s (page %s)", title, created.id);
   ctx.stats.created++;
   return created.id;
@@ -605,7 +689,7 @@ async function main() {
     spaceKey: null,
     rootPageId,
     dryRun,
-    stats: { created: 0, updated: 0 },
+    stats: { created: 0, updated: 0, unchanged: 0 },
   };
 
   // Ensure dashboard and derive space key
@@ -615,9 +699,10 @@ async function main() {
   await publishDirectory(ctx, rootPageId, aidosDir, 0, null, "epic");
 
   console.log(
-    "\nDone — created: %d, updated: %d",
+    "\nDone — created: %d, updated: %d, unchanged: %d",
     ctx.stats.created,
     ctx.stats.updated,
+    ctx.stats.unchanged,
   );
 }
 
