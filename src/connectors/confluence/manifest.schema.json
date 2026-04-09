@@ -1,65 +1,33 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "AIDOS Confluence Manifest",
-  "description": "Configuration for publishing AIDOS artifacts to Confluence",
+  "title": "AIDOS Publish Manifest",
+  "description": "Configuration for publishing AIDOS artifacts to external targets",
   "type": "object",
-  "required": ["publish", "artifacts"],
+  "required": ["publish"],
   "additionalProperties": false,
   "properties": {
     "publish": {
       "type": "object",
-      "required": ["target", "confluenceBaseUrl", "spaceKey", "rootPageId", "secrets"],
-      "additionalProperties": false,
+      "description": "Publish targets — each key is a target name with its own config",
       "properties": {
-        "target": {
-          "const": "confluence",
-          "description": "Publish target — currently only 'confluence' is supported"
-        },
-        "confluenceBaseUrl": {
-          "type": "string",
-          "format": "uri",
-          "description": "Confluence Cloud base URL, e.g. https://example.atlassian.net"
-        },
-        "spaceKey": {
-          "type": "string",
-          "description": "Confluence space key where pages are published"
-        },
-        "rootPageId": {
-          "type": "string",
-          "description": "ID of the parent page in Confluence — all artifacts become child pages under this"
-        },
-        "secrets": {
+        "confluence": {
           "type": "object",
-          "required": ["confluenceEmail", "confluenceToken"],
+          "required": ["baseUrl", "rootPageId"],
           "additionalProperties": false,
           "properties": {
-            "confluenceEmail": {
+            "baseUrl": {
               "type": "string",
-              "description": "Name of the GitHub secret containing the Confluence user email"
+              "format": "uri",
+              "description": "Confluence Cloud base URL, e.g. https://example.atlassian.net"
             },
-            "confluenceToken": {
+            "rootPageId": {
               "type": "string",
-              "description": "Name of the GitHub secret containing the Confluence API token"
+              "description": "ID of the parent page — all artifacts become child pages under this"
             }
           }
         }
-      }
-    },
-    "artifacts": {
-      "type": "object",
-      "description": "Map of artifact filenames (relative to .aidos/ folder) to their metadata",
-      "additionalProperties": {
-        "type": "object",
-        "required": ["status"],
-        "additionalProperties": false,
-        "properties": {
-          "status": {
-            "type": "string",
-            "enum": ["Not Started", "Draft", "In Progress", "Review", "Done", "Blocked"],
-            "description": "Current status — rendered as a Confluence Status lozenge"
-          }
-        }
-      }
+      },
+      "additionalProperties": true
     }
   }
 }

@@ -5,27 +5,104 @@ The repository is source of truth. Confluence is a read-only projection.
 
 ## How It Works
 
-The publish script reads a `manifest.json` from a `.aidos/` folder, converts
-each listed markdown artifact to Confluence storage format (XHTML), and
-creates or updates child pages under a root page you designate.
+The publish script recursively walks the `.aidos/` directory, converts each
+markdown file to Confluence storage format (XHTML), and mirrors the folder
+structure as a page hierarchy in Confluence.
 
-Pages are matched by **title** (derived from the filename). No Confluence
-page IDs are stored in the manifest — the script looks up existing child
-pages at runtime. This keeps the manifest stateless and idempotent: delete a
-page in Confluence and re-sync, it recreates cleanly.
+- **Folders become pages** — subdirectories create parent pages with their
+  contents as child pages
+- **Status, Scale, Owner** are parsed from each file's metadata lines and
+  rendered as a Confluence Page Properties table
+- **Pages are matched by title** — no IDs stored in the manifest. Delete a
+  page in Confluence, re-sync, it recreates cleanly.
+- The **root page** gets a Page Properties Report macro that aggregates all
+  descendant statuses into a dashboard table
 
-Each artifact page gets a **Page Properties** macro at the top with a Status
-lozenge reflecting the artifact's status from the manifest. The root page
-gets a **Page Properties Report** macro that aggregates all child statuses
-into a dashboard table.
+## Git → Confluence Mapping
+
+```
+.aidos/                          Root Page (Dashboard)
+├── problem.md                   ├── Problem
+├── solution.md                  ├── Solution
+├── tech-design.md               ├── Tech Design
+├── testing.md                   ├── Testing
+├── issues-log.md                ├── Issues Log
+├── feature-auth/                ├── Feature Auth        ← body from feature-auth.md
+│   ├── feature-auth.md          │                         + Children macro appended
+│   ├── test-plan.md             │   ├── Test Plan
+│   ├── story-login.md           │   ├── Story Login
+│   └── story-signup.md          │   └── Story Signup
+├── feature-payments/            ├── Feature Payments    ← body from feature-payments.md
+│   ├── feature-payments.md      │                         + Children macro appended
+│   ├── test-plan.md             │   ├── Test Plan
+│   └── story-checkout.md        │   └── Story Checkout
+└── refs/                        └── Refs               ← auto-generated page
+    ├── api-guide.md                 ├── Api Guide         with Children macro
+    └── runbook.md                   └── Runbook
+```
+
+### Folder conventions
+
+| Scenario | What happens |
+|----------|-------------|
+| Folder has a `.md` file with the same name (`feature-auth/feature-auth.md`) | File content becomes the page body. Children macro appended to list child pages. |
+| Folder has no matching `.md` file (`refs/`) | Auto-generated page with title + Children macro. All `.md` files inside become child pages. |
+| Any depth of nesting | Fully recursive — nest as deep as you need. |
+
+Page titles are derived from filenames: strip `.md`, split on `-`,
+title-case each word. `tech-design.md` becomes **Tech Design**.
+
+## Markdown → Confluence Translation
+
+The connector translates standard markdown features into native Confluence
+macros for a rich reading experience.
+
+| Markdown | Confluence | Notes |
+|----------|-----------|-------|
+| `**Status:** Draft` | Status lozenge in Page Properties table | See colour mapping below |
+| `**Scale:** Feature` | Row in Page Properties table | Also applied as a label |
+| `**Owner:** Simon` | Row in Page Properties table | |
+| `[Solution](solution.md)` | `ac:link` (page title link) | Cross-artifact links resolve by title. Path prefixes stripped — works across folders. |
+| `` ```js ... ``` `` | `ac:structured-macro` code block | Syntax-highlighted with language parameter |
+| `> **Note:** text` | Info panel (blue) | |
+| `> **Warning:** text` | Warning panel (yellow) | |
+| `> **Decision:** text` | Note panel (yellow) | |
+| `> **Tip:** text` | Tip panel (green) | |
+| `<details><summary>Title</summary>` | Expand/collapse macro | Collapsible sections |
+| Tables, lists, headings, bold, italic | Standard HTML equivalents | Passed through cleanly |
+
+### Status lozenge colours
+
+| Status | Colour |
+|--------|--------|
+| Not Started | Grey |
+| Draft | Yellow |
+| In Progress | Blue |
+| Review | Purple |
+| Done | Green |
+| Blocked | Red |
+
+Status matching is case-insensitive. Unrecognised values default to Grey.
+
+### Labels
+
+Every published page gets labels automatically:
+
+| Label | Source |
+|-------|--------|
+| Artifact type | Derived from filename: `problem`, `tech-design`, `testing`, etc. |
+| Scale | Parsed from `**Scale:** Epic` → label `epic` |
+| `aidos` | Always applied — identifies connector-managed pages |
+
+Labels enable Confluence search, CQL filtering, and dashboard reports.
 
 ## Prerequisites
 
 - **Confluence Cloud** (not Server/Data Center)
-- A Confluence **API token** — generate one at
+- A Confluence **API token** — generate at
   https://id.atlassian.com/manage-profile/security/api-tokens
-- A **root page** in your Confluence space — create one manually, then copy
-  its page ID from the URL (the numeric ID in `…/pages/123456789/…`)
+- A **root page** in your Confluence space — create one manually, copy its
+  page ID from the URL (the numeric ID in `…/pages/123456789/…`)
 
 ## Manifest
 
@@ -34,47 +111,31 @@ Place a `manifest.json` in your `.aidos/` folder:
 ```json
 {
   "publish": {
-    "target": "confluence",
-    "confluenceBaseUrl": "https://example.atlassian.net",
-    "spaceKey": "PROJ",
-    "rootPageId": "123456789",
-    "secrets": {
-      "confluenceEmail": "CONFLUENCE_EMAIL",
-      "confluenceToken": "CONFLUENCE_TOKEN"
+    "confluence": {
+      "baseUrl": "https://example.atlassian.net",
+      "rootPageId": "123456789"
     }
-  },
-  "artifacts": {
-    "problem.md": { "status": "Draft" },
-    "solution.md": { "status": "Not Started" },
-    "tech-design.md": { "status": "Not Started" },
-    "testing.md": { "status": "Not Started" },
-    "issues-log.md": { "status": "In Progress" }
   }
 }
 ```
 
-| Field | Description |
-|-------|-------------|
-| `publish.target` | Must be `"confluence"` |
-| `publish.confluenceBaseUrl` | Your Atlassian Cloud URL |
-| `publish.spaceKey` | Confluence space key |
-| `publish.rootPageId` | ID of the parent page for all artifacts |
-| `publish.secrets` | Documents which GitHub secrets to create (not used at runtime) |
-| `artifacts.<file>` | Filename relative to the `.aidos/` folder |
-| `artifacts.<file>.status` | One of: `Not Started`, `Draft`, `In Progress`, `Review`, `Done`, `Blocked` |
+That's it. Two fields. The script discovers files automatically, parses
+metadata from each file, and derives the Confluence space from the root page.
+
+To add more targets later, add another key under `publish`:
+
+```json
+{
+  "publish": {
+    "confluence": { "baseUrl": "...", "rootPageId": "..." },
+    "sharepoint": { "siteUrl": "..." }
+  }
+}
+```
+
+Each connector reads only its own key and ignores the rest.
 
 Validate your manifest against `manifest.schema.json` in this directory.
-
-## Status Colours
-
-| Status | Confluence Lozenge Colour |
-|--------|--------------------------|
-| Not Started | Grey |
-| Draft | Yellow |
-| In Progress | Blue |
-| Review | Purple |
-| Done | Green |
-| Blocked | Red |
 
 ## GitHub Actions Workflow
 
@@ -104,25 +165,14 @@ workflow will auto-discover all `manifest.json` files.
 
 ## Local Testing
 
-Run the script locally with `--dry-run` to see what would be published
-without calling the Confluence API:
+Run the script with `--dry-run` to see the page hierarchy and converted
+bodies without calling the Confluence API:
 
 ```bash
 node src/connectors/confluence/publish.js .aidos/manifest.json --dry-run
 ```
 
-This converts each markdown file, assembles the Confluence storage format
-body, and prints it to stdout. No authentication is required for dry-run.
-
-## Title Matching
-
-Page titles are derived from artifact filenames:
-
-| Filename | Confluence Page Title |
-|----------|----------------------|
-| `problem.md` | Problem |
-| `tech-design.md` | Tech Design |
-| `issues-log.md` | Issues Log |
-
-If you rename a file, the next publish creates a new page with the new title.
-The old page remains in Confluence and can be deleted manually.
+No authentication is required for dry-run. Output shows:
+- Page hierarchy with indentation matching Confluence nesting
+- Properties and labels for each page
+- Whether each folder page is sourced from a `.md` file or auto-generated
