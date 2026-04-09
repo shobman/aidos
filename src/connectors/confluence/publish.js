@@ -355,7 +355,10 @@ async function publishPage(ctx, parentId, childPages, title, body, labels) {
     return pageId;
   }
 
-  const created = await createPage(baseUrl, spaceKey, parentId, title, body);
+  // Two-step create: minimal body first (avoids Fabric editor macro
+  // restrictions), then immediately update with full storage format.
+  const created = await createPage(baseUrl, spaceKey, parentId, title, "<p></p>");
+  await updatePage(baseUrl, created.id, title, body, 1);
   await addLabels(baseUrl, created.id, labels);
   console.log("  Created: %s (page %s)", title, created.id);
   ctx.stats.created++;
