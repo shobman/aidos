@@ -1,0 +1,66 @@
+name: Publish AIDOS to Confluence
+
+on:
+  workflow_call:
+    inputs:
+      manifest-path:
+        description: 'Path to manifest.json (leave empty to auto-discover all .aidos/manifest.json files)'
+        required: false
+        type: string
+        default: ''
+    secrets:
+      confluence_email:
+        required: true
+      confluence_token:
+        required: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout calling repo
+        uses: actions/checkout@v4
+
+      - name: Checkout aidos connector
+        uses: actions/checkout@v4
+        with:
+          repository: shobman/aidos
+          path: .aidos-connector
+          sparse-checkout: src/connectors/confluence
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: .aidos-connector/src/connectors/confluence/package-lock.json
+
+      - name: Install connector dependencies
+        run: npm ci
+        working-directory: .aidos-connector/src/connectors/confluence
+
+      - name: Publish to Confluence
+        env:
+          CONFLUENCE_EMAIL: ${{ secrets.confluence_email }}
+          CONFLUENCE_TOKEN: ${{ secrets.confluence_token }}
+        run: |
+          SCRIPT=".aidos-connector/src/connectors/confluence/publish.js"
+          INPUT_PATH="${{ inputs.manifest-path }}"
+
+          if [ -n "$INPUT_PATH" ]; then
+            MANIFESTS="$INPUT_PATH"
+          else
+            MANIFESTS=$(find . -path '*/.aidos/manifest.json' \
+              -not -path './.aidos-connector/*' | sort)
+          fi
+
+          if [ -z "$MANIFESTS" ]; then
+            echo "No manifest files found"
+            exit 0
+          fi
+
+          for manifest in $MANIFESTS; do
+            echo "::group::Publishing $manifest"
+            node "$SCRIPT" "$manifest"
+            echo "::endgroup::"
+          done
