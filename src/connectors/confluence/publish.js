@@ -112,10 +112,11 @@ async function getChildPages(baseUrl, parentId) {
   return (data.results ?? []).map((p) => ({ id: p.id, title: p.title }));
 }
 
-/** Search the entire space for an active page by title. Returns { id, title } or null. */
-async function findPageByTitle(baseUrl, spaceKey, title) {
+/** Search for an active page by title, scoped to descendants of rootPageId only. */
+async function findPageByTitle(baseUrl, rootPageId, title) {
+  const cql = `ancestor=${rootPageId} AND title="${title}" AND type=page`;
   const data = await confluenceFetch(
-    `${baseUrl}/wiki/rest/api/content?title=${encodeURIComponent(title)}&spaceKey=${spaceKey}&type=page&status=current`,
+    `${baseUrl}/wiki/rest/api/content/search?cql=${encodeURIComponent(cql)}&limit=1`,
   );
   const results = data.results ?? [];
   return results.length > 0
@@ -319,10 +320,10 @@ async function publishPage(ctx, parentId, childPages, title, body, labels) {
     return existing ?? `dry-run-${title}`;
   }
 
-  // Check children of parent first, then search entire space as fallback
+  // Check children of parent first, then search descendants of root as fallback
   let pageId = childPages.get(title);
   if (!pageId) {
-    const found = await findPageByTitle(baseUrl, spaceKey, title);
+    const found = await findPageByTitle(baseUrl, ctx.rootPageId, title);
     if (found) pageId = found.id;
   }
 
