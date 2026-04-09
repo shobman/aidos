@@ -368,17 +368,30 @@ async function publishDirectory(ctx, parentId, dirPath, depth, skipFile, fileSca
     await publishPage(ctx, parentId, childPages, title, body, labels);
   }
 
-  // Process subdirectories — each becomes a parent page
+  // Process subdirectories
+  const SCALE_FOLDERS = new Set(["epic", "feature", "story"]);
+
   for (const subdir of subdirs) {
-    const title = titleFromName(subdir);
     const subdirPath = join(dirPath, subdir);
+
+    // Scale-named folders (epic/, feature/, story/) are transparent groupings.
+    // Contents promoted to parent level with the folder name as scale label.
+    if (SCALE_FOLDERS.has(subdir)) {
+      if (dryRun) {
+        console.log("%s[%s/] promoting contents to parent", indent, subdir);
+      }
+      await publishDirectory(ctx, parentId, subdirPath, depth, null, subdir);
+      continue;
+    }
+
+    const title = titleFromName(subdir);
 
     // Check for a matching .md body file INSIDE the subdirectory
     const bodyFileName = `${subdir}.md`;
     const subdirEntries = await readdir(subdirPath);
     const hasBody = subdirEntries.includes(bodyFileName);
 
-    // Folders with body files at root level are features
+    // Folders with body files under epic scale are features
     const isFeature = fileScale === "epic" && hasBody;
 
     let body;
@@ -402,7 +415,6 @@ async function publishDirectory(ctx, parentId, dirPath, depth, skipFile, fileSca
       // No matching .md — auto-generated page with Children Display macro
       labels = [subdir, "aidos"];
       body = `<h1>${title}</h1>${CHILDREN_MACRO}`;
-      childScale = null;
     }
 
     if (dryRun) {
