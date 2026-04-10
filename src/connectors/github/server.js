@@ -118,6 +118,37 @@ export async function resolveWorkspace(client, login, repoFullName, branchOverri
   };
 }
 
+/**
+ * Read all files under an aidosPath prefix from a branch.
+ *
+ * @param {object} client - GitHub API client
+ * @param {string} owner - Repository owner
+ * @param {string} repo - Repository name
+ * @param {string} branch - Branch name
+ * @param {string} aidosPath - Path prefix to filter (e.g. ".aidos")
+ * @returns {{ files: Array<{ path: string, content: string, sha: string }> }}
+ */
+export async function readArtifacts(client, owner, repo, branch, aidosPath) {
+  const branchInfo = await client.getBranch(owner, repo, branch);
+  const headSha = branchInfo.commit.sha;
+  const tree = await client.getTree(owner, repo, headSha);
+
+  const prefix = aidosPath.endsWith("/") ? aidosPath : `${aidosPath}/`;
+  const entries = tree.tree.filter(
+    (e) => e.type === "blob" && e.path.startsWith(prefix),
+  );
+
+  const files = await Promise.all(
+    entries.map(async (entry) => {
+      const blob = await client.getBlob(owner, repo, entry.sha);
+      const content = Buffer.from(blob.content, blob.encoding || "base64").toString("utf8");
+      return { path: entry.path, content, sha: entry.sha };
+    }),
+  );
+
+  return { files };
+}
+
 // ---- Tool registration ----
 
 server.registerTool(
@@ -158,6 +189,28 @@ server.registerTool(
           text: JSON.stringify(workspace, null, 2),
         },
       ],
+    };
+  },
+);
+
+server.registerTool(
+  "read_artifacts",
+  {
+    title: "Read AIDOS Artifacts",
+    description:
+      "Read all files from a .aidos/ folder on a branch. Returns path, decoded content, and SHA for each file.",
+    inputSchema: z.object({
+      repo: z.string().describe("Repository as owner/repo"),
+      branch: z.string().describe("Branch to read from"),
+      path: z.string().describe("Path prefix to read (e.g. .aidos)"),
+    }),
+  },
+  async ({ repo, branch, path }) => {
+    const { client } = await getClient();
+    const [owner, repoName] = repo.split("/");
+    const result = await readArtifacts(client, owner, repoName, branch, path);
+    return {
+      content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
     };
   },
 );

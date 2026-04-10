@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { resolveWorkspace } from "../server.js";
+import { resolveWorkspace, readArtifacts } from "../server.js";
 
 function mockClient(overrides = {}) {
   const defaults = {
@@ -102,5 +102,54 @@ describe("resolveWorkspace", () => {
     const paths = result.aidos_folders.map((f) => f.path);
     assert.ok(paths.includes(".aidos"), "root .aidos/ should be found");
     assert.ok(paths.includes("services/auth/.aidos"), "nested .aidos/ should be found");
+  });
+});
+
+describe("readArtifacts", () => {
+  it("returns all files from .aidos/ folder", async () => {
+    const client = mockClient({
+      getBranch: async () => ({ commit: { sha: "head123" }, name: "aidos/simon" }),
+      getTree: async () => ({
+        sha: "root",
+        tree: [
+          { path: ".aidos/problem.md", type: "blob", sha: "sha1" },
+          { path: ".aidos/solution.md", type: "blob", sha: "sha2" },
+          { path: ".aidos/manifest.json", type: "blob", sha: "sha3" },
+          { path: ".aidos/feature-auth/feature-auth.md", type: "blob", sha: "sha4" },
+          { path: "src/index.js", type: "blob", sha: "sha5" },
+        ],
+      }),
+      getBlob: async (owner, repo, sha) => ({
+        content: Buffer.from(`content of ${sha}`).toString("base64"),
+        encoding: "base64",
+      }),
+    });
+
+    const result = await readArtifacts(client, "org", "my-repo", "aidos/simon", ".aidos");
+
+    assert.equal(result.files.length, 4, "should return only .aidos/ files");
+    const paths = result.files.map((f) => f.path);
+    assert.ok(paths.includes(".aidos/problem.md"));
+    assert.ok(paths.includes(".aidos/solution.md"));
+    assert.ok(paths.includes(".aidos/manifest.json"));
+    assert.ok(paths.includes(".aidos/feature-auth/feature-auth.md"));
+    assert.ok(!paths.includes("src/index.js"), "src/ file should not be included");
+
+    for (const file of result.files) {
+      assert.ok(file.path, "each file should have a path");
+      assert.ok(file.content, "each file should have content");
+      assert.ok(file.sha, "each file should have a sha");
+    }
+  });
+
+  it("returns empty array for folder with no files", async () => {
+    const client = mockClient({
+      getBranch: async () => ({ commit: { sha: "head123" }, name: "aidos/simon" }),
+      getTree: async () => ({ sha: "root", tree: [] }),
+    });
+
+    const result = await readArtifacts(client, "org", "my-repo", "aidos/simon", ".aidos");
+
+    assert.equal(result.files.length, 0);
   });
 });
