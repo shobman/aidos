@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { resolveWorkspace, readArtifacts } from "../server.js";
+import { resolveWorkspace, readArtifacts, saveArtifacts } from "../server.js";
 
 function mockClient(overrides = {}) {
   const defaults = {
@@ -151,5 +151,61 @@ describe("readArtifacts", () => {
     const result = await readArtifacts(client, "org", "my-repo", "aidos/simon", ".aidos");
 
     assert.equal(result.files.length, 0);
+  });
+});
+
+describe("saveArtifacts", () => {
+  it("creates atomic commit with all files", async () => {
+    let createTreeArgs;
+    let createCommitArgs;
+    let updateRefArgs;
+
+    const client = mockClient({
+      getBranch: async () => ({ commit: { sha: "head123" }, name: "aidos/simon" }),
+      getTree: async () => ({ sha: "root-tree-sha", tree: [] }),
+      createTree: async (owner, repo, baseSha, treeEntries) => {
+        createTreeArgs = { owner, repo, baseSha, treeEntries };
+        return { sha: "new-tree-sha" };
+      },
+      createCommit: async (owner, repo, message, treeSha, parentShas) => {
+        createCommitArgs = { owner, repo, message, treeSha, parentShas };
+        return { sha: "new-commit-sha" };
+      },
+      updateRef: async (owner, repo, ref, sha) => {
+        updateRefArgs = { owner, repo, ref, sha };
+        return {};
+      },
+    });
+
+    const files = [
+      { path: ".aidos/problem.md", content: "# Problem" },
+      { path: ".aidos/solution.md", content: "# Solution" },
+    ];
+
+    const result = await saveArtifacts(client, "org", "my-repo", "aidos/simon", files, "update docs");
+
+    assert.ok(createTreeArgs, "createTree should be called");
+    assert.equal(createTreeArgs.treeEntries.length, 2, "tree should have both files");
+    assert.equal(createTreeArgs.treeEntries[0].mode, "100644");
+    assert.equal(createTreeArgs.treeEntries[0].type, "blob");
+
+    assert.ok(createCommitArgs, "createCommit should be called");
+    assert.ok(createCommitArgs.message.startsWith("[aidos]"), "commit message should start with [aidos]");
+
+    assert.ok(updateRefArgs, "updateRef should be called");
+    assert.equal(updateRefArgs.sha, "new-commit-sha");
+
+    assert.equal(result.commit, "new-commit-sha");
+    assert.equal(result.files_changed, 2);
+  });
+
+  it("skips commit when no files provided", async () => {
+    const client = mockClient();
+
+    const result = await saveArtifacts(client, "org", "my-repo", "aidos/simon", [], "empty");
+
+    assert.equal(result.commit, null);
+    assert.equal(result.message, "Nothing to save");
+    assert.equal(result.files_changed, 0);
   });
 });

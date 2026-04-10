@@ -149,6 +149,41 @@ export async function readArtifacts(client, owner, repo, branch, aidosPath) {
   return { files };
 }
 
+/**
+ * Save files to a branch as an atomic commit using the Git Trees API.
+ *
+ * @param {object} client - GitHub API client
+ * @param {string} owner - Repository owner
+ * @param {string} repo - Repository name
+ * @param {string} branch - Branch name
+ * @param {Array<{ path: string, content: string }>} files - Files to write
+ * @param {string} message - Commit message suffix
+ * @returns {{ commit: string|null, message?: string, files_changed: number }}
+ */
+export async function saveArtifacts(client, owner, repo, branch, files, message) {
+  if (!files || files.length === 0) {
+    return { commit: null, message: "Nothing to save", files_changed: 0 };
+  }
+
+  const branchInfo = await client.getBranch(owner, repo, branch);
+  const headSha = branchInfo.commit.sha;
+  const baseTree = await client.getTree(owner, repo, headSha);
+
+  const treeEntries = files.map((f) => ({
+    path: f.path,
+    mode: "100644",
+    type: "blob",
+    content: f.content,
+  }));
+
+  const newTree = await client.createTree(owner, repo, baseTree.sha, treeEntries);
+  const commitMessage = `[aidos] ${message}`;
+  const newCommit = await client.createCommit(owner, repo, commitMessage, newTree.sha, [headSha]);
+  await client.updateRef(owner, repo, `heads/${branch}`, newCommit.sha);
+
+  return { commit: newCommit.sha, files_changed: files.length };
+}
+
 // ---- Tool registration ----
 
 server.registerTool(
@@ -209,6 +244,31 @@ server.registerTool(
     const { client } = await getClient();
     const [owner, repoName] = repo.split("/");
     const result = await readArtifacts(client, owner, repoName, branch, path);
+    return {
+      content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+    };
+  },
+);
+
+server.registerTool(
+  "save",
+  {
+    title: "Save AIDOS Artifacts",
+    description:
+      "Write files to a branch as a single atomic commit using the Git Trees API. All files are committed together with an [aidos] prefix on the message.",
+    inputSchema: z.object({
+      repo: z.string().describe("Repository as owner/repo"),
+      branch: z.string().describe("Branch to commit to"),
+      files: z
+        .array(z.object({ path: z.string(), content: z.string() }))
+        .describe("Files to write, each with path and content"),
+      message: z.string().describe("Commit message (will be prefixed with [aidos])"),
+    }),
+  },
+  async ({ repo, branch, files, message }) => {
+    const { client } = await getClient();
+    const [owner, repoName] = repo.split("/");
+    const result = await saveArtifacts(client, owner, repoName, branch, files, message);
     return {
       content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
     };
