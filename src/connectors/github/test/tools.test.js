@@ -22,6 +22,7 @@ function mockClient(overrides = {}) {
       encoding: "base64",
     }),
     merge: async () => ({}),
+    compare: async () => ({ ahead_by: 0, files: [] }),
   };
   return { ...defaults, ...overrides };
 }
@@ -119,6 +120,32 @@ describe("resolveWorkspace", () => {
     const folder = result.aidos_folders.find((f) => f.path === ".aidos");
     assert.ok(folder, ".aidos/ should be discovered even without manifest");
     assert.equal(folder.manifest_present, false);
+  });
+
+  it("reports work in progress when branch is ahead of target", async () => {
+    const client = mockClient({
+      getBranch: async () => ({ commit: { sha: "abc123" }, name: "aidos/simon" }),
+      compare: async () => ({
+        ahead_by: 3,
+        files: [
+          { filename: ".aidos/problem.md", status: "modified" },
+          { filename: ".aidos/solution.md", status: "added" },
+        ],
+      }),
+    });
+    const result = await resolveWorkspace(client, "simon", "org/my-repo", null);
+    assert.ok(result.work_in_progress, "should detect WIP");
+    assert.equal(result.work_in_progress.ahead, 3);
+    assert.equal(result.work_in_progress.files.length, 2);
+  });
+
+  it("no work_in_progress when branch is even with target", async () => {
+    const client = mockClient({
+      getBranch: async () => ({ commit: { sha: "abc123" }, name: "aidos/simon" }),
+      compare: async () => ({ ahead_by: 0, files: [] }),
+    });
+    const result = await resolveWorkspace(client, "simon", "org/my-repo", null);
+    assert.equal(result.work_in_progress, null);
   });
 });
 

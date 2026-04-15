@@ -169,6 +169,24 @@ export async function resolveWorkspace(client, login, repoFullName, branchOverri
     userBranchSha = baseSha;
   }
 
+  // Probe for work in progress (only meaningful when branch already existed)
+  let workInProgress = null;
+  if (!branchCreated) {
+    try {
+      const cmp = await client.compare(owner, repo, defaultBranch, branchName);
+      if ((cmp.ahead_by || 0) > 0) {
+        workInProgress = {
+          ahead: cmp.ahead_by,
+          files: (cmp.files || [])
+            .filter((f) => f.filename.includes(".aidos/"))
+            .map((f) => ({ filename: f.filename, status: f.status })),
+        };
+      }
+    } catch (err) {
+      console.error(`compare failed for WIP detection: ${err.message}`);
+    }
+  }
+
   // Get full tree for the user branch
   const tree = await client.getTree(owner, repo, userBranchSha);
 
@@ -223,7 +241,7 @@ export async function resolveWorkspace(client, login, repoFullName, branchOverri
     branch_created: branchCreated,
     default_branch: defaultBranch,
     aidos_folders: aidosFolders,
-    work_in_progress: null,
+    work_in_progress: workInProgress,
   };
 }
 
