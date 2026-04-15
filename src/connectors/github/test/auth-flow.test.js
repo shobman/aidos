@@ -182,7 +182,7 @@ describe("ensureAuth two-phase flow", () => {
     delete process.env.AIDOS_GITHUB_CLIENT_ID;
     const result = await ensureAuth({ path: authPath, pendingPath, fetchFn: async () => ({}) });
     assert.equal(result.authenticated, false);
-    assert.match(result.message, /AIDOS_GITHUB_CLIENT_ID|OAuth App Client ID/);
+    assert.match(result.message, /AIDOS_GITHUB_CLIENT_ID/);
   });
 
   it("returns invalid client ID message when device code returns 404", async () => {

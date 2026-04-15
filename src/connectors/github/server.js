@@ -49,7 +49,7 @@ function translateToolError(err, ctx = {}) {
   return message;
 }
 
-function renderManifestStatus(folder) {
+export function renderManifestStatus(folder) {
   const lines = ["Manifest status:"];
   if (!folder.manifest_present) {
     lines.push("  ✗ manifest.json is missing — I can create a default one. What's the target branch for PRs? (usually 'main')");
@@ -72,7 +72,7 @@ function renderManifestStatus(folder) {
   return lines.join("\n");
 }
 
-function renderWorkspaceStatus(workspace) {
+export function renderWorkspaceStatus(workspace) {
   const lines = [];
   lines.push(`Workspace: ${workspace.repo}`);
   const branchSuffix = workspace.branch_created
