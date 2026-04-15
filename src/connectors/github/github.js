@@ -80,5 +80,7 @@ export function createClient(token, fetchFn = fetch) {
       api("POST", `/repos/${owner}/${repo}/pulls`, opts, "createPull"),
     requestReviewers: (owner, repo, pullNumber, opts) =>
       api("POST", `/repos/${owner}/${repo}/pulls/${pullNumber}/requested_reviewers`, opts, "requestReviewers"),
+    lookupUser: (login) => api("GET", `/users/${encodeURIComponent(login)}`, null, "lookupUser"),
+    lookupTeam: (org, slug) => api("GET", `/orgs/${encodeURIComponent(org)}/teams/${encodeURIComponent(slug)}`, null, "lookupTeam"),
   };
 }

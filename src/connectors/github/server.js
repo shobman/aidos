@@ -391,6 +391,58 @@ export async function submitChanges(client, owner, repo, branch, opts) {
   return { type: "push", merge_sha: mergeResult.sha, branch_deleted: true };
 }
 
+// ---- Pre-flight ----
+
+export async function preflightSubmit(client, owner, repo, branch, opts) {
+  const { target, reviewers = [] } = opts;
+  const checks = [];
+
+  try {
+    await client.getBranch(owner, repo, target);
+    checks.push({ name: "target_branch", pass: true, message: `Target branch '${target}' exists` });
+  } catch {
+    checks.push({ name: "target_branch", pass: false, message: `Target branch '${target}' not found` });
+  }
+
+  try {
+    const cmp = await client.compare(owner, repo, target, branch);
+    const behind = cmp.behind_by || 0;
+    if (behind > 0) {
+      checks.push({
+        name: "conflicts",
+        pass: false,
+        message: `Branch is ${behind} commit(s) behind ${target} — possible conflict. A developer may need to merge ${target} into ${branch}.`,
+      });
+    } else {
+      checks.push({ name: "conflicts", pass: true, message: `No conflicts with ${target}` });
+    }
+  } catch (err) {
+    checks.push({ name: "conflicts", pass: false, message: `Couldn't check conflicts: ${err.message}` });
+  }
+
+  for (const r of reviewers) {
+    if (r.startsWith("@")) {
+      const body = r.slice(1);
+      const [orgSlug, teamSlug] = body.includes("/") ? body.split("/") : [owner, body];
+      try {
+        await client.lookupTeam(orgSlug, teamSlug);
+        checks.push({ name: "reviewers", pass: true, message: `Reviewer ${r} resolved to team ${orgSlug}/${teamSlug}` });
+      } catch {
+        checks.push({ name: "reviewers", pass: false, message: `Reviewer team '${r}' not found` });
+      }
+    } else {
+      try {
+        await client.lookupUser(r);
+        checks.push({ name: "reviewers", pass: true, message: `Reviewer '${r}' exists` });
+      } catch {
+        checks.push({ name: "reviewers", pass: false, message: `Reviewer '${r}' is not a valid GitHub user` });
+      }
+    }
+  }
+
+  return { ok: checks.every((c) => c.pass), checks };
+}
+
 // ---- Repo resolution ----
 
 export async function resolveRepo(client, query) {
@@ -557,35 +609,48 @@ server.registerTool(
   {
     title: "Submit AIDOS Changes",
     description:
-      "Submit working branch changes via pull request (pr) or direct merge and delete (push). For pr strategy, optional reviewers can be provided as logins; @-prefixed values are treated as team slugs.",
+      "Preflight and submit working branch changes via pull request (pr) or direct merge (push). Set confirm=true to execute after reviewing the preflight.",
     inputSchema: z.object({
       repo: z.string().describe("Repository as owner/repo"),
       branch: z.string().describe("Working branch to submit"),
       target: z.string().describe("Target branch (e.g. main)"),
       strategy: z.enum(["pr", "push"]).describe("Submission strategy: pr or push"),
-      reviewers: z
-        .array(z.string())
-        .default([])
-        .describe("Reviewer logins for PR strategy (@ prefix for team slugs)"),
+      reviewers: z.array(z.string()).default([]).describe("Reviewer logins (@ prefix for team slugs)"),
       title: z.string().optional().describe("PR title (pr strategy only)"),
       body: z.string().optional().describe("PR body (pr strategy only)"),
+      confirm: z.boolean().default(false).describe("Set true to execute after reviewing preflight"),
     }),
   },
-  async ({ repo, branch, target, strategy, reviewers, title, body }) => {
+  async ({ repo, branch, target, strategy, reviewers, title, body, confirm }) => {
     const auth = await requireAuth();
     if (!auth.authenticated) return textResult(auth.message);
+    const [owner, repoName] = repo.split("/");
+
     try {
-      const [owner, repoName] = repo.split("/");
+      const pre = await preflightSubmit(auth.client, owner, repoName, branch, { strategy, target, reviewers });
+      if (!pre.ok) {
+        return textResult(
+          "Pre-flight found issues:\n\n" +
+          pre.checks.map((c) => `${c.pass ? "✓" : "✗"} ${c.message}`).join("\n") +
+          "\n\nFix these before submitting."
+        );
+      }
+      if (!confirm) {
+        return textResult(
+          "Pre-flight check for submit:\n\n" +
+          pre.checks.map((c) => `✓ ${c.message}`).join("\n") +
+          "\n\nCall submit again with confirm=true to proceed."
+        );
+      }
       const result = await submitChanges(auth.client, owner, repoName, branch, {
-        strategy,
-        target,
-        reviewers,
-        title,
-        body,
+        strategy, target, reviewers, title, body,
       });
-      return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      if (result.type === "pr") {
+        return textResult(`Created PR #${result.number}: ${result.url}`);
+      }
+      return textResult(`Merged branch ${branch} into ${target} (commit ${result.merge_sha}). Branch deleted.`);
     } catch (err) {
-      return textResult(translateToolError(err, { op: "submit" }));
+      return textResult(translateToolError(err, { op: "submit", target }));
     }
   },
 );
