@@ -44,6 +44,16 @@ export function createClient(token, fetchFn = fetch) {
     getUser: () => api("GET", "/user", null, "getUser"),
     searchRepos: (query) =>
       api("GET", `/search/repositories?q=${encodeURIComponent(query)}&per_page=10`, null, "searchRepos"),
+    listUserRepos: async () => {
+      const all = [];
+      for (let page = 1; page <= 3; page++) {
+        const res = await api("GET", `/user/repos?per_page=100&page=${page}&affiliation=owner,collaborator,organization_member`, null, "listUserRepos");
+        if (!res || res.length === 0) break;
+        all.push(...res);
+        if (res.length < 100) break;
+      }
+      return all;
+    },
     getRepo: (owner, repo) =>
       api("GET", `/repos/${owner}/${repo}`, null, "getRepo"),
     getBranch: (owner, repo, branch) =>

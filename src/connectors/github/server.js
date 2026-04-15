@@ -373,21 +373,41 @@ export async function submitChanges(client, owner, repo, branch, opts) {
 // ---- Repo resolution ----
 
 export async function resolveRepo(client, query) {
-  if (query.includes("/")) {
+  const q = query.trim();
+
+  if (q.includes("/")) {
+    const [owner, repo] = q.split("/");
     try {
-      const [owner, repo] = query.split("/");
       const info = await client.getRepo(owner, repo);
       return { status: "single", repo: info.full_name };
     } catch (err) {
-      if (err.message.includes("404")) return { status: "none", matches: [] };
-      throw err;
+      if (!/404/.test(err.message)) throw err;
+      return { status: "none", matches: [] };
     }
   }
-  const results = await client.searchRepos(query);
-  const items = results.items || [];
-  if (items.length === 0) return { status: "none", matches: [] };
-  if (items.length === 1) return { status: "single", repo: items[0].full_name };
-  return { status: "multiple", matches: items.map((i) => i.full_name) };
+
+  const lower = q.toLowerCase();
+
+  try {
+    const repos = await client.listUserRepos();
+    const matches = repos
+      .map((r) => r.full_name)
+      .filter((name) => name.toLowerCase().split("/")[1]?.includes(lower));
+    if (matches.length === 1) return { status: "single", repo: matches[0] };
+    if (matches.length > 1) return { status: "multiple", matches };
+  } catch (err) {
+    console.error(`listUserRepos failed: ${err.message}`);
+  }
+
+  try {
+    const search = await client.searchRepos(q);
+    const items = search.items || [];
+    if (items.length === 0) return { status: "none", matches: [] };
+    if (items.length === 1) return { status: "single", repo: items[0].full_name };
+    return { status: "multiple", matches: items.map((i) => i.full_name) };
+  } catch {
+    return { status: "none", matches: [] };
+  }
 }
 
 // ---- Tool registration ----
