@@ -94,7 +94,7 @@ If the file already has other MCP servers, add `aidos-github` alongside them ins
    - Open the URL, enter the code, authorise the OAuth App
    - Token is cached at `~/.aidos/auth.json` for future sessions
 
-Subsequent sessions skip auth and go straight to work.
+The auth flow is two-phase: the first call initiates device flow and returns the code; after you authorise in the browser, ask the AI to open the workspace again and it will pick up the token. Subsequent sessions skip auth entirely and go straight to work. Tokens are auto-refreshed if revoked.
 
 ## Use
 
@@ -102,21 +102,26 @@ Subsequent sessions skip auth and go straight to work.
 
 | Tool | Purpose |
 |------|---------|
-| `open_workspace` | Resolve repo, create/sync working branch, discover `.aidos/` folders |
+| `open_workspace` | Resolve repo (fuzzy match supported), create/sync working branch, discover `.aidos/` folders, validate manifest, surface work-in-progress and last publish status |
 | `read_artifacts` | Batch read all files from a `.aidos/` folder |
-| `save` | Commit changed files to the working branch |
+| `save` | Preview files to commit (default) or commit them (`confirm=true`) |
 | `diff` | Show changes vs target branch |
-| `submit` | Create PR or merge, per manifest config |
+| `submit` | Run pre-flight checks (branch exists, conflicts, reviewers) and preview; execute on `confirm=true` |
+
+`save` and `submit` are two-phase: the first call returns a preview, the second call with `confirm=true` performs the action. This gives the AI a chance to show you the plan before changes hit the repo.
 
 ### Workflow
 
 ```
-open_workspace("my-repo") → creates aidos/{you} branch, finds .aidos/ folders
+open_workspace("my-repo") → creates aidos/{you} branch, finds .aidos/ folders,
+                            validates manifest, reports WIP if any
 read_artifacts(...)       → loads all artifacts into AI context
 [work with AI]
-save(files, message)      → checkpoint commit to working branch
-diff()                    → review changes before submitting
-submit()                  → PR or merge per manifest.json write config
+save(files, message)      → returns preview of files and commit message
+save(..., confirm=true)   → atomic commit to working branch
+diff()                    → review changes vs target branch
+submit()                  → runs pre-flight, returns check report
+submit(..., confirm=true) → create PR or merge per manifest.json write config
 ```
 
 ### Manifest configuration
@@ -165,22 +170,30 @@ npm install
 npm test
 ```
 
-22 tests across 8 suites. All tests are unit tests with mocked `fetch` — no GitHub API calls, no network, no auth required. Runs in under a second.
+80 tests across 15 suites. All tests are unit tests with mocked `fetch` — no GitHub API calls, no network, no auth required. Runs in under a second.
 
 ### Project structure
 
 ```
 src/connectors/github/
-├── server.js              ← MCP server entry + tool registrations
-├── github.js              ← GitHub REST API client (fetch-based)
-├── auth.js                ← Device flow + token cache
-├── manifest.schema.json   ← JSON Schema for .aidos/manifest.json
-├── package.json           ← Node package (ESM, @modelcontextprotocol/sdk, zod)
-├── README.md              ← This file
+├── server.js                   ← MCP server entry + tool registrations + orchestration
+├── github.js                   ← GitHub REST API client (fetch-based)
+├── auth.js                     ← Two-phase device flow + token cache
+├── errors.js                   ← User-facing error mapper
+├── manifest.js                 ← Manifest schema validation (ajv)
+├── manifest.schema.json        ← JSON Schema for .aidos/manifest.json
+├── package.json                ← Node package (ESM, @modelcontextprotocol/sdk, zod, ajv)
+├── README.md                   ← This file
 └── test/
-    ├── auth.test.js       ← Token caching + device flow tests
-    ├── github.test.js     ← API client unit tests
-    └── tools.test.js      ← Tool logic tests with mocked client
+    ├── auth.test.js            ← Token cache tests
+    ├── auth-flow.test.js       ← Two-phase device flow tests
+    ├── errors.test.js          ← Error mapper tests
+    ├── github.test.js          ← API client unit tests
+    ├── manifest.test.js        ← Manifest validation tests
+    ├── preflight.test.js       ← Submit pre-flight tests
+    ├── rendering.test.js       ← Workspace dashboard rendering tests
+    ├── resolve-repo.test.js    ← Fuzzy repo resolution tests
+    └── tools.test.js           ← Tool logic tests with mocked client
 ```
 
 Each logic function is exported from `server.js` and unit-tested in isolation (see `resolveWorkspace`, `readArtifacts`, `saveArtifacts`, `diffBranch`, `submitChanges`). The MCP tool registrations wrap these functions thinly — test the logic, not the MCP protocol.
@@ -207,17 +220,25 @@ Tool responses appear on stdout as JSON-RPC. All logging goes to stderr so it do
 
 ## Troubleshooting
 
-**"AIDOS_GITHUB_CLIENT_ID environment variable is required"**
-The env var isn't reaching the server. Check that the `env` block is inside the `aidos-github` server entry in `claude_desktop_config.json`, then fully quit and restart Claude Desktop (not just close the window).
+The connector translates GitHub errors into actionable guidance — most common issues surface as readable text in the AI chat. If you see one of the messages below, here's what to do.
 
-**"Device flow initiation failed: 404"**
-Your OAuth App doesn't have Device Flow enabled. Go back to the OAuth App settings page and tick the "Enable Device Flow" checkbox.
+**"The AIDOS GitHub connector needs a GitHub OAuth App Client ID..."**
+The `AIDOS_GITHUB_CLIENT_ID` env var isn't reaching the server. Check that the `env` block is inside the `aidos-github` server entry in `claude_desktop_config.json`, then fully quit and restart Claude Desktop (not just close the window). The message includes step-by-step setup instructions.
+
+**"The GitHub OAuth App Client ID appears to be invalid (GitHub returned 404)..."**
+Either the Client ID is wrong, Device Flow is not enabled on the OAuth App, or the app has been deleted. Go to the OAuth App settings page, verify the Client ID matches your Claude Desktop config, and tick the "Enable Device Flow" checkbox.
+
+**"Authentication required. Go to https://github.com/login/device..."**
+First-time auth — open the URL in a browser, enter the code, authorise the OAuth App. Then ask the AI to open the workspace again; it will pick up the token. No need to restart the server.
+
+**"Still waiting for authorisation..."**
+You asked the AI to open the workspace again before completing the browser authorisation. Finish the authorisation in the browser, then ask the AI to retry.
 
 **Tools don't appear in Claude Desktop**
 Check the Claude Desktop logs (Settings → Developer → Open Logs Folder) for `aidos-github` errors. Common causes: wrong path to `server.js`, `npm install` not run, invalid JSON in `claude_desktop_config.json`.
 
-**"Branch has diverged from main"**
-Someone changed `.aidos/` files on the target branch while your `aidos/{you}` branch had unmerged work. A developer needs to resolve this manually with `git checkout aidos/{you} && git merge main`.
+**"Your changes conflict with what's on main..."**
+Someone changed `.aidos/` files on the target branch while your `aidos/{you}` branch had unmerged work. A developer needs to resolve this manually with `git checkout aidos/{you} && git merge main`. This shows up in the `submit` pre-flight report before any changes are attempted.
 
 **Re-authenticate**
-Delete `~/.aidos/auth.json` to force a fresh device flow on the next call.
+Normally not needed — a revoked or expired token triggers a fresh device flow automatically on the next call. If you want to force it, delete `~/.aidos/auth.json` and `~/.aidos/pending_auth.json`.

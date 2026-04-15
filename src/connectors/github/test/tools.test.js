@@ -22,6 +22,9 @@ function mockClient(overrides = {}) {
       encoding: "base64",
     }),
     merge: async () => ({}),
+    compare: async () => ({ ahead_by: 0, files: [] }),
+    listWorkflows: async () => ({ workflows: [] }),
+    listWorkflowRuns: async () => ({ workflow_runs: [] }),
   };
   return { ...defaults, ...overrides };
 }
@@ -101,6 +104,94 @@ describe("resolveWorkspace", () => {
     const paths = result.aidos_folders.map((f) => f.path);
     assert.ok(paths.includes(".aidos"), "root .aidos/ should be found");
     assert.ok(paths.includes("services/auth/.aidos"), "nested .aidos/ should be found");
+  });
+
+  it("surfaces .aidos/ folders without a manifest as tree entries", async () => {
+    const client = mockClient({
+      getBranch: async (owner, repo, branch) => ({ commit: { sha: "abc123" }, name: branch }),
+      getTree: async () => ({
+        sha: "root",
+        tree: [
+          { path: ".aidos", type: "tree", sha: "tree1" },
+          { path: "src/index.js", type: "blob", sha: "eee" },
+        ],
+      }),
+    });
+
+    const result = await resolveWorkspace(client, "simon", "org/my-repo", null);
+    const folder = result.aidos_folders.find((f) => f.path === ".aidos");
+    assert.ok(folder, ".aidos/ should be discovered even without manifest");
+    assert.equal(folder.manifest_present, false);
+  });
+
+  it("reports work in progress when branch is ahead of target", async () => {
+    const client = mockClient({
+      getBranch: async () => ({ commit: { sha: "abc123" }, name: "aidos/simon" }),
+      compare: async () => ({
+        ahead_by: 3,
+        files: [
+          { filename: ".aidos/problem.md", status: "modified" },
+          { filename: ".aidos/solution.md", status: "added" },
+        ],
+      }),
+    });
+    const result = await resolveWorkspace(client, "simon", "org/my-repo", null);
+    assert.ok(result.work_in_progress, "should detect WIP");
+    assert.equal(result.work_in_progress.ahead, 3);
+    assert.equal(result.work_in_progress.files.length, 2);
+  });
+
+  it("no work_in_progress when branch is even with target", async () => {
+    const client = mockClient({
+      getBranch: async () => ({ commit: { sha: "abc123" }, name: "aidos/simon" }),
+      compare: async () => ({ ahead_by: 0, files: [] }),
+    });
+    const result = await resolveWorkspace(client, "simon", "org/my-repo", null);
+    assert.equal(result.work_in_progress, null);
+  });
+
+  it("surfaces last publish workflow run when available", async () => {
+    const client = mockClient({
+      getBranch: async () => ({ commit: { sha: "abc" }, name: "aidos/simon" }),
+      listWorkflows: async () => ({ workflows: [{ id: 42, name: "Publish to Confluence", path: ".github/workflows/confluence-publish.yml" }] }),
+      listWorkflowRuns: async (o, r, wid) => {
+        assert.equal(wid, 42);
+        return { workflow_runs: [{ id: 100, conclusion: "success", created_at: "2026-04-15T10:00:00Z", html_url: "https://github.com/org/my-repo/actions/runs/100" }] };
+      },
+    });
+
+    const result = await resolveWorkspace(client, "simon", "org/my-repo", null);
+    assert.ok(result.publish_status, "publish_status should be populated");
+    assert.equal(result.publish_status.workflow, "Publish to Confluence");
+    assert.equal(result.publish_status.conclusion, "success");
+  });
+
+  it("publish_status is null when no matching workflow", async () => {
+    const client = mockClient({
+      getBranch: async () => ({ commit: { sha: "abc" }, name: "aidos/simon" }),
+      listWorkflows: async () => ({ workflows: [{ id: 1, name: "CI", path: ".github/workflows/ci.yml" }] }),
+    });
+
+    const result = await resolveWorkspace(client, "simon", "org/my-repo", null);
+    assert.equal(result.publish_status, null);
+  });
+
+  it("does not match paths where .aidos is a segment suffix (not its own segment)", async () => {
+    const client = mockClient({
+      getBranch: async () => ({ commit: { sha: "abc" }, name: "aidos/simon" }),
+      getTree: async () => ({
+        sha: "root",
+        tree: [
+          { path: "not.aidos/file.md", type: "blob", sha: "aaa" },
+          { path: "my.aidos/data.json", type: "blob", sha: "bbb" },
+          { path: ".aidos/real.md", type: "blob", sha: "ccc" },
+        ],
+      }),
+    });
+
+    const result = await resolveWorkspace(client, "simon", "org/my-repo", null);
+    const paths = result.aidos_folders.map((f) => f.path);
+    assert.deepEqual(paths, [".aidos"], "only the real .aidos/ folder should be discovered");
   });
 });
 
