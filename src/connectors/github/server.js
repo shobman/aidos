@@ -5,19 +5,119 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 import { createClient } from "./github.js";
 import { ensureAuth } from "./auth.js";
+import { mapGitHubError } from "./errors.js";
 
 const server = new McpServer({ name: "aidos-github", version: "1.0.0" });
 
-let ghClient;
-let ghLogin;
+const session = {
+  client: null,
+  login: null,
+  token: null,
+  workspace: null,
+};
 
-async function getClient() {
-  if (!ghClient) {
-    const { token, login } = await ensureAuth();
-    ghClient = createClient(token);
-    ghLogin = login;
+function textResult(text) {
+  return { content: [{ type: "text", text }] };
+}
+
+async function requireAuth() {
+  if (session.client && session.token) {
+    return { authenticated: true, client: session.client, login: session.login };
   }
-  return { client: ghClient, login: ghLogin };
+  const auth = await ensureAuth();
+  if (!auth.authenticated) {
+    return { authenticated: false, message: auth.message };
+  }
+  session.token = auth.token;
+  session.login = auth.login;
+  session.client = createClient(auth.token);
+  return { authenticated: true, client: session.client, login: auth.login };
+}
+
+function clearAuth() {
+  session.client = null;
+  session.token = null;
+  session.login = null;
+}
+
+function translateToolError(err, ctx = {}) {
+  const { status, message } = mapGitHubError(err, ctx.op || "any", ctx);
+  console.error(`[aidos-github] ${ctx.op || "tool"} failed: ${err?.message || err}`);
+  if (status === 401) {
+    clearAuth();
+  }
+  return message;
+}
+
+function renderManifestStatus(folder) {
+  const lines = ["Manifest status:"];
+  if (!folder.manifest_present) {
+    lines.push("  ✗ manifest.json is missing — I can create a default one. What's the target branch for PRs? (usually 'main')");
+    return lines.join("\n");
+  }
+  if (folder.manifest_errors && folder.manifest_errors.length > 0) {
+    lines.push("  ⚠ manifest.json has validation errors:");
+    for (const e of folder.manifest_errors) lines.push(`    • ${e}`);
+    return lines.join("\n");
+  }
+  const w = folder.write || {};
+  if (w.strategy) lines.push(`  ✓ write.strategy: ${w.strategy} (PRs will target ${w.target})`);
+  else lines.push("  ⚠ No write config — Submit will default to PR against main.");
+  if (w.reviewers && w.reviewers.length) lines.push(`  ✓ write.reviewers: ${w.reviewers.join(", ")}`);
+  if (folder.publish_configured) {
+    lines.push("  ✓ publish.confluence configured");
+  } else {
+    lines.push("  ✗ publish.confluence: not configured (artifacts won't auto-publish to Confluence on merge)");
+  }
+  return lines.join("\n");
+}
+
+function renderWorkspaceStatus(workspace) {
+  const lines = [];
+  lines.push(`Workspace: ${workspace.repo}`);
+  const branchSuffix = workspace.branch_created
+    ? `(created from ${workspace.default_branch})`
+    : `(synced with ${workspace.default_branch})`;
+  lines.push(`Branch: ${workspace.branch} ${branchSuffix}`);
+
+  if (workspace.work_in_progress) {
+    lines.push("");
+    lines.push(`You have work in progress: ${workspace.work_in_progress.ahead} commits ahead of ${workspace.default_branch}.`);
+    for (const f of workspace.work_in_progress.files) {
+      lines.push(`  • ${f.filename} (${f.status})`);
+    }
+    lines.push("");
+    lines.push("Continue where you left off, or say 'start fresh' to reset the branch.");
+  }
+
+  if (workspace.aidos_folders.length === 0) {
+    lines.push("");
+    lines.push("No .aidos/ folders found in this repo. Want me to create one? Where should it go?");
+    lines.push("  • Repository root (.aidos/)");
+    lines.push("  • Or specify a path");
+    return lines.join("\n");
+  }
+
+  if (workspace.aidos_folders.length === 1) {
+    const folder = workspace.aidos_folders[0];
+    lines.push(`Artifacts folder: ${folder.path}/`);
+    lines.push("");
+    lines.push(renderManifestStatus(folder));
+    lines.push("");
+    lines.push("Ready to work. What would you like to do?");
+  } else {
+    lines.push("");
+    lines.push(`Found ${workspace.aidos_folders.length} artifact folders:`);
+    workspace.aidos_folders.forEach((f, i) => {
+      const target = f.write?.target || workspace.default_branch;
+      const strategy = f.write?.strategy || "pr";
+      const manifestState = f.manifest_present ? `write: ${strategy} → ${target}` : "no manifest";
+      lines.push(`  ${i + 1}. ${f.path}/ — ${manifestState}`);
+    });
+    lines.push("");
+    lines.push("Which one do you want to work with? (number or path)");
+  }
+  return lines.join("\n");
 }
 
 /**
@@ -92,20 +192,22 @@ export async function resolveWorkspace(client, login, repoFullName, branchOverri
       );
 
       let write = { ...defaultWrite };
+      const manifest_present = !!manifestEntry;
+      let publish_configured = false;
+      const manifest_errors = [];
       if (manifestEntry) {
         try {
           const blob = await client.getBlob(owner, repo, manifestEntry.sha);
           const content = Buffer.from(blob.content, blob.encoding || "base64").toString("utf8");
           const manifest = JSON.parse(content);
-          if (manifest.write) {
-            write = { ...defaultWrite, ...manifest.write };
-          }
-        } catch {
-          // Manifest unreadable — use defaults
+          if (manifest.write) write = { ...defaultWrite, ...manifest.write };
+          if (manifest.publish) publish_configured = true;
+        } catch (err) {
+          manifest_errors.push(`Couldn't parse manifest: ${err.message}`);
         }
       }
 
-      return { path: folderPath, write };
+      return { path: folderPath, write, manifest_present, publish_configured, manifest_errors };
     }),
   );
 
@@ -115,6 +217,7 @@ export async function resolveWorkspace(client, login, repoFullName, branchOverri
     branch_created: branchCreated,
     default_branch: defaultBranch,
     aidos_folders: aidosFolders,
+    work_in_progress: null,
   };
 }
 
@@ -264,6 +367,26 @@ export async function submitChanges(client, owner, repo, branch, opts) {
   return { type: "push", merge_sha: mergeResult.sha, branch_deleted: true };
 }
 
+// ---- Repo resolution ----
+
+export async function resolveRepo(client, query) {
+  if (query.includes("/")) {
+    try {
+      const [owner, repo] = query.split("/");
+      const info = await client.getRepo(owner, repo);
+      return { status: "single", repo: info.full_name };
+    } catch (err) {
+      if (err.message.includes("404")) return { status: "none", matches: [] };
+      throw err;
+    }
+  }
+  const results = await client.searchRepos(query);
+  const items = results.items || [];
+  if (items.length === 0) return { status: "none", matches: [] };
+  if (items.length === 1) return { status: "single", repo: items[0].full_name };
+  return { status: "multiple", matches: items.map((i) => i.full_name) };
+}
+
 // ---- Tool registration ----
 
 server.registerTool(
@@ -271,40 +394,34 @@ server.registerTool(
   {
     title: "Open AIDOS Workspace",
     description:
-      "Resolve a GitHub repo, ensure the user's aidos/ working branch exists (create or sync), and discover .aidos/ folders with their write configuration.",
+      "Resolve a GitHub repo, ensure the user's aidos/ working branch exists, and discover .aidos/ folders with their write configuration.",
     inputSchema: z.object({
       query: z.string().describe("Repository name or org/repo"),
-      branch: z
-        .string()
-        .optional()
-        .describe("Override branch name (default: aidos/{username})"),
+      branch: z.string().optional().describe("Override branch name (default: aidos/{username})"),
     }),
   },
   async ({ query, branch }) => {
-    const { client, login } = await getClient();
+    const auth = await requireAuth();
+    if (!auth.authenticated) return textResult(auth.message);
 
-    // Resolve repo — if contains "/" treat as org/repo, else search
-    let repoFullName;
-    if (query.includes("/")) {
-      repoFullName = query;
-    } else {
-      const results = await client.searchRepos(query);
-      if (!results.items || results.items.length === 0) {
-        throw new Error(`No repositories found matching "${query}"`);
+    try {
+      const resolved = await resolveRepo(auth.client, query);
+      if (resolved.status === "none") {
+        return textResult(`No repos found matching '${query}'. Check that your GitHub account has access to the repo's organisation. You might need the full name like 'your-org/${query}'.`);
       }
-      repoFullName = results.items[0].full_name;
+      if (resolved.status === "multiple") {
+        const list = resolved.matches.map((m) => `  • ${m}`).join("\n");
+        return textResult(`Found ${resolved.matches.length} repos matching '${query}':\n${list}\n\nWhich one do you want to work with? (give me the full org/repo name)`);
+      }
+
+      const repoFullName = resolved.repo;
+      const workspace = await resolveWorkspace(auth.client, auth.login, repoFullName, branch || null);
+      session.workspace = workspace;
+
+      return textResult(renderWorkspaceStatus(workspace));
+    } catch (err) {
+      return textResult(translateToolError(err, { op: "open_workspace", query }));
     }
-
-    const workspace = await resolveWorkspace(client, login, repoFullName, branch || null);
-
-    return {
-      content: [
-        {
-          type: "text",
-          text: JSON.stringify(workspace, null, 2),
-        },
-      ],
-    };
   },
 );
 
@@ -321,12 +438,15 @@ server.registerTool(
     }),
   },
   async ({ repo, branch, path }) => {
-    const { client } = await getClient();
-    const [owner, repoName] = repo.split("/");
-    const result = await readArtifacts(client, owner, repoName, branch, path);
-    return {
-      content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
-    };
+    const auth = await requireAuth();
+    if (!auth.authenticated) return textResult(auth.message);
+    try {
+      const [owner, repoName] = repo.split("/");
+      const result = await readArtifacts(auth.client, owner, repoName, branch, path);
+      return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+    } catch (err) {
+      return textResult(translateToolError(err, { op: "read_artifacts" }));
+    }
   },
 );
 
@@ -346,12 +466,15 @@ server.registerTool(
     }),
   },
   async ({ repo, branch, files, message }) => {
-    const { client } = await getClient();
-    const [owner, repoName] = repo.split("/");
-    const result = await saveArtifacts(client, owner, repoName, branch, files, message);
-    return {
-      content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
-    };
+    const auth = await requireAuth();
+    if (!auth.authenticated) return textResult(auth.message);
+    try {
+      const [owner, repoName] = repo.split("/");
+      const result = await saveArtifacts(auth.client, owner, repoName, branch, files, message);
+      return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+    } catch (err) {
+      return textResult(translateToolError(err, { op: "save" }));
+    }
   },
 );
 
@@ -368,12 +491,15 @@ server.registerTool(
     }),
   },
   async ({ repo, branch, target }) => {
-    const { client } = await getClient();
-    const [owner, repoName] = repo.split("/");
-    const result = await diffBranch(client, owner, repoName, branch, target);
-    return {
-      content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
-    };
+    const auth = await requireAuth();
+    if (!auth.authenticated) return textResult(auth.message);
+    try {
+      const [owner, repoName] = repo.split("/");
+      const result = await diffBranch(auth.client, owner, repoName, branch, target);
+      return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+    } catch (err) {
+      return textResult(translateToolError(err, { op: "diff" }));
+    }
   },
 );
 
@@ -397,18 +523,21 @@ server.registerTool(
     }),
   },
   async ({ repo, branch, target, strategy, reviewers, title, body }) => {
-    const { client } = await getClient();
-    const [owner, repoName] = repo.split("/");
-    const result = await submitChanges(client, owner, repoName, branch, {
-      strategy,
-      target,
-      reviewers,
-      title,
-      body,
-    });
-    return {
-      content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
-    };
+    const auth = await requireAuth();
+    if (!auth.authenticated) return textResult(auth.message);
+    try {
+      const [owner, repoName] = repo.split("/");
+      const result = await submitChanges(auth.client, owner, repoName, branch, {
+        strategy,
+        target,
+        reviewers,
+        title,
+        body,
+      });
+      return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+    } catch (err) {
+      return textResult(translateToolError(err, { op: "submit" }));
+    }
   },
 );
 
