@@ -6,6 +6,7 @@ import { z } from "zod";
 import { createClient } from "./github.js";
 import { ensureAuth } from "./auth.js";
 import { mapGitHubError } from "./errors.js";
+import { validateManifest } from "./manifest.js";
 
 const server = new McpServer({ name: "aidos-github", version: "1.0.0" });
 
@@ -200,6 +201,8 @@ export async function resolveWorkspace(client, login, repoFullName, branchOverri
           const blob = await client.getBlob(owner, repo, manifestEntry.sha);
           const content = Buffer.from(blob.content, blob.encoding || "base64").toString("utf8");
           const manifest = JSON.parse(content);
+          const validation = validateManifest(manifest);
+          if (!validation.valid) manifest_errors.push(...validation.errors);
           if (manifest.write) write = { ...defaultWrite, ...manifest.write };
           if (manifest.publish) publish_configured = true;
         } catch (err) {
