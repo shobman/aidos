@@ -104,6 +104,13 @@ export function renderWorkspaceStatus(workspace) {
     lines.push(`Artifacts folder: ${folder.path}/`);
     lines.push("");
     lines.push(renderManifestStatus(folder));
+    if (workspace.publish_status) {
+      const ps = workspace.publish_status;
+      const icon = ps.conclusion === "success" ? "✓" : ps.conclusion === "failure" ? "✗" : "•";
+      const state = ps.conclusion || "in progress";
+      lines.push("");
+      lines.push(`Last publish (${ps.workflow}): ${icon} ${state} — ${ps.url}`);
+    }
     lines.push("");
     lines.push("Ready to work. What would you like to do?");
   } else {
@@ -235,6 +242,29 @@ export async function resolveWorkspace(client, login, repoFullName, branchOverri
     }),
   );
 
+  let publishStatus = null;
+  try {
+    const workflows = await client.listWorkflows(owner, repo);
+    const wfList = workflows.workflows || [];
+    const candidate = wfList.find((w) =>
+      /aidos|confluence|publish/i.test(w.name || "") || /aidos|confluence|publish/i.test(w.path || "")
+    );
+    if (candidate) {
+      const runs = await client.listWorkflowRuns(owner, repo, candidate.id);
+      const latest = (runs.workflow_runs || [])[0];
+      if (latest) {
+        publishStatus = {
+          workflow: candidate.name,
+          conclusion: latest.conclusion,
+          created_at: latest.created_at,
+          url: latest.html_url,
+        };
+      }
+    }
+  } catch (err) {
+    console.error(`publish status probe failed: ${err.message}`);
+  }
+
   return {
     repo: repoFullName,
     branch: branchName,
@@ -242,6 +272,7 @@ export async function resolveWorkspace(client, login, repoFullName, branchOverri
     default_branch: defaultBranch,
     aidos_folders: aidosFolders,
     work_in_progress: workInProgress,
+    publish_status: publishStatus,
   };
 }
 

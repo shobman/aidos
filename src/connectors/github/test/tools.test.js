@@ -23,6 +23,8 @@ function mockClient(overrides = {}) {
     }),
     merge: async () => ({}),
     compare: async () => ({ ahead_by: 0, files: [] }),
+    listWorkflows: async () => ({ workflows: [] }),
+    listWorkflowRuns: async () => ({ workflow_runs: [] }),
   };
   return { ...defaults, ...overrides };
 }
@@ -146,6 +148,32 @@ describe("resolveWorkspace", () => {
     });
     const result = await resolveWorkspace(client, "simon", "org/my-repo", null);
     assert.equal(result.work_in_progress, null);
+  });
+
+  it("surfaces last publish workflow run when available", async () => {
+    const client = mockClient({
+      getBranch: async () => ({ commit: { sha: "abc" }, name: "aidos/simon" }),
+      listWorkflows: async () => ({ workflows: [{ id: 42, name: "Publish to Confluence", path: ".github/workflows/confluence-publish.yml" }] }),
+      listWorkflowRuns: async (o, r, wid) => {
+        assert.equal(wid, 42);
+        return { workflow_runs: [{ id: 100, conclusion: "success", created_at: "2026-04-15T10:00:00Z", html_url: "https://github.com/org/my-repo/actions/runs/100" }] };
+      },
+    });
+
+    const result = await resolveWorkspace(client, "simon", "org/my-repo", null);
+    assert.ok(result.publish_status, "publish_status should be populated");
+    assert.equal(result.publish_status.workflow, "Publish to Confluence");
+    assert.equal(result.publish_status.conclusion, "success");
+  });
+
+  it("publish_status is null when no matching workflow", async () => {
+    const client = mockClient({
+      getBranch: async () => ({ commit: { sha: "abc" }, name: "aidos/simon" }),
+      listWorkflows: async () => ({ workflows: [{ id: 1, name: "CI", path: ".github/workflows/ci.yml" }] }),
+    });
+
+    const result = await resolveWorkspace(client, "simon", "org/my-repo", null);
+    assert.equal(result.publish_status, null);
   });
 });
 

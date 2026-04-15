@@ -82,5 +82,9 @@ export function createClient(token, fetchFn = fetch) {
       api("POST", `/repos/${owner}/${repo}/pulls/${pullNumber}/requested_reviewers`, opts, "requestReviewers"),
     lookupUser: (login) => api("GET", `/users/${encodeURIComponent(login)}`, null, "lookupUser"),
     lookupTeam: (org, slug) => api("GET", `/orgs/${encodeURIComponent(org)}/teams/${encodeURIComponent(slug)}`, null, "lookupTeam"),
+    listWorkflows: (owner, repo) =>
+      api("GET", `/repos/${owner}/${repo}/actions/workflows`, null, "listWorkflows"),
+    listWorkflowRuns: (owner, repo, workflowId) =>
+      api("GET", `/repos/${owner}/${repo}/actions/workflows/${workflowId}/runs?per_page=1`, null, "listWorkflowRuns"),
   };
 }
