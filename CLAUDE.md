@@ -38,12 +38,12 @@ The `.aidos/manifest.json` in your project configures both the GitHub MCP Connec
 
 ## Migrations
 
-When modifying templates, rubrics, naming conventions, or artifact structure in `src/prompts/`, `src/templates/`, `src/rubrics/`, or `skills/`:
+When modifying templates, rubrics, naming conventions, or artifact structure in `src/prompts/`, `src/templates/`, `src/rubrics/`, `src/framework.md`, or `skills/`:
 
 1. Determine if the change affects the structure or naming of generated artifacts, or the metadata block. If yes, this is a **minor** version bump.
 2. Increment the middle segment in the repo-root `VERSION` file (e.g. `1.0.0` → `1.1.0`).
-3. Create a migration file at `src/migrations/vX.Y.Z-to-vX.Y+1.0.md` following the format in `src/migrations/README.md`. Write the instructions so an AI agent can apply them to a single artifact file at a time.
-4. Update the placeholder `**AIDOS Version:** X.Y.Z` in any affected template so new scaffolds start at the new version.
+3. Create a migration file at `src/migrations/vX.Y.Z-to-vX.Y+1.0.md` (e.g. `v1.0.0-to-v1.1.0.md`) following the format in `src/migrations/README.md`. Write the instructions so an AI agent can apply them to a single artifact file at a time.
+4. Update the `**AIDOS Version:** X.Y.Z` placeholder in any affected template to keep it in sync with `VERSION`.
 5. If the change is wording-only with no structural impact (rubric clarifications, prompt tweaks), it's a **patch** bump — increment the last segment of `VERSION`. No migration file needed.
 
 Major version bumps (e.g. `1.x.x` → `2.0.0`) are reserved for fundamental redesigns where automated migration may not be feasible. If you think you're looking at a major bump, stop and discuss it before proceeding — major bumps are not in scope for the current framework generation.
