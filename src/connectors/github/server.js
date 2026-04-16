@@ -7,7 +7,7 @@ import { createClient } from "./github.js";
 import { ensureAuth } from "./auth.js";
 import { mapGitHubError } from "./errors.js";
 import { validateManifest } from "./manifest.js";
-import { detectConflicts, buildConflictPacket } from "./merge.js";
+import { detectConflicts, buildConflictPacket, resolveConflicts } from "./merge.js";
 
 const server = new McpServer({ name: "aidos-github", version: "1.0.0" });
 
@@ -423,6 +423,28 @@ export async function publishChanges(client, owner, repo, branch, opts) {
   return { type: "push", merge_sha: mergeResult.sha, branch_deleted: true };
 }
 
+/**
+ * Resolve conflicts and complete the publish in one call.
+ *
+ * Wraps resolveConflicts (which handles staleness and new-conflict detection)
+ * and, on successful merge commit, invokes publishChanges to open the PR or
+ * push-merge per the manifest write config.
+ */
+export async function resolveConflictsAndPublish(client, owner, repo, branch, opts) {
+  const { target, strategy, reviewers, title, body, merges } = opts;
+
+  const resolveResult = await resolveConflicts(client, owner, repo, branch, target, merges);
+  if (resolveResult.status === "conflict") {
+    return resolveResult;
+  }
+
+  const publishResult = await publishChanges(client, owner, repo, branch, {
+    strategy, target, reviewers, title, body,
+  });
+
+  return { status: "resolved", commit: resolveResult.commit, ...publishResult };
+}
+
 // ---- Pre-flight ----
 
 export async function preflightPublish(client, owner, repo, branch, opts) {
@@ -712,6 +734,48 @@ server.registerTool(
       return textResult(`Merged branch ${branch} into ${target} (commit ${result.merge_sha}). Branch deleted.`);
     } catch (err) {
       return textResult(translateToolError(err, { op: "publish", target }));
+    }
+  },
+);
+
+server.registerTool(
+  "resolve",
+  {
+    title: "Resolve AIDOS Publish Conflicts",
+    description:
+      "Apply conflict resolutions returned by publish(). Takes an array of merge packets, each with the original base/theirs/yours echoed back verbatim and the user's resolved content. Validates staleness, rejects if new conflicts appeared, otherwise commits the merge and opens the PR.",
+    inputSchema: z.object({
+      repo: z.string().describe("Repository as owner/repo"),
+      branch: z.string().describe("Working branch"),
+      target: z.string().describe("Target branch (e.g. main)"),
+      strategy: z.enum(["pr", "push"]).describe("pr or push"),
+      reviewers: z.array(z.string()).default([]).describe("Reviewer logins (@ prefix for team slugs)"),
+      title: z.string().optional(),
+      body: z.string().optional(),
+      merges: z.array(
+        z.object({
+          path: z.string(),
+          original: z.object({
+            base: z.string(),
+            theirs: z.string(),
+            yours: z.string(),
+          }),
+          resolved: z.string(),
+        }),
+      ).describe("Per-file resolutions; original block must be echoed verbatim from publish()'s response"),
+    }),
+  },
+  async ({ repo, branch, target, strategy, reviewers, title, body, merges }) => {
+    const auth = await requireAuth();
+    if (!auth.authenticated) return textResult(auth.message);
+    const [owner, repoName] = repo.split("/");
+    try {
+      const result = await resolveConflictsAndPublish(auth.client, owner, repoName, branch, {
+        target, strategy, reviewers, title, body, merges,
+      });
+      return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+    } catch (err) {
+      return textResult(translateToolError(err, { op: "resolve", target }));
     }
   },
 );
