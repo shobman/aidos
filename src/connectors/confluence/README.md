@@ -208,7 +208,7 @@ If forking isn't practical, write a workflow in your consuming repo that runs th
 
 ### Tracking alignment
 
-In either option, the `**AIDOS Version:**` field in your artifact files is the source of truth for "what AIDOS version should this workflow be running". If artifacts are on v1.1.0, the workflow should be on the v1.1.0 release (or later-compatible). Keep the workflow's internal version pin in step with what your artifacts declare.
+In either option, the `**AIDOS Version:**` field in your artifact files is the source of truth for "what AIDOS version should this workflow be running". If artifacts are on v1.1.0, the workflow should be on the v1.1.0 release. Minor-version mismatches between artifacts and the workflow are not guaranteed compatible — migrate artifacts first, then bump the workflow pin. Patch-version drift is safe.
 
 ---
 
