@@ -35,7 +35,7 @@ None.
 
 The AIDOS builder skill, when it opens an artifact file whose `AIDOS Version` is behind the current framework version. It reads the relevant migration files, applies them to the file in question (only the parts that affect that file), presents a diff for user signoff, then updates the file's `AIDOS Version` metadata.
 
-The AIDOS auditor skill reads these files only to report the version gap. It does not execute migrations.
+The AIDOS auditor skill does not read these files. It reads only the `AIDOS Version` metadata field from artifact files and compares it against `VERSION` to warn users about version gaps.
 
 ## Who writes these files
 
