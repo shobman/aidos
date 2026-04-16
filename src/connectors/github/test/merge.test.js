@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { indexTree, detectConflicts, buildConflictPacket, stalenessCheck } from "../merge.js";
+import { indexTree, detectConflicts, buildConflictPacket, stalenessCheck, buildMergedTree } from "../merge.js";
 
 describe("indexTree", () => {
   it("maps blob paths to their blob SHAs", () => {
@@ -225,5 +225,112 @@ describe("stalenessCheck", () => {
     }]]);
     const stale = await stalenessCheck(client, "org", "repo", merges, detection);
     assert.deepEqual(stale, ["a.md"]);
+  });
+});
+
+describe("buildMergedTree", () => {
+  function makeDetection({ base = {}, main = {}, branch = {} }) {
+    return {
+      baseMap: new Map(Object.entries(base)),
+      mainMap: new Map(Object.entries(main)),
+      branchMap: new Map(Object.entries(branch)),
+    };
+  }
+
+  it("uses resolved content for a conflicting path", () => {
+    const det = makeDetection({
+      base:   { "x.md": "xb" },
+      main:   { "x.md": "xm" },
+      branch: { "x.md": "xr" },
+    });
+    const resolved = new Map([["x.md", { path: "x.md", resolved: "RESOLVED" }]]);
+    const entries = buildMergedTree(det, resolved);
+    const x = entries.find((e) => e.path === "x.md");
+    assert.equal(x.content, "RESOLVED");
+    assert.equal(x.sha, undefined);
+  });
+
+  it("takes main's SHA for a main-only change", () => {
+    const det = makeDetection({
+      base:   { "a.md": "a0" },
+      main:   { "a.md": "a1" },
+      branch: { "a.md": "a0" },
+    });
+    const entries = buildMergedTree(det, new Map());
+    const a = entries.find((e) => e.path === "a.md");
+    assert.equal(a.sha, "a1");
+  });
+
+  it("takes branch's SHA for a branch-only change", () => {
+    const det = makeDetection({
+      base:   { "b.md": "b0" },
+      main:   { "b.md": "b0" },
+      branch: { "b.md": "b1" },
+    });
+    const entries = buildMergedTree(det, new Map());
+    const b = entries.find((e) => e.path === "b.md");
+    assert.equal(b.sha, "b1");
+  });
+
+  it("keeps base SHA when unchanged on both", () => {
+    const det = makeDetection({
+      base:   { "u.md": "u0" },
+      main:   { "u.md": "u0" },
+      branch: { "u.md": "u0" },
+    });
+    const entries = buildMergedTree(det, new Map());
+    const u = entries.find((e) => e.path === "u.md");
+    assert.equal(u.sha, "u0");
+  });
+
+  it("includes files added only on main", () => {
+    const det = makeDetection({
+      base:   {},
+      main:   { "new.md": "n1" },
+      branch: {},
+    });
+    const entries = buildMergedTree(det, new Map());
+    const n = entries.find((e) => e.path === "new.md");
+    assert.equal(n.sha, "n1");
+  });
+
+  it("includes files added only on branch", () => {
+    const det = makeDetection({
+      base:   {},
+      main:   {},
+      branch: { "new.md": "n1" },
+    });
+    const entries = buildMergedTree(det, new Map());
+    const n = entries.find((e) => e.path === "new.md");
+    assert.equal(n.sha, "n1");
+  });
+
+  it("omits files deleted on main and unchanged on branch", () => {
+    const det = makeDetection({
+      base:   { "gone.md": "g0" },
+      main:   {},
+      branch: { "gone.md": "g0" },
+    });
+    const entries = buildMergedTree(det, new Map());
+    assert.equal(entries.find((e) => e.path === "gone.md"), undefined);
+  });
+
+  it("omits files deleted on branch and unchanged on main", () => {
+    const det = makeDetection({
+      base:   { "gone.md": "g0" },
+      main:   { "gone.md": "g0" },
+      branch: {},
+    });
+    const entries = buildMergedTree(det, new Map());
+    assert.equal(entries.find((e) => e.path === "gone.md"), undefined);
+  });
+
+  it("uses mode 100644 and type blob for all entries", () => {
+    const det = makeDetection({
+      base: { "a.md": "a0" }, main: { "a.md": "a1" }, branch: { "a.md": "a0" },
+    });
+    const [entry] = buildMergedTree(det, new Map());
+    assert.equal(entry.mode, "100644");
+    assert.equal(entry.type, "blob");
   });
 });

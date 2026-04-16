@@ -84,6 +84,56 @@ export async function stalenessCheck(client, owner, repo, mergesByPath, detectio
 }
 
 /**
+ * Produce tree entries for a two-parent merge commit.
+ * Flavor B: per-file 3-way. Conflicts resolved to branch (plus user-provided
+ * `resolved` content passed in `resolvedByPath`).
+ */
+export function buildMergedTree(detection, resolvedByPath) {
+  const { baseMap, mainMap, branchMap } = detection;
+  const entries = [];
+  const allPaths = new Set([...baseMap.keys(), ...mainMap.keys(), ...branchMap.keys()]);
+
+  for (const path of allPaths) {
+    const b = baseMap.get(path);
+    const m = mainMap.get(path);
+    const r = branchMap.get(path);
+
+    // Resolved conflict — use the content from the resolve packet.
+    if (resolvedByPath.has(path)) {
+      entries.push({ path, mode: "100644", type: "blob", content: resolvedByPath.get(path).resolved });
+      continue;
+    }
+
+    const onMain = m !== undefined;
+    const onBranch = r !== undefined;
+    const onBase = b !== undefined;
+
+    // Deleted on both → omit.
+    if (!onMain && !onBranch) continue;
+
+    // Deleted on main, unchanged on branch → omit.
+    if (!onMain && onBranch && onBase && r === b) continue;
+
+    // Deleted on branch, unchanged on main → omit.
+    if (!onBranch && onMain && onBase && m === b) continue;
+
+    // Choose the winning SHA.
+    let sha;
+    if (!onMain && onBranch) sha = r;        // branch-only retained (e.g. deleted on main but modified on branch — handled as conflict earlier; defensive)
+    else if (!onBranch && onMain) sha = m;   // main-only retained
+    else if (m === r) sha = m;               // same on both (including unchanged from base)
+    else if (b === m) sha = r;               // branch-only change
+    else if (b === r) sha = m;              // main-only change
+    else continue;                           // should be resolved via resolvedByPath; defensive skip
+
+    entries.push({ path, mode: "100644", type: "blob", sha });
+  }
+
+  entries.sort((a, b) => a.path.localeCompare(b.path));
+  return entries;
+}
+
+/**
  * Build the conflict packet the agent sees. For each conflicting path, fetch
  * base/theirs/yours content and include a rendered conflict-marker form.
  */
