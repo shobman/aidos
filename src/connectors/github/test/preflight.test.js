@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { preflightSubmit } from "../server.js";
+import { preflightPublish } from "../server.js";
 
 function mockClient(overrides = {}) {
   return {
@@ -12,10 +12,10 @@ function mockClient(overrides = {}) {
   };
 }
 
-describe("preflightSubmit", () => {
+describe("preflightPublish", () => {
   it("passes when all checks ok", async () => {
     const client = mockClient();
-    const result = await preflightSubmit(client, "org", "repo", "aidos/simon", {
+    const result = await preflightPublish(client, "org", "repo", "aidos/simon", {
       strategy: "pr", target: "main", reviewers: [],
     });
     assert.equal(result.ok, true);
@@ -29,7 +29,7 @@ describe("preflightSubmit", () => {
         return { commit: { sha: "abc" } };
       },
     });
-    const result = await preflightSubmit(client, "org", "repo", "aidos/simon", {
+    const result = await preflightPublish(client, "org", "repo", "aidos/simon", {
       strategy: "pr", target: "main", reviewers: [],
     });
     assert.equal(result.ok, false);
@@ -40,7 +40,7 @@ describe("preflightSubmit", () => {
     const client = mockClient({
       compare: async () => ({ ahead_by: 1, behind_by: 2, files: [] }),
     });
-    const result = await preflightSubmit(client, "org", "repo", "aidos/simon", {
+    const result = await preflightPublish(client, "org", "repo", "aidos/simon", {
       strategy: "pr", target: "main", reviewers: [],
     });
     assert.equal(result.ok, false);
@@ -53,7 +53,7 @@ describe("preflightSubmit", () => {
     const client = mockClient({
       lookupUser: async (login) => { lookedUp = login; return { login }; },
     });
-    const result = await preflightSubmit(client, "org", "repo", "aidos/simon", {
+    const result = await preflightPublish(client, "org", "repo", "aidos/simon", {
       strategy: "pr", target: "main", reviewers: ["alice"],
     });
     assert.equal(lookedUp, "alice");
@@ -64,7 +64,7 @@ describe("preflightSubmit", () => {
     const client = mockClient({
       lookupUser: async () => { throw new Error("GitHub API 404"); },
     });
-    const result = await preflightSubmit(client, "org", "repo", "aidos/simon", {
+    const result = await preflightPublish(client, "org", "repo", "aidos/simon", {
       strategy: "pr", target: "main", reviewers: ["bob"],
     });
     assert.equal(result.ok, false);
@@ -76,7 +76,7 @@ describe("preflightSubmit", () => {
     const client = mockClient({
       lookupTeam: async (org, slug) => { lookedUp = { org, slug }; return { slug }; },
     });
-    const result = await preflightSubmit(client, "org", "repo", "aidos/simon", {
+    const result = await preflightPublish(client, "org", "repo", "aidos/simon", {
       strategy: "pr", target: "main", reviewers: ["@reviewers"],
     });
     assert.deepEqual(lookedUp, { org: "org", slug: "reviewers" });

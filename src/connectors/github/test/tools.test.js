@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { resolveWorkspace, readArtifacts, saveArtifacts, diffBranch, submitChanges } from "../server.js";
+import { resolveWorkspace, readArtifacts, saveArtifacts, diffBranch, publishChanges } from "../server.js";
 
 function mockClient(overrides = {}) {
   const defaults = {
@@ -346,7 +346,7 @@ describe("diffBranch", () => {
   });
 });
 
-describe("submitChanges", () => {
+describe("publishChanges", () => {
   it("creates PR with reviewers when strategy is pr", async () => {
     let createPullArgs;
     let requestReviewersArgs;
@@ -362,7 +362,7 @@ describe("submitChanges", () => {
       },
     });
 
-    const result = await submitChanges(client, "org", "my-repo", "aidos/simon", {
+    const result = await publishChanges(client, "org", "my-repo", "aidos/simon", {
       strategy: "pr",
       target: "main",
       reviewers: ["alice", "bob"],
@@ -392,7 +392,7 @@ describe("submitChanges", () => {
       },
     });
 
-    const result = await submitChanges(client, "org", "my-repo", "aidos/simon", {
+    const result = await publishChanges(client, "org", "my-repo", "aidos/simon", {
       strategy: "push",
       target: "main",
       reviewers: [],
@@ -416,7 +416,7 @@ describe("submitChanges", () => {
       },
     });
 
-    await submitChanges(client, "org", "my-repo", "aidos/simon", {
+    await publishChanges(client, "org", "my-repo", "aidos/simon", {
       strategy: "pr",
       target: "main",
       reviewers: [],

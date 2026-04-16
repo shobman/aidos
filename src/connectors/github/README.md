@@ -87,7 +87,7 @@ If the file already has other MCP servers, add `aidos-github` alongside them ins
 
 1. Quit Claude Desktop completely and reopen it
 2. Start a new chat
-3. The 5 AIDOS tools should be available: `open_workspace`, `read_artifacts`, `save`, `diff`, `submit`
+3. The 5 AIDOS tools should be available: `open_workspace`, `read_artifacts`, `save`, `diff`, `publish`
 4. Ask Claude: *"Open the AIDOS workspace for `<your-org>/<your-repo>`"*
 5. The first call triggers GitHub device flow:
    - Claude shows: *"Go to https://github.com/login/device and enter code XXXX-XXXX"*
@@ -106,9 +106,9 @@ The auth flow is two-phase: the first call initiates device flow and returns the
 | `read_artifacts` | Batch read all files from a `.aidos/` folder |
 | `save` | Preview files to commit (default) or commit them (`confirm=true`) |
 | `diff` | Show changes vs target branch |
-| `submit` | Run pre-flight checks (branch exists, conflicts, reviewers) and preview; execute on `confirm=true` |
+| `publish` | Run pre-flight checks (branch exists, conflicts, reviewers) and preview; execute on `confirm=true` |
 
-`save` and `submit` are two-phase: the first call returns a preview, the second call with `confirm=true` performs the action. This gives the AI a chance to show you the plan before changes hit the repo.
+`save` and `publish` are two-phase: the first call returns a preview, the second call with `confirm=true` performs the action. This gives the AI a chance to show you the plan before changes hit the repo.
 
 ### Workflow
 
@@ -120,8 +120,8 @@ read_artifacts(...)       → loads all artifacts into AI context
 save(files, message)      → returns preview of files and commit message
 save(..., confirm=true)   → atomic commit to working branch
 diff()                    → review changes vs target branch
-submit()                  → runs pre-flight, returns check report
-submit(..., confirm=true) → create PR or merge per manifest.json write config
+publish()                 → runs pre-flight, returns check report
+publish(..., confirm=true) → create PR or merge per manifest.json write config
 ```
 
 ### Manifest configuration
@@ -238,7 +238,7 @@ You asked the AI to open the workspace again before completing the browser autho
 Check the Claude Desktop logs (Settings → Developer → Open Logs Folder) for `aidos-github` errors. Common causes: wrong path to `server.js`, `npm install` not run, invalid JSON in `claude_desktop_config.json`.
 
 **"Your changes conflict with what's on main..."**
-Someone changed `.aidos/` files on the target branch while your `aidos/{you}` branch had unmerged work. A developer needs to resolve this manually with `git checkout aidos/{you} && git merge main`. This shows up in the `submit` pre-flight report before any changes are attempted.
+Someone changed `.aidos/` files on the target branch while your `aidos/{you}` branch had unmerged work. A developer needs to resolve this manually with `git checkout aidos/{you} && git merge main`. This shows up in the `publish` pre-flight report before any changes are attempted.
 
 **Re-authenticate**
 Normally not needed — a revoked or expired token triggers a fresh device flow automatically on the next call. If you want to force it, delete `~/.aidos/auth.json` and `~/.aidos/pending_auth.json`.

@@ -395,7 +395,7 @@ export async function diffBranch(client, owner, repo, branch, target) {
  * @param {string} [opts.body] - PR body
  * @returns {{ type: "pr", number: number, url: string }|{ type: "push", merge_sha: string, branch_deleted: boolean }}
  */
-export async function submitChanges(client, owner, repo, branch, opts) {
+export async function publishChanges(client, owner, repo, branch, opts) {
   const { strategy, target, reviewers = [], title, body } = opts;
 
   if (strategy === "pr") {
@@ -424,7 +424,7 @@ export async function submitChanges(client, owner, repo, branch, opts) {
 
 // ---- Pre-flight ----
 
-export async function preflightSubmit(client, owner, repo, branch, opts) {
+export async function preflightPublish(client, owner, repo, branch, opts) {
   const { target, reviewers = [] } = opts;
   const checks = [];
 
@@ -652,11 +652,11 @@ server.registerTool(
 );
 
 server.registerTool(
-  "submit",
+  "publish",
   {
-    title: "Submit AIDOS Changes",
+    title: "Publish AIDOS Changes",
     description:
-      "Preflight and submit working branch changes via pull request (pr) or direct merge (push). Set confirm=true to execute after reviewing the preflight.",
+      "Preflight and publish working branch changes via pull request (pr) or direct merge (push). Set confirm=true to execute after reviewing the preflight.",
     inputSchema: z.object({
       repo: z.string().describe("Repository as owner/repo"),
       branch: z.string().describe("Working branch to submit"),
@@ -674,7 +674,7 @@ server.registerTool(
     const [owner, repoName] = repo.split("/");
 
     try {
-      const pre = await preflightSubmit(auth.client, owner, repoName, branch, { strategy, target, reviewers });
+      const pre = await preflightPublish(auth.client, owner, repoName, branch, { strategy, target, reviewers });
       if (!pre.ok) {
         return textResult(
           "Pre-flight found issues:\n\n" +
@@ -689,7 +689,7 @@ server.registerTool(
           "\n\nCall submit again with confirm=true to proceed."
         );
       }
-      const result = await submitChanges(auth.client, owner, repoName, branch, {
+      const result = await publishChanges(auth.client, owner, repoName, branch, {
         strategy, target, reviewers, title, body,
       });
       if (result.type === "pr") {
@@ -697,7 +697,7 @@ server.registerTool(
       }
       return textResult(`Merged branch ${branch} into ${target} (commit ${result.merge_sha}). Branch deleted.`);
     } catch (err) {
-      return textResult(translateToolError(err, { op: "submit", target }));
+      return textResult(translateToolError(err, { op: "publish", target }));
     }
   },
 );
