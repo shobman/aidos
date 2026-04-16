@@ -95,7 +95,7 @@ export function renderWorkspaceStatus(workspace) {
   if (workspace.sync_conflict) {
     lines.push("");
     lines.push(`⚠ ${workspace.sync_conflict.conflicts.length} file(s) conflict between your branch and ${workspace.default_branch}.`);
-    lines.push("  Use the publish tool to get the full conflict packet, or resolve directly via the resolve tool.");
+    lines.push("  Call publish to get the full conflict packet, then resolve to apply your choices.");
   }
 
   if (workspace.aidos_folders.length === 0) {
@@ -164,7 +164,8 @@ export async function resolveWorkspace(client, login, repoFullName, branchOverri
     try {
       await client.merge(owner, repo, branchName, defaultBranch, `Sync ${defaultBranch} into ${branchName}`);
     } catch (err) {
-      if (err.message.includes("409")) {
+      const { status } = mapGitHubError(err, "merge");
+      if (status === 409) {
         try {
           const detection = await detectConflicts(client, owner, repo, branchName, defaultBranch);
           if (detection.conflicts.length > 0) {

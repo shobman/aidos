@@ -184,7 +184,7 @@ npm install
 npm test
 ```
 
-80 tests across 15 suites. All tests are unit tests with mocked `fetch` — no GitHub API calls, no network, no auth required. Runs in under a second.
+113 tests across 24 suites. All tests are unit tests with mocked `fetch` — no GitHub API calls, no network, no auth required. Runs in under a second.
 
 ### Project structure
 
@@ -196,6 +196,7 @@ src/connectors/github/
 ├── errors.js                   ← User-facing error mapper
 ├── manifest.js                 ← Manifest schema validation (ajv)
 ├── manifest.schema.json        ← JSON Schema for .aidos/manifest.json
+├── merge.js                    ← Conflict detection, packet building, Flavor B 3-way merge orchestration
 ├── package.json                ← Node package (ESM, @modelcontextprotocol/sdk, zod, ajv)
 ├── README.md                   ← This file
 └── test/
@@ -203,7 +204,9 @@ src/connectors/github/
     ├── auth-flow.test.js       ← Two-phase device flow tests
     ├── errors.test.js          ← Error mapper tests
     ├── github.test.js          ← API client unit tests
+    ├── integration.test.js     ← End-to-end publish→conflict→resolve loop tests
     ├── manifest.test.js        ← Manifest validation tests
+    ├── merge.test.js           ← Merge logic unit tests
     ├── preflight.test.js       ← Publish pre-flight tests
     ├── rendering.test.js       ← Workspace dashboard rendering tests
     ├── resolve-repo.test.js    ← Fuzzy repo resolution tests

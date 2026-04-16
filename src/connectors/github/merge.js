@@ -163,7 +163,8 @@ export async function resolveConflicts(client, owner, repo, branch, mainBranch, 
 
   // Step 4: build tree and commit.
   const treeEntries = buildMergedTree(detection, mergesByPath);
-  const newTree = await client.createTree(owner, repo, detection.baseSha, treeEntries);
+  const branchTreeObj = await client.getTree(owner, repo, detection.branchSha);
+  const newTree = await client.createTree(owner, repo, branchTreeObj.sha, treeEntries);
   const commit = await client.createCommit(
     owner,
     repo,

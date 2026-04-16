@@ -363,7 +363,7 @@ function resolveTestClient({ baseTree, mainTree, branchTree, blobs, createTreeSh
     calls,
     compare: async () => ({ merge_base_commit: { sha: "base-sha" } }),
     getBranch: async (o, r, b) => ({ commit: { sha: b === "main" ? "main-sha" : "branch-sha" } }),
-    getTree: async (o, r, sha) => trees[sha] || { tree: [] },
+    getTree: async (o, r, sha) => ({ sha, ...(trees[sha] || { tree: [] }) }),
     getBlob: async (o, r, sha) => ({
       content: Buffer.from(blobs[sha] || "").toString("base64"),
       encoding: "base64",
@@ -407,6 +407,9 @@ describe("resolveConflicts", () => {
     assert.equal(client.calls.createCommit.length, 1);
     assert.deepEqual(client.calls.createCommit[0].parents, ["branch-sha", "main-sha"]);
     assert.equal(client.calls.updateRef[0].sha, "merge-commit-sha");
+    assert.equal(client.calls.createTree.length, 1);
+    assert.equal(client.calls.createTree[0].baseTreeSha, "branch-sha",
+      "base_tree must be the branch tree SHA, not the merge base commit SHA");
   });
 
   it("returns a fresh conflict packet when original.theirs drifted", async () => {
