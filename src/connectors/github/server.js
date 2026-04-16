@@ -92,6 +92,12 @@ export function renderWorkspaceStatus(workspace) {
     lines.push("Continue where you left off, or say 'start fresh' to reset the branch.");
   }
 
+  if (workspace.sync_conflict) {
+    lines.push("");
+    lines.push(`⚠ ${workspace.sync_conflict.conflicts.length} file(s) conflict between your branch and ${workspace.default_branch}.`);
+    lines.push("  Use the publish tool to get the full conflict packet, or resolve directly via the resolve tool.");
+  }
+
   if (workspace.aidos_folders.length === 0) {
     lines.push("");
     lines.push("No .aidos/ folders found in this repo. Want me to create one? Where should it go?");
@@ -147,19 +153,27 @@ export async function resolveWorkspace(client, login, repoFullName, branchOverri
 
   const branchName = branchOverride || `aidos/${login}`;
   let branchCreated = false;
+  let syncConflict = null;
 
   // Check if user branch exists
   let userBranchSha;
   try {
     const existing = await client.getBranch(owner, repo, branchName);
     userBranchSha = existing.commit.sha;
-    // Branch exists — sync by merging default branch into user branch
+    // Branch exists — sync by merging default branch into user branch.
     try {
       await client.merge(owner, repo, branchName, defaultBranch, `Sync ${defaultBranch} into ${branchName}`);
     } catch (err) {
-      // 409 = conflict — already up to date is acceptable too (merge returns null on 204, no throw)
-      if (!err.message.includes("409")) {
-        // Not a known benign error — still continue, sync is best-effort
+      if (err.message.includes("409")) {
+        try {
+          const detection = await detectConflicts(client, owner, repo, branchName, defaultBranch);
+          if (detection.conflicts.length > 0) {
+            syncConflict = await buildConflictPacket(client, owner, repo, detection);
+          }
+        } catch (inner) {
+          console.error(`sync conflict probe failed: ${inner.message}`);
+        }
+      } else {
         console.error(`Merge warning: ${err.message}`);
       }
     }
@@ -274,6 +288,7 @@ export async function resolveWorkspace(client, login, repoFullName, branchOverri
     aidos_folders: aidosFolders,
     work_in_progress: workInProgress,
     publish_status: publishStatus,
+    sync_conflict: syncConflict,
   };
 }
 

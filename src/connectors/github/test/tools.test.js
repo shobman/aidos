@@ -193,6 +193,37 @@ describe("resolveWorkspace", () => {
     const paths = result.aidos_folders.map((f) => f.path);
     assert.deepEqual(paths, [".aidos"], "only the real .aidos/ folder should be discovered");
   });
+
+  it("attaches a conflict packet when sync merge hits 409", async () => {
+    const client = mockClient({
+      getBranch: async (o, r, b) => ({ commit: { sha: b === "main" ? "m1" : "b1" }, name: b }),
+      merge: async () => { throw new Error("GitHub API 409: merge conflict"); },
+      compare: async () => ({
+        merge_base_commit: { sha: "base-sha" },
+        ahead_by: 1, behind_by: 2,
+      }),
+      getTree: async (o, r, sha) => {
+        if (sha === "base-sha") return { tree: [{ path: "x.md", type: "blob", sha: "x0" }]};
+        if (sha === "m1")       return { tree: [{ path: "x.md", type: "blob", sha: "xm" }]};
+        if (sha === "b1")       return { tree: [
+          { path: "x.md", type: "blob", sha: "xb" },
+          { path: ".aidos/manifest.json", type: "blob", sha: "bbb" },
+        ]};
+        return { tree: [] };
+      },
+      getBlob: async (o, r, sha) => {
+        const map = { "x0": "BASE", "xm": "MAIN", "xb": "BRANCH" };
+        if (map[sha]) return { content: Buffer.from(map[sha]).toString("base64"), encoding: "base64" };
+        return { content: Buffer.from(JSON.stringify({ write: { strategy: "pr", target: "main" } })).toString("base64"), encoding: "base64" };
+      },
+    });
+
+    const result = await resolveWorkspace(client, "simon", "org/my-repo", null);
+
+    assert.ok(result.sync_conflict, "workspace must include sync_conflict when 409 hit");
+    assert.equal(result.sync_conflict.status, "conflict");
+    assert.equal(result.sync_conflict.conflicts[0].path, "x.md");
+  });
 });
 
 describe("readArtifacts", () => {
