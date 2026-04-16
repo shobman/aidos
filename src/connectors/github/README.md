@@ -2,7 +2,7 @@
 
 A local MCP server that gives AI agents (Claude Desktop, Copilot) read/write access to `.aidos/` folders in GitHub repos.
 
-Lets non-technical users author AIDOS artifacts via AI without ever touching Git. The server runs as a subprocess of your MCP client and exposes 5 tools that the AI uses to resolve repos, read artifacts, save changes, review diffs, and submit PRs.
+Lets non-technical users author AIDOS artifacts via AI without ever touching Git. The server runs as a subprocess of your MCP client and exposes 6 tools that the AI uses to resolve repos, read artifacts, save changes, review diffs, publish PRs, and resolve merge conflicts.
 
 ---
 
@@ -87,7 +87,7 @@ If the file already has other MCP servers, add `aidos-github` alongside them ins
 
 1. Quit Claude Desktop completely and reopen it
 2. Start a new chat
-3. The 5 AIDOS tools should be available: `open_workspace`, `read_artifacts`, `save`, `diff`, `publish`
+3. The 6 AIDOS tools should be available: `open_workspace`, `read_artifacts`, `save`, `diff`, `publish`, `resolve`
 4. Ask Claude: *"Open the AIDOS workspace for `<your-org>/<your-repo>`"*
 5. The first call triggers GitHub device flow:
    - Claude shows: *"Go to https://github.com/login/device and enter code XXXX-XXXX"*

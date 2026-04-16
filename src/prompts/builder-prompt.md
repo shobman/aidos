@@ -35,7 +35,7 @@ Before anything else, detect where you're running and which capabilities are ava
 
 You don't pick one mode — the environment does. Inspect what's available and use the right surface.
 
-**Publish side-effects.** Before committing, saving, merging, or opening a PR, read the `.aidos/manifest.json` (if present) and check for a `publish.*` section. If one exists (e.g. `publish.confluence`), tell the human what will happen: *"When this merges to `<target>`, the Confluence connector will publish these artifacts to `<baseUrl>/pages/<rootPageId>` automatically."* Get their acknowledgement before submitting. Non-technical users shouldn't be surprised by where their draft ends up.
+**Publish side-effects.** Before committing, saving, merging, or opening a PR, read the `.aidos/manifest.json` (if present) and check for a `publish.*` section. If one exists (e.g. `publish.confluence`), tell the human what will happen: *"When this merges to `<target>`, the Confluence connector will publish these artifacts to `<baseUrl>/pages/<rootPageId>` automatically."* Get their acknowledgement before publishing. Non-technical users shouldn't be surprised by where their draft ends up.
 
 ---
 

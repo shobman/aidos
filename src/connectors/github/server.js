@@ -64,7 +64,7 @@ export function renderManifestStatus(folder) {
   }
   const w = folder.write || {};
   if (w.strategy) lines.push(`  ✓ write.strategy: ${w.strategy} (PRs will target ${w.target})`);
-  else lines.push("  ⚠ No write config — Submit will default to PR against main.");
+  else lines.push("  ⚠ No write config — Publish will default to PR against main.");
   if (w.reviewers && w.reviewers.length) lines.push(`  ✓ write.reviewers: ${w.reviewers.join(", ")}`);
   if (folder.publish_configured) {
     lines.push("  ✓ publish.confluence configured");
@@ -398,12 +398,12 @@ export async function diffBranch(client, owner, repo, branch, target) {
 }
 
 /**
- * Submit changes via PR or direct push/merge.
+ * Publish changes via PR or direct push/merge.
  *
  * @param {object} client - GitHub API client
  * @param {string} owner - Repository owner
  * @param {string} repo - Repository name
- * @param {string} branch - Working branch to submit
+ * @param {string} branch - Working branch to publish
  * @param {object} opts
  * @param {string} opts.strategy - "pr" or "push"
  * @param {string} opts.target - Target branch (e.g. "main")
@@ -731,7 +731,7 @@ server.registerTool(
         return textResult(
           "Pre-flight found issues:\n\n" +
           pre.checks.map((c) => `${c.pass ? "✓" : "✗"} ${c.message}`).join("\n") +
-          "\n\nFix these before submitting."
+          "\n\nFix these before publishing."
         );
       }
       if (!confirm) {
