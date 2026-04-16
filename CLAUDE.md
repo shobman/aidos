@@ -36,6 +36,49 @@ separate session.
 
 The `.aidos/manifest.json` in your project configures both the GitHub MCP Connector's `write` strategy and the Confluence publish target (if used). See each connector's README for the manifest fields.
 
+## Development workflow
+
+Multi-step work (new tools, connector changes, framework features) follows a consistent flow. Future sessions should respect this cadence:
+
+1. **Brainstorm → spec → plan.** Use `superpowers:brainstorming` to turn an idea into a design doc at `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`, then `superpowers:writing-plans` for an implementation plan at `docs/superpowers/plans/YYYY-MM-DD-<topic>.md`. Both directories are gitignored — they're local planning artifacts, not shipped.
+
+2. **Worktree for feature work.** Use `superpowers:using-git-worktrees` to set up an isolated worktree on a branch named `feature/<topic>` (e.g. `feature/github-connector-edit-tool`). Worktrees live as siblings to the main clone.
+
+3. **Execute with review checkpoints.** `superpowers:subagent-driven-development` is the preferred executor — fresh implementer subagent per plan task, spec-compliance review first, then code-quality review, fix loops until approved. Final code-reviewer subagent over the whole branch diff before pushing.
+
+4. **Push and open a PR.** `git push -u origin feature/<topic>`, then `gh pr create` with summary + test plan. Do **not** merge yet.
+
+5. **Wait for user approval.** Merging requires an explicit "yes, merge it" from the user. Never merge proactively, even after clean reviews. This is a hard rule — the user is the authoritative gate.
+
+6. **Merge the PR.** Once approved, merge with a merge commit (not squash) so the step-by-step commits remain readable:
+   ```bash
+   gh pr merge <N> --merge
+   ```
+
+7. **Tag the release.** After pulling merged main, create an **annotated** tag on the merge commit:
+   ```bash
+   git checkout main && git pull --ff-only
+   git tag -a vX.Y.Z -m "Short description of the release"
+   git push origin vX.Y.Z
+   ```
+   Always annotated (`-a -m`), never lightweight — we want author, date, and message captured in the tag object.
+
+8. **Clean up in order.**
+   ```bash
+   # 1. Confirm everything is on main (should print nothing):
+   git log main..origin/feature/<topic> --oneline
+
+   # 2. Delete remote feature branch:
+   git push origin --delete feature/<topic>
+
+   # 3. Remove worktree:
+   git worktree remove ../aidos-<topic>
+
+   # 4. Delete local feature branch (safe -d, not -D):
+   git branch -d feature/<topic>
+   ```
+   If `git branch -d` refuses, something is unmerged — investigate, don't `-D` to force.
+
 ## Migrations
 
 When modifying templates, rubrics, naming conventions, or artifact structure in `src/prompts/`, `src/templates/`, `src/rubrics/`, `src/framework.md`, or `skills/`:
@@ -48,4 +91,4 @@ When modifying templates, rubrics, naming conventions, or artifact structure in 
 
 Major version bumps (e.g. `1.x.x` → `2.0.0`) are reserved for fundamental redesigns where automated migration may not be feasible. If you think you're looking at a major bump, stop and discuss it before proceeding — major bumps are not in scope for the current framework generation.
 
-After a version bump, tag the repo: `git tag vX.Y.Z`.
+After a version bump, tag the repo with an annotated tag (see "Development workflow" → step 7).
