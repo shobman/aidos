@@ -659,9 +659,9 @@ server.registerTool(
       "Preflight and publish working branch changes via pull request (pr) or direct merge (push). Set confirm=true to execute after reviewing the preflight.",
     inputSchema: z.object({
       repo: z.string().describe("Repository as owner/repo"),
-      branch: z.string().describe("Working branch to submit"),
+      branch: z.string().describe("Working branch to publish"),
       target: z.string().describe("Target branch (e.g. main)"),
-      strategy: z.enum(["pr", "push"]).describe("Submission strategy: pr or push"),
+      strategy: z.enum(["pr", "push"]).describe("Publication strategy: pr or push"),
       reviewers: z.array(z.string()).default([]).describe("Reviewer logins (@ prefix for team slugs)"),
       title: z.string().optional().describe("PR title (pr strategy only)"),
       body: z.string().optional().describe("PR body (pr strategy only)"),
@@ -684,9 +684,9 @@ server.registerTool(
       }
       if (!confirm) {
         return textResult(
-          "Pre-flight check for submit:\n\n" +
+          "Pre-flight check for publish:\n\n" +
           pre.checks.map((c) => `✓ ${c.message}`).join("\n") +
-          "\n\nCall submit again with confirm=true to proceed."
+          "\n\nCall publish again with confirm=true to proceed."
         );
       }
       const result = await publishChanges(auth.client, owner, repoName, branch, {
