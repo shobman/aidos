@@ -171,6 +171,14 @@ If your Confluence space has existing pages with common names, add a `titleTempl
 | `(CW) %title%` | (CW) Problem |
 | `CW.Core - %title%` | CW.Core - Problem |
 
+### Duplicate titles
+
+Confluence requires page titles to be **unique within a space**. If an AIDOS artifact's derived title collides with an existing page elsewhere in the target space (not under the AIDOS root), the connector renames the new page by appending a numeric suffix: `Title`, then `Title (1)`, then `Title (2)`.
+
+The connector caps this at **3 total attempts** and hard-fails on the 4th duplicate. Each rename logs a `WARNING:` line in the publish output. If you see these warnings, rename the source file (or the conflicting Confluence pages) so titles are unique — the cap exists specifically to force the issue to be resolved rather than silently accumulating duplicates.
+
+On re-publish the connector checks the same suffix ladder, so previously-renamed pages are updated in place rather than creating a new copy each run.
+
 ### Multiple publish targets
 
 To add more targets later, add another key under `publish`:
