@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { MAX_TITLE_ATTEMPTS, suffixedTitle, isDuplicateTitleError, createWithRetryOnDuplicate } from "./title-conflict.js";
+import { MAX_TITLE_ATTEMPTS, suffixedTitle, isDuplicateTitleError, createWithRetryOnDuplicate, findOwnedPageByTitle } from "./title-conflict.js";
 
 test("MAX_TITLE_ATTEMPTS is 3", () => {
   assert.equal(MAX_TITLE_ATTEMPTS, 3);
@@ -132,4 +132,48 @@ test("createWithRetryOnDuplicate bubbles non-duplicate errors without retry", as
     /500/,
   );
   assert.deepEqual(attempts, ["Issues Log"]);
+});
+
+test("findOwnedPageByTitle returns the plain title match when present", async () => {
+  const lookups = [];
+  const doFind = async (title) => {
+    lookups.push(title);
+    return title === "Issues Log" ? { id: "a", title } : null;
+  };
+  const out = await findOwnedPageByTitle("Issues Log", doFind);
+  assert.deepEqual(lookups, ["Issues Log"]);
+  assert.deepEqual(out, { id: "a", title: "Issues Log" });
+});
+
+test("findOwnedPageByTitle falls through to (1) when plain is missing", async () => {
+  const lookups = [];
+  const doFind = async (title) => {
+    lookups.push(title);
+    return title === "Issues Log (1)" ? { id: "b", title } : null;
+  };
+  const out = await findOwnedPageByTitle("Issues Log", doFind);
+  assert.deepEqual(lookups, ["Issues Log", "Issues Log (1)"]);
+  assert.deepEqual(out, { id: "b", title: "Issues Log (1)" });
+});
+
+test("findOwnedPageByTitle falls through to (2)", async () => {
+  const lookups = [];
+  const doFind = async (title) => {
+    lookups.push(title);
+    return title === "Issues Log (2)" ? { id: "c", title } : null;
+  };
+  const out = await findOwnedPageByTitle("Issues Log", doFind);
+  assert.deepEqual(lookups, ["Issues Log", "Issues Log (1)", "Issues Log (2)"]);
+  assert.deepEqual(out, { id: "c", title: "Issues Log (2)" });
+});
+
+test("findOwnedPageByTitle returns null when no variant matches within cap", async () => {
+  const lookups = [];
+  const doFind = async (title) => {
+    lookups.push(title);
+    return null;
+  };
+  const out = await findOwnedPageByTitle("Issues Log", doFind);
+  assert.equal(out, null);
+  assert.deepEqual(lookups, ["Issues Log", "Issues Log (1)", "Issues Log (2)"]);
 });

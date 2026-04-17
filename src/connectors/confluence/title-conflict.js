@@ -60,3 +60,21 @@ export async function createWithRetryOnDuplicate(baseTitle, doCreate) {
     }
   }
 }
+
+/**
+ * Try to find a page the connector previously created, tolerant of numeric
+ * suffix renames. Walks the same ladder as createWithRetryOnDuplicate — plain,
+ * (1), (2), up to MAX_TITLE_ATTEMPTS — and returns the first hit.
+ *
+ * @param {string} baseTitle
+ * @param {(title: string) => Promise<{id: string, title: string} | null>} doFind
+ * @returns {Promise<{id: string, title: string} | null>}
+ */
+export async function findOwnedPageByTitle(baseTitle, doFind) {
+  for (let attempt = 0; attempt < MAX_TITLE_ATTEMPTS; attempt++) {
+    const title = suffixedTitle(baseTitle, attempt);
+    const page = await doFind(title);
+    if (page) return page;
+  }
+  return null;
+}
