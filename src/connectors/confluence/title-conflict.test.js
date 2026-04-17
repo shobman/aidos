@@ -51,3 +51,8 @@ test("isDuplicateTitleError handles non-Error inputs safely", () => {
   assert.equal(isDuplicateTitleError({}), false);
   assert.equal(isDuplicateTitleError("A page with this title already exists"), false);
 });
+
+test("isDuplicateTitleError is case-insensitive", () => {
+  const err = new Error("A PAGE WITH THIS TITLE ALREADY EXISTS");
+  assert.equal(isDuplicateTitleError(err), true);
+});

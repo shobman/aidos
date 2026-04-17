@@ -24,9 +24,9 @@ export function isDuplicateTitleError(err) {
   if (!err || typeof err !== "object" || typeof err.message !== "string") {
     return false;
   }
-  const msg = err.message;
+  const msg = err.message.toLowerCase();
   return (
-    msg.includes("A page with this title already exists") ||
-    msg.includes("A page already exists with the same TITLE")
+    msg.includes("a page with this title already exists") ||
+    msg.includes("a page already exists with the same title")
   );
 }
