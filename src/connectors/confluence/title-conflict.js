@@ -7,3 +7,11 @@
 // resolved at the source rather than accumulating silently.
 
 export const MAX_TITLE_ATTEMPTS = 3;
+
+/**
+ * Build the title to try on attempt N of a create loop.
+ * Attempt 0 is the plain title; attempts 1+ append " (N)".
+ */
+export function suffixedTitle(baseTitle, attempt) {
+  return attempt === 0 ? baseTitle : `${baseTitle} (${attempt})`;
+}
