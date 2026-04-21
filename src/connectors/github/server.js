@@ -72,6 +72,9 @@ export function renderManifestStatus(folder) {
     } else {
       lines.push("  • no rolling PR yet — it will open on the first publish");
     }
+    if (folder.staging_workflow_present === false) {
+      lines.push("  ⚠ aidos-staging.yml workflow not installed — publishes will succeed to the staging branch, but no rolling PR will be maintained until you install the workflow (copy from src/connectors/github/workflows/aidos-staging.yml into .github/workflows/)");
+    }
   } else if (w.strategy) {
     lines.push(`  ✓ write.strategy: ${w.strategy} (PRs will target ${w.target})`);
   } else {
@@ -270,9 +273,22 @@ export async function resolveWorkspace(client, login, repoFullName, branchOverri
     }),
   );
 
-  // Ensure staging branches exist and look up rolling PR for any folder with strategy: "staged".
+  // Probe once: is aidos-staging.yml installed?
+  let stagingWorkflowPresent = false;
+  try {
+    const wfs = await client.listWorkflows(owner, repo);
+    const wfList = wfs.workflows || [];
+    stagingWorkflowPresent = wfList.some((w) =>
+      /aidos-staging/i.test(w.path || "") || /aidos[-_ ]*staging/i.test(w.name || "")
+    );
+  } catch (err) {
+    console.error(`Workflow probe failed: ${err.message}`);
+  }
+
+  // Ensure staging branches exist and look up rolling PR + workflow state for every folder.
   const stagingBranchesEnsured = new Set();
   for (const folder of aidosFolders) {
+    folder.staging_workflow_present = stagingWorkflowPresent;
     if (folder.write?.strategy !== "staged") {
       folder.rolling_pr = null;
       continue;

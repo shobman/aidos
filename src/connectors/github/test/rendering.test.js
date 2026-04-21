@@ -165,3 +165,43 @@ describe("renderManifestStatus — staged strategy", () => {
     assert.match(output, /staging: docs-staging → main/);
   });
 });
+
+describe("renderManifestStatus — aidos-staging workflow warning", () => {
+  it("warns when strategy is staged and workflow is absent", () => {
+    const folder = {
+      manifest_present: true,
+      manifest_errors: [],
+      write: { strategy: "staged", target: "main", staging_branch: "aidos" },
+      publish_configured: true,
+      rolling_pr: null,
+      staging_workflow_present: false,
+    };
+    const output = renderManifestStatus(folder);
+    assert.match(output, /aidos-staging\.yml.*not installed/i);
+  });
+
+  it("does not warn when workflow is present", () => {
+    const folder = {
+      manifest_present: true,
+      manifest_errors: [],
+      write: { strategy: "staged", target: "main", staging_branch: "aidos" },
+      publish_configured: true,
+      rolling_pr: null,
+      staging_workflow_present: true,
+    };
+    const output = renderManifestStatus(folder);
+    assert.doesNotMatch(output, /aidos-staging\.yml/i);
+  });
+
+  it("does not warn for non-staged folders even if workflow is absent", () => {
+    const folder = {
+      manifest_present: true,
+      manifest_errors: [],
+      write: { strategy: "pr", target: "main" },
+      publish_configured: false,
+      staging_workflow_present: false,
+    };
+    const output = renderManifestStatus(folder);
+    assert.doesNotMatch(output, /aidos-staging/i);
+  });
+});
