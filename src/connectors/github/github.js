@@ -86,5 +86,13 @@ export function createClient(token, fetchFn = fetch) {
       api("GET", `/repos/${owner}/${repo}/actions/workflows`, null, "listWorkflows"),
     listWorkflowRuns: (owner, repo, workflowId) =>
       api("GET", `/repos/${owner}/${repo}/actions/workflows/${workflowId}/runs?per_page=1`, null, "listWorkflowRuns"),
+    listPulls: (owner, repo, opts = {}) => {
+      const params = new URLSearchParams();
+      if (opts.state) params.set("state", opts.state);
+      if (opts.head) params.set("head", opts.head);
+      if (opts.base) params.set("base", opts.base);
+      params.set("per_page", String(opts.perPage || 10));
+      return api("GET", `/repos/${owner}/${repo}/pulls?${params.toString()}`, null, "listPulls");
+    },
   };
 }
