@@ -460,19 +460,19 @@ export async function diffBranch(client, owner, repo, branch, target) {
 }
 
 /**
- * Publish changes via PR or direct push/merge.
+ * Publish changes via PR, direct push/merge, or staged merge.
  *
  * @param {object} client - GitHub API client
  * @param {string} owner - Repository owner
  * @param {string} repo - Repository name
  * @param {string} branch - Working branch to publish
  * @param {object} opts
- * @param {string} opts.strategy - "pr" or "push"
- * @param {string} opts.target - Target branch (e.g. "main")
- * @param {string[]} [opts.reviewers] - Reviewer logins (@ prefix treated as team)
- * @param {string} [opts.title] - PR title
- * @param {string} [opts.body] - PR body
- * @returns {{ type: "pr", number: number, url: string }|{ type: "push", merge_sha: string, branch_deleted: boolean }}
+ * @param {string} opts.strategy - "pr" | "push" | "staged"
+ * @param {string} opts.target - Target branch. For pr/push: final merge target (e.g. main). For staged: staging branch (e.g. aidos)
+ * @param {string[]} [opts.reviewers] - Reviewer logins (@ prefix treated as team). Ignored for staged — the shipped workflow requests reviewers on the rolling PR
+ * @param {string} [opts.title] - PR title (pr strategy only)
+ * @param {string} [opts.body] - PR body (pr strategy only)
+ * @returns {{ type: "pr", number: number, url: string }|{ type: "push", merge_sha: string, branch_deleted: boolean }|{ type: "staged", merge_sha: string, branch_deleted: boolean }}
  */
 export async function publishChanges(client, owner, repo, branch, opts) {
   const { strategy, target, reviewers = [], title, body } = opts;
@@ -492,6 +492,12 @@ export async function publishChanges(client, owner, repo, branch, opts) {
     }
 
     return { type: "pr", number: pr.number, url: pr.html_url };
+  }
+
+  if (strategy === "staged") {
+    const mergeResult = await client.merge(owner, repo, target, branch);
+    await client.deleteRef(owner, repo, branch);
+    return { type: "staged", merge_sha: mergeResult.sha, branch_deleted: true };
   }
 
   // strategy === "push"

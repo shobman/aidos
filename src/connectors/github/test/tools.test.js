@@ -663,3 +663,64 @@ describe("editArtifacts", () => {
     assert.match(client.calls.createCommit[0].msg, /^\[aidos\] Fix typo$/);
   });
 });
+
+describe("publishChanges — staged strategy", () => {
+  it("merges working branch into staging branch and deletes working branch", async () => {
+    let mergedInto = null;
+    let mergedFrom = null;
+    let deletedBranch = null;
+    let createPullCalled = false;
+
+    const client = mockClient({
+      merge: async (owner, repo, base, head) => {
+        mergedInto = base;
+        mergedFrom = head;
+        return { sha: "merge-abc" };
+      },
+      deleteRef: async (owner, repo, branch) => {
+        deletedBranch = branch;
+        return null;
+      },
+      createPull: async () => {
+        createPullCalled = true;
+        return { number: 99, html_url: "should-not-be-called" };
+      },
+    });
+
+    const result = await publishChanges(client, "org", "repo", "aidos/simon", {
+      strategy: "staged",
+      target: "aidos",
+    });
+
+    assert.equal(result.type, "staged");
+    assert.equal(result.merge_sha, "merge-abc");
+    assert.equal(result.branch_deleted, true);
+    assert.equal(mergedInto, "aidos");
+    assert.equal(mergedFrom, "aidos/simon");
+    assert.equal(deletedBranch, "aidos/simon");
+    assert.equal(createPullCalled, false, "staged strategy must not open a PR — workflow owns that");
+  });
+
+  it("ignores reviewers, title, body for staged (those apply to the rolling PR, not each publish)", async () => {
+    let requestedReviewers = false;
+    const client = mockClient({
+      merge: async () => ({ sha: "ok" }),
+      deleteRef: async () => null,
+      requestReviewers: async () => {
+        requestedReviewers = true;
+        return null;
+      },
+    });
+
+    const result = await publishChanges(client, "org", "repo", "aidos/simon", {
+      strategy: "staged",
+      target: "aidos",
+      reviewers: ["@team"],
+      title: "ignored",
+      body: "ignored",
+    });
+
+    assert.equal(result.type, "staged");
+    assert.equal(requestedReviewers, false);
+  });
+});
