@@ -850,7 +850,7 @@ server.registerTool(
     inputSchema: z.object({
       repo: z.string().describe("Repository as owner/repo"),
       branch: z.string().describe("Working branch to publish"),
-      target: z.string().describe("Publish destination. Under strategy 'pr' or 'push': the final destination branch (e.g. 'main'). Under strategy 'staged': the staging branch (e.g. 'aidos'). Read from the manifest accordingly — manifest.write.staging_branch for 'staged', manifest.write.target otherwise."),
+      target: z.string().describe("Publish destination. Under strategy 'pr' or 'push': the final destination branch (e.g. 'main'). Under strategy 'staged': the staging branch (e.g. 'aidos/staged'). Read from the manifest accordingly — manifest.write.staging_branch for 'staged', manifest.write.target otherwise."),
       strategy: z.enum(["pr", "push", "staged"]).describe("Publication strategy: pr, push, or staged"),
       reviewers: z.array(z.string()).default([]).describe("Reviewer logins (@ prefix for team slugs). Ignored under strategy: 'staged' — reviewers apply to the rolling PR (use CODEOWNERS or branch protection)"),
       title: z.string().optional().describe("PR title (pr strategy only)"),
@@ -904,7 +904,7 @@ server.registerTool(
     inputSchema: z.object({
       repo: z.string().describe("Repository as owner/repo"),
       branch: z.string().describe("Working branch"),
-      target: z.string().describe("Publish destination. Under strategy 'pr' or 'push': the final destination branch (e.g. 'main'). Under strategy 'staged': the staging branch (e.g. 'aidos'). Read from the manifest accordingly — manifest.write.staging_branch for 'staged', manifest.write.target otherwise."),
+      target: z.string().describe("Publish destination. Under strategy 'pr' or 'push': the final destination branch (e.g. 'main'). Under strategy 'staged': the staging branch (e.g. 'aidos/staged'). Read from the manifest accordingly — manifest.write.staging_branch for 'staged', manifest.write.target otherwise."),
       strategy: z.enum(["pr", "push", "staged"]).describe("Publication strategy: pr, push, or staged"),
       reviewers: z.array(z.string()).default([]).describe("Reviewer logins (@ prefix for team slugs). Ignored under strategy: 'staged' — reviewers apply to the rolling PR (use CODEOWNERS or branch protection)"),
       title: z.string().optional(),
