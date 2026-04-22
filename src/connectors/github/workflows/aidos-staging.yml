@@ -1,0 +1,195 @@
+name: AIDOS Staging Branch Lifecycle
+
+# Maintains the rolling aidos->main PR, resets aidos after a merge, and syncs
+# aidos with main when main advances independently. Install one copy of this
+# file per repo that uses strategy: staged.
+#
+# To customise branch names (if your manifest uses a non-default staging_branch
+# or target), edit the env block below AND the branch filters in each trigger.
+
+env:
+  STAGING_BRANCH: aidos
+  TARGET_BRANCH: main
+  ROLLING_PR_TITLE: "AIDOS artifact updates (rolling)"
+
+on:
+  push:
+    branches:
+      - aidos    # must match STAGING_BRANCH
+      - main     # must match TARGET_BRANCH
+  pull_request:
+    types: [closed]
+    branches:
+      - main     # must match TARGET_BRANCH
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  ensure-rolling-pr:
+    # Fires on push to the staging branch.
+    if: github.event_name == 'push' && github.ref == format('refs/heads/{0}', env.STAGING_BRANCH)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ensure rolling PR exists
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const staging = process.env.STAGING_BRANCH;
+            const target = process.env.TARGET_BRANCH;
+            const title = process.env.ROLLING_PR_TITLE;
+
+            const existing = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: "open",
+              head: `${context.repo.owner}:${staging}`,
+              base: target,
+              per_page: 5,
+            });
+
+            if (existing.data.length > 0) {
+              core.info(`Rolling PR #${existing.data[0].number} already exists — no-op.`);
+              return;
+            }
+
+            const body = [
+              "**AIDOS rolling PR.** This PR accumulates `.aidos/` artifact changes published via the AIDOS GitHub MCP connector's `staged` write strategy.",
+              "",
+              "Merging signals that engineering is picking up this batch for implementation. The `" + staging + "` branch will be reset to `" + target + "` automatically after merge.",
+              "",
+              "See `src/connectors/github/README.md` for the staging branch model.",
+            ].join("\n");
+
+            try {
+              const pr = await github.rest.pulls.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                head: staging,
+                base: target,
+                title,
+                body,
+              });
+              core.info(`Created rolling PR #${pr.data.number}: ${pr.data.html_url}`);
+            } catch (err) {
+              if (err.status === 422 && /pull request already exists/i.test(err.message || "")) {
+                core.info("Race with another job — PR now exists. No-op.");
+                return;
+              }
+              throw err;
+            }
+
+  reset-aidos-on-merge:
+    # Fires on rolling PR merge (pull_request closed & merged, head=staging, base=target).
+    if: >
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.head.ref == env.STAGING_BRANCH &&
+      github.event.pull_request.base.ref == env.TARGET_BRANCH
+    runs-on: ubuntu-latest
+    steps:
+      - name: Hard-reset staging branch to target tip
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const staging = process.env.STAGING_BRANCH;
+            const target = process.env.TARGET_BRANCH;
+
+            const targetRef = await github.rest.git.getRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: `heads/${target}`,
+            });
+            const targetSha = targetRef.data.object.sha;
+
+            await github.rest.git.updateRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: `heads/${staging}`,
+              sha: targetSha,
+              force: true,
+            });
+            core.info(`Reset ${staging} to ${target} tip (${targetSha.slice(0, 7)}).`);
+
+  sync-staging-from-main:
+    # Fires on push to target. Creates staging if missing; fast-forwards if clean;
+    # merges target into staging if staging has pending publishes.
+    if: github.event_name == 'push' && github.ref == format('refs/heads/{0}', env.TARGET_BRANCH)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sync staging with target
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const staging = process.env.STAGING_BRANCH;
+            const target = process.env.TARGET_BRANCH;
+
+            // 1. Ensure staging exists.
+            const targetRef = await github.rest.git.getRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: `heads/${target}`,
+            });
+            const targetSha = targetRef.data.object.sha;
+
+            try {
+              await github.rest.git.getRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: `heads/${staging}`,
+              });
+            } catch (err) {
+              if (err.status !== 404) throw err;
+              core.info(`${staging} does not exist — creating from ${target}.`);
+              await github.rest.git.createRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: `refs/heads/${staging}`,
+                sha: targetSha,
+              });
+              return;
+            }
+
+            // 2. Compare staging to target.
+            const cmp = await github.rest.repos.compareCommits({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              base: staging,
+              head: target,
+            });
+            // cmp.data.ahead_by = how many commits target has that staging does not.
+            // cmp.data.behind_by = how many commits staging has that target does not.
+            const aheadOfStaging = cmp.data.ahead_by || 0;
+            const stagingAhead = cmp.data.behind_by || 0;
+
+            if (aheadOfStaging === 0) {
+              core.info(`${staging} is up to date with ${target} — no-op.`);
+              return;
+            }
+
+            if (stagingAhead === 0) {
+              // Staging has nothing unique — fast-forward.
+              await github.rest.git.updateRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: `heads/${staging}`,
+                sha: targetSha,
+              });
+              core.info(`Fast-forwarded ${staging} to ${target}.`);
+              return;
+            }
+
+            // 3. Staging has pending publishes — merge target into staging.
+            try {
+              const merge = await github.rest.repos.merge({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                base: staging,
+                head: target,
+                commit_message: `Sync ${target} into ${staging}`,
+              });
+              core.info(`Merged ${target} into ${staging} (${merge.data.sha.slice(0, 7)}).`);
+            } catch (err) {
+              core.setFailed(`Failed to merge ${target} into ${staging}: ${err.message}. Resolve conflicts manually on ${staging}.`);
+            }

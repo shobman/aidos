@@ -25,6 +25,7 @@ function mockClient(overrides = {}) {
     compare: async () => ({ ahead_by: 0, files: [] }),
     listWorkflows: async () => ({ workflows: [] }),
     listWorkflowRuns: async () => ({ workflow_runs: [] }),
+    listPulls: async () => [],
   };
   return { ...defaults, ...overrides };
 }
@@ -661,5 +662,193 @@ describe("editArtifacts", () => {
     ], "Fix typo");
 
     assert.match(client.calls.createCommit[0].msg, /^\[aidos\] Fix typo$/);
+  });
+});
+
+describe("publishChanges — staged strategy", () => {
+  it("merges working branch into staging branch and deletes working branch", async () => {
+    let mergedInto = null;
+    let mergedFrom = null;
+    let deletedBranch = null;
+    let createPullCalled = false;
+
+    const client = mockClient({
+      merge: async (owner, repo, base, head) => {
+        mergedInto = base;
+        mergedFrom = head;
+        return { sha: "merge-abc" };
+      },
+      deleteRef: async (owner, repo, branch) => {
+        deletedBranch = branch;
+        return null;
+      },
+      createPull: async () => {
+        createPullCalled = true;
+        return { number: 99, html_url: "should-not-be-called" };
+      },
+    });
+
+    const result = await publishChanges(client, "org", "repo", "aidos/simon", {
+      strategy: "staged",
+      target: "aidos",
+    });
+
+    assert.equal(result.type, "staged");
+    assert.equal(result.merge_sha, "merge-abc");
+    assert.equal(result.branch_deleted, true);
+    assert.equal(mergedInto, "aidos");
+    assert.equal(mergedFrom, "aidos/simon");
+    assert.equal(deletedBranch, "aidos/simon");
+    assert.equal(createPullCalled, false, "staged strategy must not open a PR — workflow owns that");
+  });
+
+  it("ignores reviewers, title, body for staged (those apply to the rolling PR, not each publish)", async () => {
+    let requestedReviewers = false;
+    const client = mockClient({
+      merge: async () => ({ sha: "ok" }),
+      deleteRef: async () => null,
+      requestReviewers: async () => {
+        requestedReviewers = true;
+        return null;
+      },
+    });
+
+    const result = await publishChanges(client, "org", "repo", "aidos/simon", {
+      strategy: "staged",
+      target: "aidos",
+      reviewers: ["@team"],
+      title: "ignored",
+      body: "ignored",
+    });
+
+    assert.equal(result.type, "staged");
+    assert.equal(requestedReviewers, false);
+  });
+});
+
+describe("resolveWorkspace — staged folders", () => {
+  it("creates staging branch from default when missing", async () => {
+    const created = [];
+    const stagedManifest = { write: { strategy: "staged", target: "main", staging_branch: "aidos" } };
+
+    const client = mockClient({
+      getBranch: async (owner, repo, branch) => {
+        if (branch === "aidos/simon") throw new Error("GitHub API 404");
+        if (branch === "aidos") throw new Error("GitHub API 404");
+        return { commit: { sha: "default-tip" }, name: branch };
+      },
+      createBranch: async (owner, repo, name, sha) => {
+        created.push({ name, sha });
+        return { ref: `refs/heads/${name}` };
+      },
+      getTree: async () => ({
+        sha: "root",
+        tree: [
+          { path: ".aidos/problem.md", type: "blob", sha: "aaa" },
+          { path: ".aidos/manifest.json", type: "blob", sha: "bbb" },
+        ],
+      }),
+      getBlob: async () => ({
+        content: Buffer.from(JSON.stringify(stagedManifest)).toString("base64"),
+        encoding: "base64",
+      }),
+    });
+
+    await resolveWorkspace(client, "simon", "org/my-repo", null);
+
+    assert.ok(created.some((c) => c.name === "aidos/simon"), "user branch should be created");
+    assert.ok(created.some((c) => c.name === "aidos"), "staging branch should be created");
+  });
+
+  it("leaves staging branch alone when it already exists", async () => {
+    const created = [];
+    const stagedManifest = { write: { strategy: "staged", target: "main", staging_branch: "aidos" } };
+
+    const client = mockClient({
+      getBranch: async (owner, repo, branch) => {
+        if (branch === "aidos/simon") throw new Error("GitHub API 404");
+        // staging and default both exist
+        return { commit: { sha: "some-sha" }, name: branch };
+      },
+      createBranch: async (owner, repo, name, sha) => {
+        created.push({ name, sha });
+        return { ref: `refs/heads/${name}` };
+      },
+      getTree: async () => ({
+        sha: "root",
+        tree: [
+          { path: ".aidos/manifest.json", type: "blob", sha: "bbb" },
+        ],
+      }),
+      getBlob: async () => ({
+        content: Buffer.from(JSON.stringify(stagedManifest)).toString("base64"),
+        encoding: "base64",
+      }),
+    });
+
+    await resolveWorkspace(client, "simon", "org/my-repo", null);
+
+    assert.ok(created.some((c) => c.name === "aidos/simon"), "user branch should still be created");
+    assert.ok(!created.some((c) => c.name === "aidos"), "staging branch should NOT be recreated when it exists");
+  });
+
+  it("does nothing extra for non-staged folders", async () => {
+    const created = [];
+    const prManifest = { write: { strategy: "pr", target: "main" } };
+
+    const client = mockClient({
+      getBranch: async (owner, repo, branch) => {
+        if (branch === "aidos/simon") throw new Error("GitHub API 404");
+        return { commit: { sha: "default-tip" }, name: branch };
+      },
+      createBranch: async (owner, repo, name, sha) => {
+        created.push({ name, sha });
+        return { ref: `refs/heads/${name}` };
+      },
+      getTree: async () => ({
+        sha: "root",
+        tree: [
+          { path: ".aidos/manifest.json", type: "blob", sha: "bbb" },
+        ],
+      }),
+      getBlob: async () => ({
+        content: Buffer.from(JSON.stringify(prManifest)).toString("base64"),
+        encoding: "base64",
+      }),
+    });
+
+    await resolveWorkspace(client, "simon", "org/my-repo", null);
+
+    assert.equal(created.length, 1, "only user branch should be created");
+    assert.equal(created[0].name, "aidos/simon");
+  });
+
+  it("uses default staging_branch name 'aidos' when manifest omits it", async () => {
+    const created = [];
+    const stagedNoName = { write: { strategy: "staged", target: "main" } };
+
+    const client = mockClient({
+      getBranch: async (owner, repo, branch) => {
+        if (branch === "aidos/simon") throw new Error("GitHub API 404");
+        if (branch === "aidos") throw new Error("GitHub API 404");
+        return { commit: { sha: "default-tip" }, name: branch };
+      },
+      createBranch: async (owner, repo, name, sha) => {
+        created.push({ name, sha });
+        return { ref: `refs/heads/${name}` };
+      },
+      getTree: async () => ({
+        sha: "root",
+        tree: [{ path: ".aidos/manifest.json", type: "blob", sha: "bbb" }],
+      }),
+      getBlob: async () => ({
+        content: Buffer.from(JSON.stringify(stagedNoName)).toString("base64"),
+        encoding: "base64",
+      }),
+    });
+
+    await resolveWorkspace(client, "simon", "org/my-repo", null);
+
+    assert.ok(created.some((c) => c.name === "aidos"), "default name 'aidos' should be used");
   });
 });

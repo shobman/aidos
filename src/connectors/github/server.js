@@ -10,7 +10,7 @@ import { validateManifest } from "./manifest.js";
 import { detectConflicts, buildConflictPacket, resolveConflicts } from "./merge.js";
 import { applyEdits } from "./edit.js";
 
-const server = new McpServer({ name: "aidos-github", version: "1.0.2" });
+const server = new McpServer({ name: "aidos-github", version: "1.1.0" });
 
 const session = {
   client: null,
@@ -64,8 +64,22 @@ export function renderManifestStatus(folder) {
     return lines.join("\n");
   }
   const w = folder.write || {};
-  if (w.strategy) lines.push(`  ✓ write.strategy: ${w.strategy} (PRs will target ${w.target})`);
-  else lines.push("  ⚠ No write config — Publish will default to PR against main.");
+  if (w.strategy === "staged") {
+    const stagingName = w.staging_branch || "aidos";
+    lines.push(`  ✓ write.strategy: staged (staging: ${stagingName} → ${w.target})`);
+    if (folder.rolling_pr) {
+      lines.push(`  ✓ rolling PR #${folder.rolling_pr.number} (${folder.rolling_pr.state}): ${folder.rolling_pr.url}`);
+    } else {
+      lines.push("  • no rolling PR yet — it will open on the first publish");
+    }
+    if (folder.staging_workflow_present === false) {
+      lines.push("  ⚠ aidos-staging.yml workflow not installed — publishes will succeed to the staging branch, but no rolling PR will be maintained until you install the workflow (copy from src/connectors/github/workflows/aidos-staging.yml into .github/workflows/)");
+    }
+  } else if (w.strategy) {
+    lines.push(`  ✓ write.strategy: ${w.strategy} (PRs will target ${w.target})`);
+  } else {
+    lines.push("  ⚠ No write config — Publish will default to PR against main.");
+  }
   if (w.reviewers && w.reviewers.length) lines.push(`  ✓ write.reviewers: ${w.reviewers.join(", ")}`);
   if (folder.publish_configured) {
     lines.push("  ✓ publish.confluence configured");
@@ -259,13 +273,72 @@ export async function resolveWorkspace(client, login, repoFullName, branchOverri
     }),
   );
 
+  // Probe once: fetch all workflows and derive (a) staging-workflow presence (b) publish-status candidate
+  let wfList = [];
+  try {
+    const wfs = await client.listWorkflows(owner, repo);
+    wfList = wfs.workflows || [];
+  } catch (err) {
+    console.error(`Workflow probe failed: ${err.message}`);
+  }
+  const stagingWorkflowPresent = wfList.some((w) =>
+    /aidos-staging/i.test(w.path || "") || /aidos[-_ ]*staging/i.test(w.name || "")
+  );
+
+  // Ensure staging branches exist and look up rolling PR + workflow state for every folder.
+  const stagingBranchesEnsured = new Set();
+  for (const folder of aidosFolders) {
+    folder.staging_workflow_present = stagingWorkflowPresent;
+    if (folder.write?.strategy !== "staged") {
+      folder.rolling_pr = null;
+      continue;
+    }
+    const stagingBranchName = folder.write.staging_branch || "aidos";
+    const targetBranchName = folder.write.target || defaultBranch;
+
+    if (!stagingBranchesEnsured.has(stagingBranchName)) {
+      stagingBranchesEnsured.add(stagingBranchName);
+      try {
+        await client.getBranch(owner, repo, stagingBranchName);
+      } catch (err) {
+        if (/404/.test(err.message)) {
+          try {
+            const base = await client.getBranch(owner, repo, defaultBranch);
+            await client.createBranch(owner, repo, stagingBranchName, base.commit.sha);
+          } catch (createErr) {
+            console.error(`Failed to create staging branch ${stagingBranchName}: ${createErr.message}`);
+          }
+        } else {
+          console.error(`Staging branch probe failed for ${stagingBranchName}: ${err.message}`);
+        }
+      }
+    }
+
+    try {
+      const prs = await client.listPulls(owner, repo, {
+        state: "open",
+        head: `${owner}:${stagingBranchName}`,
+        base: targetBranchName,
+      });
+      const pr = (prs || [])[0];
+      folder.rolling_pr = pr
+        ? { number: pr.number, url: pr.html_url, state: pr.state }
+        : null;
+    } catch (err) {
+      console.error(`Rolling PR lookup failed for ${stagingBranchName}: ${err.message}`);
+      folder.rolling_pr = null;
+    }
+  }
+
   let publishStatus = null;
   try {
-    const workflows = await client.listWorkflows(owner, repo);
-    const wfList = workflows.workflows || [];
-    const candidate = wfList.find((w) =>
-      /aidos|confluence|publish/i.test(w.name || "") || /aidos|confluence|publish/i.test(w.path || "")
-    );
+    // Exclude aidos-staging.yml — that's the rolling-PR maintainer, not a publish workflow.
+    const candidate = wfList.find((w) => {
+      const path = w.path || "";
+      const name = w.name || "";
+      if (/aidos-staging/i.test(path)) return false;
+      return /confluence|publish/i.test(name) || /confluence|publish/i.test(path);
+    });
     if (candidate) {
       const runs = await client.listWorkflowRuns(owner, repo, candidate.id);
       const latest = (runs.workflow_runs || [])[0];
@@ -460,19 +533,19 @@ export async function diffBranch(client, owner, repo, branch, target) {
 }
 
 /**
- * Publish changes via PR or direct push/merge.
+ * Publish changes via PR, direct push/merge, or staged merge.
  *
  * @param {object} client - GitHub API client
  * @param {string} owner - Repository owner
  * @param {string} repo - Repository name
  * @param {string} branch - Working branch to publish
  * @param {object} opts
- * @param {string} opts.strategy - "pr" or "push"
- * @param {string} opts.target - Target branch (e.g. "main")
- * @param {string[]} [opts.reviewers] - Reviewer logins (@ prefix treated as team)
- * @param {string} [opts.title] - PR title
- * @param {string} [opts.body] - PR body
- * @returns {{ type: "pr", number: number, url: string }|{ type: "push", merge_sha: string, branch_deleted: boolean }}
+ * @param {string} opts.strategy - "pr" | "push" | "staged"
+ * @param {string} opts.target - Target branch. For pr/push: final merge target (e.g. main). For staged: staging branch (e.g. aidos)
+ * @param {string[]} [opts.reviewers] - Reviewer logins (@ prefix treated as team). Ignored for staged — the shipped workflow requests reviewers on the rolling PR
+ * @param {string} [opts.title] - PR title (pr strategy only)
+ * @param {string} [opts.body] - PR body (pr strategy only)
+ * @returns {{ type: "pr", number: number, url: string }|{ type: "push", merge_sha: string, branch_deleted: boolean }|{ type: "staged", merge_sha: string, branch_deleted: boolean }}
  */
 export async function publishChanges(client, owner, repo, branch, opts) {
   const { strategy, target, reviewers = [], title, body } = opts;
@@ -492,6 +565,12 @@ export async function publishChanges(client, owner, repo, branch, opts) {
     }
 
     return { type: "pr", number: pr.number, url: pr.html_url };
+  }
+
+  if (strategy === "staged") {
+    const mergeResult = await client.merge(owner, repo, target, branch);
+    await client.deleteRef(owner, repo, branch);
+    return { type: "staged", merge_sha: mergeResult.sha, branch_deleted: true };
   }
 
   // strategy === "push"
@@ -767,13 +846,13 @@ server.registerTool(
   {
     title: "Publish AIDOS Changes",
     description:
-      "Preflight and publish working branch changes via pull request (pr) or direct merge (push). If main has diverged and the merge would conflict, returns a structured conflict packet with base/theirs/yours content per file — follow up with the resolve tool after walking the user through the conflicts. Set confirm=true to execute after reviewing the preflight.",
+      "Preflight and publish working branch changes. Strategy options: 'pr' (open a pull request to target), 'push' (direct merge into target), or 'staged' (merge into a persistent staging branch that has a rolling PR to the final target — the AI skill reads the manifest and passes target=staging_branch in this mode). If the target branch has diverged and the merge would conflict, returns a structured conflict packet with base/theirs/yours content per file — follow up with the resolve tool after walking the user through the conflicts. Set confirm=true to execute after reviewing the preflight.",
     inputSchema: z.object({
       repo: z.string().describe("Repository as owner/repo"),
       branch: z.string().describe("Working branch to publish"),
       target: z.string().describe("Target branch (e.g. main)"),
-      strategy: z.enum(["pr", "push"]).describe("Publication strategy: pr or push"),
-      reviewers: z.array(z.string()).default([]).describe("Reviewer logins (@ prefix for team slugs)"),
+      strategy: z.enum(["pr", "push", "staged"]).describe("Publication strategy: pr, push, or staged"),
+      reviewers: z.array(z.string()).default([]).describe("Reviewer logins (@ prefix for team slugs). Ignored under strategy: 'staged' — reviewers apply to the rolling PR (use CODEOWNERS or branch protection)"),
       title: z.string().optional().describe("PR title (pr strategy only)"),
       body: z.string().optional().describe("PR body (pr strategy only)"),
       confirm: z.boolean().default(false).describe("Set true to execute after reviewing preflight"),
@@ -821,13 +900,13 @@ server.registerTool(
   {
     title: "Resolve AIDOS Publish Conflicts",
     description:
-      "Apply conflict resolutions returned by publish(). Takes an array of merge packets, each with the original base/theirs/yours echoed back verbatim from publish's response and the user's resolved content. Validates staleness (rejects if main's content for a conflicting file changed since the packet was issued), checks for newly-conflicting paths not in the incoming merges, and on success commits a two-parent merge commit and opens the PR. If main drifted or a new conflict appeared, returns a fresh conflict packet — present the new state to the user and call resolve again with updated resolutions.",
+      "Apply conflict resolutions returned by publish(). Takes an array of merge packets, each with the original base/theirs/yours echoed back verbatim from publish's response and the user's resolved content. Validates staleness (rejects if the target's content for a conflicting file changed since the packet was issued), checks for newly-conflicting paths not in the incoming merges, and on success commits a two-parent merge commit and performs the publish action (pr, push, or staged). If the target drifted or a new conflict appeared, returns a fresh conflict packet — present the new state to the user and call resolve again with updated resolutions.",
     inputSchema: z.object({
       repo: z.string().describe("Repository as owner/repo"),
       branch: z.string().describe("Working branch"),
       target: z.string().describe("Target branch (e.g. main)"),
-      strategy: z.enum(["pr", "push"]).describe("pr or push"),
-      reviewers: z.array(z.string()).default([]).describe("Reviewer logins (@ prefix for team slugs)"),
+      strategy: z.enum(["pr", "push", "staged"]).describe("Publication strategy: pr, push, or staged"),
+      reviewers: z.array(z.string()).default([]).describe("Reviewer logins (@ prefix for team slugs). Ignored under strategy: 'staged' — reviewers apply to the rolling PR (use CODEOWNERS or branch protection)"),
       title: z.string().optional(),
       body: z.string().optional(),
       merges: z.array(
