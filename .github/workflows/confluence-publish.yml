@@ -55,8 +55,9 @@ jobs:
           if [ -n "$INPUT_PATH" ]; then
             MANIFESTS="$INPUT_PATH"
           else
-            MANIFESTS=$(find . -path '*/.aidos/manifest.json' \
-              -not -path './.aidos-connector/*' | sort)
+            MANIFESTS=$(find . \
+              \( -path './.git' -o -path './.aidos-connector' -o -path '*/node_modules' \) -prune \
+              -o -type f -path '*/.aidos/manifest.json' -print | sort)
           fi
 
           if [ -z "$MANIFESTS" ]; then

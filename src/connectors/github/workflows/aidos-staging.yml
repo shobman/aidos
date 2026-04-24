@@ -54,6 +54,19 @@ jobs:
               return;
             }
 
+            // Skip when staging has no commits ahead of target — e.g. right after
+            // reset-aidos-on-merge force-resets staging to target's tip.
+            const cmp = await github.rest.repos.compareCommits({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              base: target,
+              head: staging,
+            });
+            if ((cmp.data.ahead_by || 0) === 0) {
+              core.info(`${staging} has no commits ahead of ${target} — nothing to PR. No-op.`);
+              return;
+            }
+
             const body = [
               "**AIDOS rolling PR.** This PR accumulates `.aidos/` artifact changes published via the AIDOS GitHub MCP connector's `staged` write strategy.",
               "",
@@ -75,6 +88,10 @@ jobs:
             } catch (err) {
               if (err.status === 422 && /pull request already exists/i.test(err.message || "")) {
                 core.info("Race with another job — PR now exists. No-op.");
+                return;
+              }
+              if (err.status === 422 && /no commits between/i.test(err.message || "")) {
+                core.info(`${staging} drifted even with ${target} between compare and create — no-op.`);
                 return;
               }
               throw err;
