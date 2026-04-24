@@ -32,7 +32,9 @@ on:
 
 jobs:
   publish:
-    uses: shobman/aidos/.github/workflows/confluence-publish.yml@v1.0.0
+    # Pin to the full commit SHA of the AIDOS release you want. Tag shown in the
+    # trailing comment for human readability.
+    uses: shobman/aidos/.github/workflows/confluence-publish.yml@<full-40-char-sha>  # v1.0.5
     with:
       manifest-path: .aidos/manifest.json
       dry-run: ${{ github.event_name == 'pull_request' }}
@@ -41,7 +43,7 @@ jobs:
       confluence_token: ${{ secrets.CONFLUENCE_TOKEN }}
 ```
 
-> **Pin a tag, not `@main` or `@sha`.** AIDOS releases are tagged using semver (`vX.Y.Z`). Pinning to a tag means your workflow stays on a known-good version and only moves when you bump the pin. The tag to use is the current AIDOS framework version — see the `VERSION` file at the root of the AIDOS repo.
+> **Pin a full commit SHA, not a tag or `@main`.** Tags can be moved after publication; SHAs can't, so SHA pinning is the supply-chain-safe choice for third-party reusable workflows. Look up the SHA for the AIDOS release you want (`git ls-remote https://github.com/shobman/aidos refs/tags/v1.0.5`) and paste it into `uses:` with the tag as a trailing comment. The current AIDOS framework version is in the `VERSION` file at the root of the AIDOS repo.
 
 PRs dry-run (preview in the Actions log), merges to main publish for real.
 
@@ -198,17 +200,17 @@ Validate your manifest against `manifest.schema.json` in this directory.
 
 ## Org-Restricted Environments
 
-Some organisations block all public GitHub Actions by policy. If your org's workflow policy rejects `uses: shobman/aidos/...@v1.0.0`, you have two options:
+Some organisations block all public GitHub Actions by policy. If your org's workflow policy rejects `uses: shobman/aidos/...`, you have two options:
 
 ### Option 1 — Vendor the workflow
 
 Fork the AIDOS repo into your org, or copy `.github/workflows/confluence-publish.yml` and `src/connectors/confluence/` into an internal repo. Reference it by internal path instead:
 
 ```yaml
-    uses: your-org/internal-aidos/.github/workflows/confluence-publish.yml@v1.0.0
+    uses: your-org/internal-aidos/.github/workflows/confluence-publish.yml@<full-40-char-sha>  # v1.0.5
 ```
 
-Tag your internal fork with the same version as the upstream AIDOS release it's based on. When upstream cuts a new release, pull the changes in and re-tag.
+Tag your internal fork with the same version as the upstream AIDOS release it's based on, and pin `uses:` to a full SHA on the internal fork (tag in a trailing comment). When upstream cuts a new release, pull the changes in, re-tag, and bump the SHA in consuming repos.
 
 ### Option 2 — Inline the workflow
 
