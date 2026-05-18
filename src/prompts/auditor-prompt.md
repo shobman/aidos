@@ -232,6 +232,7 @@ Check the Issues and Decisions tables in the artifact:
 - **Decision quality** — do decisions have rationale? Are dates recorded? Could someone new understand why a decision was made?
 - **ESCALATE sync** — if an ESCALATE issue exists in the artifact but not in the project Issues Log, that's a Bug. Both must be in sync.
 - **Overflow Log hygiene** — at project closure, PARKED items remaining in the Overflow Log are a Bug. Overflow items tagged for a destination artifact that now exists but weren't harvested are a Bug. Properly managed overflow (items with statuses and tagged destinations) does not affect audit results — overflow is scope discipline, not a deficiency.
+- **Inclusion-test compliance.** Apply the Issue inclusion test to every OPEN/SOCIALISE/ESCALATE entry: *"if its status changed, would the artifact change?"* If no, classify as a Bug (must remove — belongs in tickets/kickoff, not the artifact). Apply the Decision inclusion test to every Decisions-table entry: *"if this had gone the other way, would the artifact change?"* If no, classify as a Bug (baseline framings and procedural defaults aren't Decisions).
 
 ---
 

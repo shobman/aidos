@@ -399,6 +399,22 @@ The goal is that a stakeholder can make an informed call without re-reading the 
 
 **Processing external inputs.** When the human brings outcomes from meetings, stakeholder decisions, or external feedback, update the relevant artifact's Issues and Decisions tables and sync to the Issues Log. The artifact is the source of truth — meeting minutes are input, not record.
 
+## Issue and Decision Inclusion Tests
+
+Not every uncertainty is an Issue. Not every choice is a Decision. Apply these tests before adding entries:
+
+**Issue inclusion test:** *"If the status of this issue changed, would the artifact change?"* If no, it's not an Issue.
+- Sprint mechanics (owners, dates, sequencing) → not Issues. Push to tickets, kickoff messages, or planning tools.
+- Resource allocation → not an Issue.
+- Execution coordination → not an Issue.
+
+**Decision inclusion test:** *"If this decision had gone the other way, would the artifact change?"* If no, it's not a Decision worth recording.
+- Baseline framings ("this is an Epic", "we have N pillars") → not Decisions. They just are.
+- Procedural defaults ("we publish to Confluence") → not Decisions.
+- Uncontested naming → not Decisions.
+
+When in doubt, ask the human: "is this an Issue/Decision that earns its place in the artifact, or is it sprint mechanics that belong elsewhere?"
+
 ---
 
 ## Scope Discipline
