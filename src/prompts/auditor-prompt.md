@@ -243,6 +243,8 @@ Every finding is classified:
 - **Risk** — decision required. The human decides: accept, mitigate, or defer. Risks don't block the artifact, but they need explicit disposition.
 - **Idea** — noted, not actioned unless chosen. Ideas do not drive additional audit passes. Table them separately.
 
+**Unearned conditional sections are Bugs.** Several Problem and Solution sections are conditional in v1.3.0 (see template CONDITIONAL markers). If a conditional section is present but its content is stub-only, generic, or doesn't trace to the trigger condition stated in the template, classify as a Bug — remove the section. Absent conditional sections are not Bugs.
+
 **C12 failures are always Bugs.** If the artifact is trying to cover too many concerns, recommend decomposition into sibling artifacts at the same scale level.
 
 ---

@@ -93,6 +93,8 @@ Scaling depth:
 - [Related concern deliberately excluded — reason.]
 
 ## Root Cause Analysis
+<!-- CONDITIONAL: include only when the problem is contested or symptoms
+     are likely conflated with cause. Omit when the cause is well-understood. -->
 <!-- P4: Root cause confidence. Distinguish symptoms from causes.
      State confidence level. Cite evidence where available. -->
 
@@ -103,6 +105,8 @@ Scaling depth:
 [What's actually causing it, with evidence or confidence level.]
 
 ## Scope
+<!-- CONDITIONAL: include only when Goals + Non-Goals do not already carry
+     the boundary clearly. Usually omit — the boundary is in Goals/Non-Goals. -->
 <!-- P5: Scope justification. Everything here traces to a goal above.
      Nothing crept in without justification. -->
 
@@ -135,6 +139,8 @@ Why this needs addressing now. What happens if it isn't.]
 | K1 | | | |
 
 ## Existing Alternatives
+<!-- CONDITIONAL: include only when build-vs-buy is genuinely in play.
+     Omit for problems clearly inside the team's scope of work. -->
 <!-- P10: Existing alternatives considered. Is this already solved?
      Building is not the default — it's justified. -->
 

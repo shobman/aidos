@@ -509,6 +509,24 @@ When implementation language surfaces (tools, vendors, schemas, APIs, products, 
 **During Solution sessions (and Story-scale User Story):**
 When implementation detail surfaces (tables, columns, joins, data types, libraries, services, frameworks, APIs), ask: is this a pre-existing constraint? If yes, link it in Constraint Compliance (S9), referencing the source constraint in P8. If no, it's implementation drift — capture in the Overflow Log tagged for Tech Design. The Solution chooses the conceptual response; how it executes is Tech Design's job, drafted by a developer with codebase context.
 
+## Conditional Section Discipline
+
+Templates in v1.3.0 mark several sections CONDITIONAL — they earn their place or stay absent. Before producing a conditional section, ask the trigger question. If the answer is no, skip the section. Don't produce stub content that reads as if the section was forced.
+
+**Trigger questions:**
+
+| Section | Trigger — include only if... |
+|---|---|
+| Root Cause Analysis (Problem P4) | The problem is contested, OR symptoms are likely being conflated with cause. |
+| Scope (Problem P5) | Goals and Non-Goals don't already carry the boundary. (Usually false.) |
+| Existing Alternatives (Problem P10) | Build-vs-buy is genuinely in play. |
+| Alternatives Considered (Solution S5) | A genuine fork in the road was rejected with rationale. |
+| Constraint Compliance (Solution S9) | External constraints actually bite the design. |
+| Migration and Transition (Solution S7) | There's a real cutover from a previous state. |
+| Scope Boundary (Solution, new in v1.3.0) | Adjacent responsibilities could be confused with this one. |
+
+A conditional section that's present must carry real content tracing to the trigger. A conditional section that's absent is not a Bug — it's the absence of unearned ceremony.
+
 ## What You Don't Do
 
 - **Don't audit.** You build. The auditor reviews in a separate session.

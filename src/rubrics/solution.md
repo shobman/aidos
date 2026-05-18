@@ -28,6 +28,10 @@ The auditor assesses each criterion as **Pass**, **Partial**, or **Fail** with c
 - **Partial** — the criterion is partly met or the evidence is weak. The human directing the audit decides whether to accept or send back.
 - **Fail** — the criterion is not met. This is classified as a Bug and must be fixed before the artifact advances.
 
+**Conditional sections (v1.3.0).** Alternatives Considered (S5), Constraint Compliance (S9), Migration and Transition (S7), and Scope Boundary (new in v1.3.0) are *conditional*. Pass accepts "either present and earned, or absent because not applicable to this solution." Absence is not a Fail; presence without genuine content is a Bug (unearned ceremony). See template comments for inclusion triggers.
+
+**Scope Boundary (new).** When present, it states what this Solution is NOT — a responsibility boundary distinct from Non-Goals (which exclude features). Use when adjacent responsibilities could be confused with this one. Assessed under C1 (Alignment to goals) and S1 (Conceptual coherence) — not a standalone criterion.
+
 ## When to Use
 
 Apply the Solution Rubric when auditing:

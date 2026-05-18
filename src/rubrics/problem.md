@@ -29,6 +29,8 @@ The auditor assesses each criterion as **Pass**, **Partial**, or **Fail** with c
 - **Partial** — the criterion is partly met or the evidence is weak. The human directing the audit decides whether to accept or send back.
 - **Fail** — the criterion is not met. This is classified as a Bug and must be fixed before the artifact advances.
 
+**Conditional sections (v1.3.0).** Root Cause Analysis (P4), Scope (P5), and Existing Alternatives (P10) are *conditional*. Pass accepts "either present and earned, or absent because not applicable to this problem." Absence of a conditional section is not a Fail. Presence of a conditional section without genuine content is a Bug (unearned ceremony). See template comments for inclusion triggers.
+
 ## When to Use
 
 Apply the Problem Rubric when auditing:
