@@ -275,6 +275,21 @@ AIDOS is a thinking-and-assurance layer. It does not replace:
 
 It sits alongside those things. The artifacts feed into your planning tools. The rubrics complement your engineering standards. The audit process works with whatever review culture you already have.
 
+### What AIDOS Does NOT Contain
+
+Even when a session feels like it should produce one of these, push it elsewhere. They have homes that aren't AIDOS artifacts.
+
+| Thing | Lives where |
+|---|---|
+| Sprint shape (owners, dates, branch strategy, parallel execution) | Tickets / sprint planning / channel kickoff message |
+| Project management (timelines, capacity, dependencies, status reports, RAID logs) | Your project tool — Jira, Linear, ADO, etc. |
+| Implementation design (schemas, function shapes, library choices, deployment infra) | Coding session (Super Powers plan/spec phase) |
+| Test code | Coding session, satisfying the AC |
+| Daily progress notes | Channel updates, standups |
+| Code review feedback | PRs |
+
+AIDOS captures the thinking BEFORE the code and the assurance ALONGSIDE it. It does not duplicate sprint mechanics, project management ceremony, or implementation work. If a session is drifting into these, name it and push it out.
+
 ---
 
 ## For AI Agents
