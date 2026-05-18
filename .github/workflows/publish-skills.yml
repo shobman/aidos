@@ -38,10 +38,11 @@ jobs:
       # Assemble builder skill
       - name: Assemble builder skill
         run: |
-          mkdir -p _staging/aidos-builder/{rubrics,templates}
+          mkdir -p _staging/aidos-builder/{rubrics,templates,migrations}
           cp skills/builder/SKILL.md _staging/aidos-builder/
           cp src/prompts/builder-prompt.md _staging/aidos-builder/
           cp src/framework.md _staging/aidos-builder/
+          cp VERSION _staging/aidos-builder/
           cp src/rubrics/core.md _staging/aidos-builder/rubrics/
           cp src/templates/problem.md _staging/aidos-builder/templates/
           cp src/templates/solution.md _staging/aidos-builder/templates/
@@ -50,8 +51,9 @@ jobs:
           cp src/templates/issues-log.md _staging/aidos-builder/templates/
           cp src/templates/overflow-log.md _staging/aidos-builder/templates/
           cp src/templates/meeting-minutes.md _staging/aidos-builder/templates/
+          cp -r src/migrations/. _staging/aidos-builder/migrations/
           cp CONTRIBUTING.md _staging/aidos-builder/
-          sed -i 's|`src/rubrics/|`rubrics/|g; s|`src/templates/|`templates/|g; s|`src/framework\.md`|`framework.md`|g' _staging/aidos-builder/builder-prompt.md
+          sed -i 's|`src/rubrics/|`rubrics/|g; s|`src/templates/|`templates/|g; s|`src/framework\.md`|`framework.md`|g; s|`src/migrations/|`migrations/|g' _staging/aidos-builder/builder-prompt.md
 
       # Assemble auditor skill
       - name: Assemble auditor skill
@@ -60,13 +62,14 @@ jobs:
           cp skills/auditor/SKILL.md _staging/aidos-auditor/
           cp src/prompts/auditor-prompt.md _staging/aidos-auditor/
           cp src/framework.md _staging/aidos-auditor/
+          cp VERSION _staging/aidos-auditor/
           cp src/rubrics/core.md _staging/aidos-auditor/rubrics/
           cp src/rubrics/problem.md _staging/aidos-auditor/rubrics/
           cp src/rubrics/solution.md _staging/aidos-auditor/rubrics/
           cp src/rubrics/tech-design.md _staging/aidos-auditor/rubrics/
           cp src/rubrics/testing.md _staging/aidos-auditor/rubrics/
           cp CONTRIBUTING.md _staging/aidos-auditor/
-          sed -i 's|`src/rubrics/|`rubrics/|g; s|`src/templates/|`templates/|g; s|`src/framework\.md`|`framework.md`|g' _staging/aidos-auditor/auditor-prompt.md
+          sed -i 's|`src/rubrics/|`rubrics/|g; s|`src/templates/|`templates/|g; s|`src/framework\.md`|`framework.md`|g; s|`src/migrations/|`migrations/|g' _staging/aidos-auditor/auditor-prompt.md
 
       # Create ZIPs with folder at root
       - name: Create ZIP files
