@@ -17,7 +17,8 @@ Discipline-specific criteria for assessing Solution artifacts through the **Anal
 | S7 | Migration and transition | The path from the current state to the proposed solution is described. If users, data, or processes need to move, the transition approach is explicit. Cutover strategy, backward compatibility, and rollback are addressed where relevant. The solution doesn't assume a clean start. |
 | S8 | Actor identification | Every person, team, system, or role that interacts with the solution is identified with their specific interactions described. The artifact is clear about who does what — not just what the system does. Where human action is required, frequency and skill expectations are stated. |
 | S9 | Constraint compliance | The solution demonstrably respects the constraints identified in the Problem artifact — regulatory, technical, organisational, budget, and timeline. Where a constraint can't be fully met, the gap is acknowledged and the mitigation or trade-off is explicit. |
-| S10 | Implementation neutrality | The Solution describes how the response works as a system — actors, workflows, edge cases, alternatives, dependencies, migration — not which technology executes it. Specific tables, columns, joins, data types, libraries, services, frameworks, schemas, and APIs belong in Tech Design, not Solution, unless they are pre-existing constraints (in which case they're noted in S9 — Constraint Compliance, sourced from P8). Implementation detail surfaced during a Solution session is captured in the Overflow Log tagged for Tech Design — never lost. Tech detail at this stage commits the team before alternatives are weighed, and forces non-dev builders to do tech work without codebase context. Example: a data-extract Solution describes what data flows to whom and what success looks like; tables, joins, and column types are Tech Design — drafted by a developer with codebase access. |
+
+**Note on S10.** The "Implementation neutrality" criterion previously at S10 retires in v1.3.0 — its concern is subsumed by Core C13 (Implementation neutrality at the right altitude). Unlike P11, the S10 slot is not reused in v1.3.0 — Solution Rubric ends at S9. When auditing Solution artifacts post-v1.3.0, apply C13 for implementation-neutrality enforcement.
 
 ## Assessment
 
@@ -26,6 +27,10 @@ The auditor assesses each criterion as **Pass**, **Partial**, or **Fail** with c
 - **Pass** — the criterion is fully met with clear evidence.
 - **Partial** — the criterion is partly met or the evidence is weak. The human directing the audit decides whether to accept or send back.
 - **Fail** — the criterion is not met. This is classified as a Bug and must be fixed before the artifact advances.
+
+**Conditional sections (v1.3.0).** Alternatives Considered (S5), Constraint Compliance (S9), Migration and Transition (S7), and Scope Boundary (new in v1.3.0) are *conditional*. Pass accepts "either present and earned, or absent because not applicable to this solution." Absence is not a Fail; presence without genuine content is a Bug (unearned ceremony). See template comments for inclusion triggers.
+
+**Scope Boundary (new).** When present, it states what this Solution is NOT — a responsibility boundary distinct from Non-Goals (which exclude features). Use when adjacent responsibilities could be confused with this one. Assessed under C1 (Alignment to goals) and S1 (Conceptual coherence) — not a standalone criterion.
 
 ## When to Use
 

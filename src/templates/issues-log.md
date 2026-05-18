@@ -8,6 +8,8 @@ This log does not replace inline issue tracking in artifacts. It surfaces what's
 
 ---
 
+**Inclusion test.** Entries here must pass: *"if the status of this issue changed, would a project artifact change?"* If no, it doesn't belong here — sprint mechanics live in tickets, kickoff messages, or planning tools.
+
 ## Open Issues
 
 | # | Source Artifact | Issue | Status | Assigned To | Decision Packet |

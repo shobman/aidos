@@ -100,34 +100,37 @@ The builder also notices the human mentioned "auto-rollback" — which implies t
 
 The builder moves into Tech Design within the same combined document.
 
-> **Builder:** The notification service is a small, stateless service. Let me walk through the components:
+> **Builder:** The notification system has three architectural boundaries. Let me walk through them at the right altitude:
 >
-> 1. **Webhook receiver** — HTTP endpoint that accepts deploy event payloads from the pipeline. Validates the payload, acknowledges immediately (200 OK), and queues the event for processing.
-> 2. **Routing config** — a config file (YAML or JSON) mapping teams to their notification channels and preferences. Stored in the service repo, updated via PR.
-> 3. **Message formatter** — takes a deploy event and a channel type, produces a formatted message. Different templates for Slack (Block Kit), Teams (Adaptive Card), and PagerDuty (event payload).
-> 4. **Channel dispatcher** — sends the formatted message to the target channel via the appropriate API. Handles retries for transient failures.
+> 1. **Webhook receiver boundary** — owns: accepting deploy event payloads from the pipeline, acknowledging receipt fast. Does NOT own: routing, formatting, or delivery. Trust direction: pipeline initiates; receiver is authoritative for "we got it".
+> 2. **Routing boundary** — owns: per-team channel selection given a deploy event. Source of truth for routing config is the service repo (single writer: PR-merged config). Does NOT own: message content.
+> 3. **Channel delivery boundary** — owns: getting the formatted message to the named channel. Does NOT own: deciding what to send or when. Each channel target (Slack / Teams / PagerDuty) is a distinct seam.
 
-> **Human:** Wait — the routing config stored in the service repo means product teams need to submit PRs to change their notification preferences. That's friction. Could we use a config service or a self-service UI instead?
+> **Human:** Wait — the routing config stored in the service repo means product teams need to submit PRs. That's friction.
 
-> **Builder:** We could, but that's a significant increase in scope — a config service or UI is its own Feature. For now, PR-based config is the simplest approach that works. We can note the self-service option as future scope.
+> **Builder:** It's a deliberate constraint — routing config has one writer at architectural level. The alternative (self-service UI / config service) would split ownership and is significant added scope. For now, PR-based routing is the architectural choice; the implementer chooses HOW to load and validate the config. I'll add this to A9 Left Open: "the coding session chooses config loading and validation approach, including hot-reload if desired."
 
-> **Human:** Fair. PR-based is fine for twelve teams. Let's revisit if it becomes painful.
+The builder works through invariants and failure posture:
 
-> **Builder:** I'll capture that decision and park the self-service idea in the Overflow Log.
-
-The builder adds O2 to the Overflow Log (PARKED, probable destination: future Feature — self-service notification config UI).
-
-Moving to error handling and scalability:
-
-> **Builder:** For the channel dispatcher — retries on Slack and PagerDuty make sense because their APIs support idempotent delivery. For Teams, given the reliability concerns in I2, I want to add a dead letter queue. If a Teams notification fails after three retries, it goes to a DLQ for manual inspection rather than being silently lost.
+> **Builder:** Invariants worth pinning:
+> - **Always-true:** every deploy event reaching the receiver produces exactly one routing decision (idempotent receiver — duplicate webhooks don't multi-notify).
+> - **Sacred:** failure notifications are never silently dropped. If a channel delivery fails after retries, the event goes to a dead letter queue for manual recovery — not lost.
+> - **Decision-precedence:** none needed; routing config is the single decision input.
 >
-> On scalability: what happens during a release train when multiple teams deploy simultaneously? If twelve teams deploy within a ten-minute window, the notification service needs to handle the burst without dropping events.
+> For failure posture: the receiver tolerates pipeline duplicate-webhook bursts (idempotency invariant). The Teams channel has known reliability concerns (I2) — the failure-posture decision is to surface via DLQ rather than retry indefinitely. The Slack and PagerDuty channels heal via standard retry; their failure surfaces operator-visible only after sustained failure.
 
-> **Human:** That happens every Tuesday. We do coordinated releases.
+> **Human:** What about the burst-deploy scenario — twelve teams deploying together?
 
-> **Builder:** Then the webhook receiver needs to queue events, not process them synchronously. I'll spec the queue — an in-memory queue is fine for this scale, but we should document the throughput assumption: up to 20 deploy events within a 5-minute window. If we ever exceed that, we'll need a persistent queue.
+> **Builder:** Quality property: must handle 20 events within a 5-minute window without dropping. Architectural implication: receiver queues internally before processing — synchronous receive-and-deliver wouldn't survive the burst. The temporal stance for the receiver-to-delivery flow is **asynchronous** — receipt and delivery are decoupled by an in-memory queue. The implementer chooses the queue mechanism, but the architecture mandates the decoupling.
 
-The builder captures the throughput assumption and completes the Tech Design: deployment (runs as a container alongside the pipeline infrastructure), monitoring (logs, a health endpoint, a metric for notification delivery latency), and the coding agent brief.
+The builder captures the Implementation Handoff:
+
+> **Builder:** For the handoff:
+> - **Constrained:** webhook receiver must acknowledge within 200ms; routing config is the single source of truth for per-team channels; failure DLQ is mandatory for Teams; receiver-to-delivery is asynchronous.
+> - **Left open:** queue mechanism (in-memory, Redis, SQS — coding session's call); message format per channel (Block Kit / Adaptive Card / PagerDuty event — implementer chooses the framing approach); config validation strategy.
+> - **Locked-in vs reversible:** the routing-config schema is locked-in (product teams will write it); the queue mechanism is reversible (no external surface).
+>
+> Trust zones: the receiver runs in the same trust zone as the pipeline (internal network). The delivery boundary crosses out to third-party APIs (Slack / Teams / PagerDuty) — that's a trust transition; secrets management for those APIs is constrained but the implementer chooses how (env vars, secret store, etc.). Transition strategy: greenfield, no existing notification service to migrate from.
 
 ---
 
@@ -156,18 +159,25 @@ The Problem section clears cleanly — well-scoped, measurable goals, clear stak
 > |---|---|---|---|
 > | S6: Dependency identification | Partial | Teams webhook reliability is flagged as a risk (I2), but the Slack API dependency is assumed reliable without evidence. Slack API has rate limits — at 12 teams × multiple channels, are we within limits? | Bug |
 
-Moving to Tech Design:
+On Pass 1, the auditor flagged the Tech Design against the Problem:
+
+| Criterion | Assessment | Evidence | Classification |
+|---|---|---|---|
+| A4: Invariants | Partial | Sacred-operation invariant ("failure notifications never silently dropped") is stated, but the receiver-to-delivery flow's idempotency invariant is only implied. With 12 teams deploying through a shared pipeline that may retry on its end, duplicate webhooks for the same deploy are realistic — pin the idempotency invariant explicitly so the implementation knows it has to dedupe. | Risk |
+
+The builder addressed it by adding the idempotency invariant explicitly to A4 ("duplicate webhook delivery for the same deploy event produces exactly one routing decision") and noting in A9 Constrained that the receiver must dedupe on a stable event ID. Pass 2 cleared.
+
+Moving to Tech Design (remaining criteria):
 
 > | Criterion | Assessment | Evidence | Classification |
 > |---|---|---|---|
-> | A2: Integration points | Partial | Rate limits not addressed for any channel API. The burst deploy scenario (twelve teams deploying within ten minutes) could hit Slack's rate limit of ~1 message per second per channel if multiple teams share an alerts channel. | Bug |
-> | A7: Deployment and environment | Partial | The document specifies monitoring (health endpoint, delivery latency metric) but does not identify who monitors the notification service itself. If notifications silently fail — e.g., the service is down during a deploy — who gets paged? The monitoring observes the service but nobody is named as the operator. | Bug |
+> | A6: Failure and recovery posture | Partial | The document specifies monitoring (health endpoint, delivery latency metric) but does not identify who is on the hook when the notification service itself fails. If notifications silently fail — e.g., the service is down during a deploy — who gets paged? The "operator-required" leg of the failure posture is unstated. | Bug |
 
 The auditor also raises two non-Bug findings:
 
 > | Criterion | Assessment | Evidence | Classification |
 > |---|---|---|---|
-> | A6: Performance and capacity | Pass | Throughput assumption documented (20 events per 5-minute window). In-memory queue justified for current scale. | — |
+> | A5: Quality properties | Pass | Throughput assumption documented (20 events per 5-minute window). In-memory queue justified for current scale. | — |
 > | C6: Observability | Pass (with Idea) | Observability is addressed, but consider adding a metric for notification *delivery confirmation* — did the recipient channel actually accept the message? This would catch silent failures at the channel API level, not just at the HTTP level. | Idea |
 
 Finally, the coherence check:
@@ -176,7 +186,7 @@ Finally, the coherence check:
 
 This is classified as a Bug — a gap in the coherence chain.
 
-**Pass 1 summary:** 3 Bugs, 1 Idea. Sent back to builder.
+**Pass 1 summary:** 2 Bugs, 1 Risk (A4 — addressed inline above), 1 Idea. Sent back to builder.
 
 ---
 
@@ -186,9 +196,9 @@ The builder addresses the findings:
 
 > **Builder:** Working through the audit findings.
 >
-> **S6 / A2 (Rate limits):** Adding a rate limit section. Slack rate limit is 1 message per second per webhook URL. Each team has its own webhook URL, so twelve teams can send in parallel. The risk is if multiple teams share an alerts channel — but the routing config maps teams to their own channels, not shared ones. I'll add this as a stated constraint: each team must have its own notification channel. If teams want to share a channel, the routing config needs rate-limiting logic. For now, one-team-one-channel keeps us within limits.
+> **S6 (Rate limits):** Adding a rate limit section. Slack rate limit is 1 message per second per webhook URL. Each team has its own webhook URL, so twelve teams can send in parallel. The risk is if multiple teams share an alerts channel — but the routing config maps teams to their own channels, not shared ones. I'll add this as a stated constraint: each team must have its own notification channel. If teams want to share a channel, the routing config needs rate-limiting logic. For now, one-team-one-channel keeps us within limits.
 >
-> **C8 (Operational ownership):** The platform team owns the notification service. On-call rotation for the platform team is paged if the health endpoint fails. Adding this explicitly to the Operational Impact section.
+> **A6 (Operator-required failure path):** The platform team owns the notification service. On-call rotation for the platform team is paged if the health endpoint fails. Adding this explicitly to the Failure and Recovery section as the operator-required posture.
 >
 > **Coherence gap (notification service down):** Adding a resilience mechanism. The pipeline webhook delivery should use at-least-once delivery — if the notification service returns a non-200, the pipeline retries three times over five minutes. If still failing, the pipeline logs a warning to its own monitoring, which the platform team already watches. This closes the gap: if the notification service is down, the pipeline's own monitoring surfaces it.
 
@@ -209,8 +219,8 @@ The auditor re-assesses only the criteria that were Partial or Fail in Pass 1.
 > | Criterion | Pass 2 Assessment | Evidence |
 > |---|---|---|
 > | S6: Dependency identification | Pass | Rate limits addressed. One-team-one-channel constraint stated. Slack, Teams, and PagerDuty dependencies documented with their limitations. |
-> | A2: Integration points | Pass | Rate limit strategy documented. Pipeline retry mechanism covers notification service unavailability. |
-> | A7: Deployment and environment | Pass | Platform team named as owner. On-call paging specified for health endpoint failure. |
+> | A4: Invariants | Pass | Idempotency invariant pinned explicitly. Covered in Pass 1 finding above. |
+> | A6: Failure and recovery posture | Pass | Platform team named as owner for the operator-required failure path. On-call paging specified for health endpoint failure. |
 > | Coherence (Problem → Tech Design) | Pass | Pipeline retry + pipeline monitoring closes the five-minute notification gap for the service-down scenario. |
 
 **Pass 2: All clear.** Artifact status moves to ACCEPTED.
@@ -246,14 +256,15 @@ The Head of Engineering chose Option B. Issue moved to the Decisions table:
 
 The builder creates the Test Plan as a separate document, tracing tests to Solution goals.
 
-> | Test | Traces To | Scenario | Expected Result |
-> |---|---|---|---|
-> | T1 | G1 (failure notification within 5 min) | Trigger a failed deploy. Measure time from failure to notification delivery. | Notification arrives in team's channel within 5 minutes. |
-> | T2 | G1 (failure notification) | Trigger a failed deploy for a team using Teams. | Notification delivered via Teams webhook. If delivery fails, event lands in DLQ within 30 seconds. |
-> | T3 | G2 (success notification) | Trigger a successful deploy. | Success notification arrives in team's channel. |
-> | T4 | Constraint (burst deploys) | Trigger 20 deploy events within a 5-minute window. | All notifications delivered. No rate limit errors. Queue drains within 2 minutes. |
-> | T5 | Resilience (service down) | Take the notification service offline. Trigger a deploy. Bring service back up. | Pipeline retries deliver the event. Notification arrives after service recovery. Pipeline monitoring alerts on the outage. |
-> | T6 | Routing (multi-channel) | Configure Team A for Slack and Team B for PagerDuty. Trigger deploys for both. | Each team receives notification in their configured channel only. |
+| # | Traces To | Given | When | Then (expected behaviour) |
+|---|---|---|---|---|
+| BA1 | G1 (failure notification within 5 min) | A team is configured with a notification channel | A deploy for that team fails | The team's channel receives a failure notification within 5 minutes |
+| BA2 | G1 (failure notification — Teams reliability) | A team uses Teams as their channel | A Teams delivery fails after retries | The event lands in the DLQ within 30 seconds; no silent drop |
+| BA3 | G2 (success notification) | A team is configured with a notification channel | A deploy for that team succeeds | The team's channel receives a success notification |
+| BA4 | Constraint (burst deploys) | 12 teams deploying in a coordinated window | 20 deploy events fire within 5 minutes | All teams receive their notifications; no events lost; receiver remains responsive |
+| BA5 | Resilience (service down) | The notification service is offline | A deploy fires during the outage; service comes back online | The pipeline's retry mechanism delivers the event; the team's channel receives notification after service recovery; pipeline monitoring surfaces the outage |
+| BA6 | Routing (multi-channel) | Team A configured for Slack and Team B configured for PagerDuty | Deploys fire for both teams | Each team receives notification in their configured channel only — no cross-delivery |
+| BA-I1 | Invariant: idempotency | The receiver accepts a deploy event | The same event is delivered again (pipeline retry) | Exactly one routing decision is made; the team receives at most one notification |
 
 The auditor runs the Testing rubric against the Test Plan and clears it on Pass 1 — traceability is strong, scenarios cover happy path, edge cases, and failure modes, and exit criteria are specific.
 
@@ -271,24 +282,3 @@ The auditor runs the Testing rubric against the Test Plan and clears it on Pass 
 
 **The builder surfaced an assumption the human hadn't considered.** The human assumed all teams use the same notification channel. The builder caught it. That assumption, if it had survived into the Tech Design, would have produced a system that only worked for Slack teams — and the Teams and PagerDuty users would have discovered this after delivery.
 
----
-
-## Epilogue: The Definition
-
-Two weeks later, the notification service is in production and working. The platform engineer opens a new builder session.
-
-> **Human:** The deploy notification service has been live for two weeks. Let's write the Definition.
-
-> **Builder:** I'll load the delivery artifacts for reference and scaffold the Definition. The audience for this document is someone who was never in the room — a future maintainer, an on-call engineer, or an AI agent picking up work on this feature next year.
-
-The builder works through the Definition sections:
-
-- **What This Is** — a notification routing service that delivers deploy event notifications to team-specific channels (Slack, Teams, PagerDuty) within five minutes of a deploy event. Receives webhooks from the CI/CD pipeline, looks up per-team routing config, formats and dispatches messages.
-- **Why It Works This Way** — the key decisions table captures the choices that shaped the system: webhook-based (not event bus — simplicity over flexibility), PR-based routing config (not self-service UI — sufficient for twelve teams), dead letter queue for Teams (accepted reliability risk), one-team-one-channel constraint (avoids rate limit complexity).
-- **Known Limitations and Debt** — Teams webhook reliability is an accepted risk with DLQ mitigation. No self-service config UI (O2 from the Overflow Log, now BACKLOG). No delivery confirmation metrics (O3, BACKLOG). In-memory queue is sufficient for current scale but won't survive a service restart — events during restart are recovered via pipeline retry.
-- **Operational Context** — owned by platform team. Health endpoint monitored, on-call paged on failure. Pipeline retry mechanism covers service-down scenarios.
-- **How to Change It Safely** — routing config is in YAML in the service repo. Adding a new channel type requires a new formatter. Rate limit constraint: one team per channel.
-
-The Definition is audited, passes, and moves to ACCEPTED. The delivery artifacts move to `archive/`. The Definition is filed in `definitions/ci-cd/deploy-notifications.md`.
-
-Six months from now, when someone asks "why does the notification service use a dead letter queue for Teams but not Slack?", the answer is in the Definition — not buried in a project's Tech Design document that nobody remembers exists.

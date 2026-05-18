@@ -16,9 +16,9 @@ But the thinking hasn't got cheaper. Humans still need to understand problems, a
 
 ## What This Actually Is
 
-Four delivery artifacts that build on each other, plus one that outlasts the project:
+Four delivery artifacts that build on each other:
 
-**Problem** → **Solution** → **Tech Design** → **Testing** → *Definition*
+**Problem** → **Solution** → **Tech Design** → **Testing**
 
 | Artifact | Question It Answers |
 |---|---|
@@ -26,9 +26,8 @@ Four delivery artifacts that build on each other, plus one that outlasts the pro
 | **Solution** | How the proposed response works as a system, including options and trade-offs |
 | **Tech Design** | How the solution will be implemented — components, interfaces, data, constraints |
 | **Testing** | How we verify it works and trace results back to requirements |
-| **Definition** | What was built, why it works this way, and what a maintainer needs to know |
 
-The first four are delivery artifacts. The Definition is created after the work ships — the living, authoritative description of the feature, maintained as it evolves. Delivery artifacts archive; the Definition persists.
+These are delivery artifacts — living documents that stay current as the feature evolves. They are the long-term record.
 
 Each artifact is checked against its own quality rubric **and** against the artifact before it. The Solution has to actually solve the Problem. The Tech Design has to actually implement the Solution. The Testing has to actually verify the Tech Design against the Solution's goals. If the chain breaks, you find out in a review — not in production.
 
@@ -133,22 +132,19 @@ docs/
 src/
 ├── framework.md                  ← The full operating model — start here
 ├── rubrics/
-│   ├── core.md                   ← Universal criteria (C1–C12) for every artifact
+│   ├── core.md                   ← Universal criteria (C1–C13) for every artifact
 │   ├── problem.md                ← Problem criteria (P1–P11) — Product lens
-│   ├── solution.md               ← Solution criteria (S1–S10) — Analysis lens
+│   ├── solution.md               ← Solution criteria (S1–S9) — Analysis lens
 │   ├── tech-design.md            ← Tech Design criteria (A1–A10) — Architecture lens
-│   ├── testing.md                ← Testing criteria (T1–T9) — Quality lens
-│   └── definition.md             ← Definition criteria (F1–F7) — Maintenance lens
+│   └── testing.md                ← Testing criteria (T1–T9) — Quality lens
 ├── templates/
 │   ├── problem.md                ← Problem artifact template
 │   ├── solution.md               ← Solution artifact template
 │   ├── tech-design.md            ← Tech Design artifact template
 │   ├── testing.md                ← Testing artifact template
-│   ├── definition.md             ← Definition artifact template
 │   ├── issues-log.md             ← Centralised escalation register
 │   ├── overflow-log.md           ← Captures ideas, risks, and insights that don't belong in the current artifact
-│   ├── meeting-minutes.md        ← Lean meeting capture
-│   └── retrospective.md          ← Rubric evolution mechanism
+│   └── meeting-minutes.md        ← Lean meeting capture
 └── prompts/
     ├── builder-prompt.md         ← Self-contained AI builder session prompt
     └── auditor-prompt.md         ← Self-contained AI auditor session prompt

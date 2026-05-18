@@ -52,22 +52,19 @@ prompts/
 ├── builder-prompt.md        ← Self-contained system prompt for building artifacts
 └── auditor-prompt.md        ← Self-contained system prompt for auditing artifacts
 rubrics/
-├── core.md                  ← Universal criteria (C1–C12)
+├── core.md                  ← Universal criteria (C1–C13)
 ├── problem.md               ← Product lens (P1–P11)
-├── solution.md              ← Analysis lens (S1–S10)
+├── solution.md              ← Analysis lens (S1–S9)
 ├── tech-design.md           ← Architecture lens (A1–A10)
-├── testing.md               ← Quality lens (T1–T9)
-└── definition.md            ← Maintenance lens (F1–F7)
+└── testing.md               ← Quality lens (T1–T9)
 templates/
 ├── problem.md               ← Problem artifact template
 ├── solution.md              ← Solution artifact template
 ├── tech-design.md           ← Tech Design artifact template
 ├── testing.md               ← Testing artifact template
-├── definition.md            ← Definition artifact template
 ├── issues-log.md            ← Centralised escalation register
 ├── overflow-log.md          ← Captures ideas that don't belong in the current artifact
-├── meeting-minutes.md       ← Lean meeting capture
-└── retrospective.md         ← Rubric evolution mechanism
+└── meeting-minutes.md       ← Lean meeting capture
 connectors/                  ← See src/connectors/*/README.md
 ```
 

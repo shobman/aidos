@@ -20,6 +20,7 @@ Universal quality criteria applied to every AIDOS artifact, at every scale.
 | C10 | Internal consistency | The artifact is internally consistent. Terminology is used the same way throughout, sections don't contradict each other, and the document reads as one coherent unit rather than fragments assembled from different sessions. |
 | C11 | No duplication | The artifact doesn't restate what's already captured in another artifact or in a preceding section. It references rather than copies. Each fact lives in one place. If the same statement appears twice, one of them is wrong or will be soon. |
 | C12 | Single unit of work | The artifact addresses a single deliverable that can be independently understood, built, tested, and released. If it can't, it needs decomposing into sibling artifacts at the same scale level. An artifact that tries to cover too many concerns is a sign that the work hasn't been broken down enough. |
+| C13 | Implementation neutrality at the right altitude | The artifact says nothing about implementation that the coding session is better placed to decide. Problem and Solution carry no implementation hints (no tools, vendors, schemas, libraries unless pre-existing constraints). Tech Design constrains architecture — boundaries, state ownership, seam contracts at kind level, invariants, failure posture — not code (no schemas, signatures, library choices). Testing asserts behaviour — Given/When/Then or invariants — not test code (no frameworks, harness specifics, file paths). Evidence: every sentence survives the altitude test relevant to the artifact's lens (Tech Design altitude test for Tech Design; Testing altitude test for Testing; for Problem and Solution, the test is "could a sentence here name a specific tool, vendor, schema, library, or framework?" — if yes, it's implementation drift). See `framework.md` § Altitude Discipline. |
 
 ## Assessment
 
@@ -35,6 +36,5 @@ The Core Rubric is used on **every artifact** at **every scale** — Epic, Featu
 | Solution | Core | Solution |
 | Tech Design | Core | Tech Design |
 | Testing | Core | Testing |
-| Definition | Core | Definition |
 
 At Story scale, assessment can be lighter — but the criteria still apply. A Story that ignores failure modes or hides trade-offs fails the same way an Epic does, just with smaller blast radius.

@@ -2,50 +2,46 @@
 TECH DESIGN ARTIFACT TEMPLATE
 
 What this is:
-  The Tech Design artifact answers: how will the solution be implemented?
-  Components, interfaces, data, constraints — explicit enough that a
-  developer or AI coding agent can build from this document without
-  re-explaining context.
+  The Tech Design artifact answers: what is the architectural shape of
+  the response? It names boundaries, where state lives, what crosses
+  each seam at the kind level, what invariants must hold, what the
+  failure posture looks like. It is deliberately upstream of code —
+  the coding session decides how to implement these constraints.
+
+  Altitude test (apply to every section): "Could this sentence only
+  be written by someone looking at code?" If yes, the section has
+  drifted past the architectural seam. Move it to the coding session.
 
 Rubric criteria:
-  Core Rubric (C1–C12) — applied to every artifact. Core criteria are
-  cross-cutting: you address them through the sections below. In particular:
-    C1  Alignment to goals — every component traces to the Solution
-    C2  Simplicity — simplest design that implements the solution
-    C3  Explicit trade-offs — architectural choices documented
-    C4  Failure modes — each component's failure path addressed
-    C5  Testability — every design choice is verifiable
-    C6  Observability — monitoring, logging, health indicators
-    C7  Security — access control, data handling, attack surface
-    C8  Reversibility — what's irreversible (migrations, APIs)
-    C9  Future team readiness — a new developer can follow this
-    C10 Internal consistency — consistent naming and terminology
-    C11 No duplication — reference the Solution, don't restate it
-    C12 Single unit of work — one implementable unit
+  Core Rubric (C1–C13) — applied to every artifact. Core criteria are
+  cross-cutting: addressed through the sections below. C13 (Implementation
+  neutrality at the right altitude) is the cross-cutting altitude rule.
 
   Tech Design Rubric (A1–A10) — discipline-specific criteria:
-    A1  Component clarity → Components
-    A2  Integration points → Integration Points
-    A3  Data model → Data Model
-    A4  Error handling strategy → Error Handling
-    A5  Technology choices justified → Technology Choices
-    A6  Performance and capacity → Performance and Capacity
-    A7  Deployment and environment → Deployment and Environment
-    A8  Migration path → Migration Path
-    A9  Constraints and boundaries → Constraints and Boundaries
-    A10 Coding agent readiness → Coding Agent Brief
+    A1  Boundary clarity → Boundaries
+    A2  Seam contracts (kind, not shape) → Seam Contracts
+    A3  State ownership and topology → State Ownership
+    A4  Invariants → Invariants
+    A5  Quality properties → Quality Properties
+    A6  Failure and recovery posture → Failure and Recovery
+    A7  Temporal stance → Temporal Stance
+    A8  Trust zones → Trust Zones
+    A9  Implementation handoff → Implementation Handoff
+    A10 Transition strategy → Transition Strategy
 
 Coherence check:
   The Tech Design is audited against the Solution artifact. Every
-  component traces to something in the Solution. Nothing in the
-  Solution is left unaddressed without explicit justification.
+  boundary, contract, state owner, and invariant traces to something
+  the Solution requires.
 
 Scaling depth:
-  Epic — architecture-level. Component boundaries, integration contracts,
-  technology decisions. Implementation detail lives in Feature designs.
-  Feature — the primary implementation brief. This is what the coding
-  agent receives. Go deep.
-  Story — focus on Technical Approach and Coding Agent Brief.
+  Epic — full depth. Architecture-level. Every boundary and seam named.
+  Feature — focused on this feature's architectural shape within the
+  Epic architecture. Inherits Epic-level boundaries and invariants.
+  Story — minimal. Often: "Inherits parent Tech Design. No new seams or
+  contracts." This is an explicit Pass. When a story DOES touch
+  architecture, name only the seam touched, the contract change if any,
+  and the invariant preserved or extended.
 -->
 
 # Tech Design: [title]
@@ -56,105 +52,107 @@ Scaling depth:
 
 ---
 
-## Components
-<!-- A1: Component clarity. Name each component, state its responsibility,
-     define its boundaries. No overlapping responsibilities, no gaps. -->
+## Boundaries
+<!-- A1: Boundary clarity. Name each major component / service / module /
+     bounded context. State its ONE responsibility AND what it does NOT own.
+     No overlapping responsibilities, no gaps. -->
 
-| Component | Responsibility | Boundary |
+| Boundary | Responsibility | Does NOT own |
 |---|---|---|
 | | | |
 
-### [Component name]
+## Seam Contracts
+<!-- A2: Seam contracts (kind, not shape). For each seam between boundaries,
+     describe six things: kind (event/command/query/request-response/batch/
+     stream), direction of trust, sync vs async, idempotency, delivery
+     guarantee, semantic meaning of any value whose interpretation is not
+     literal. NO wire formats, NO field names, NO schemas — those are
+     coding-session decisions. -->
 
-[Detailed description. What it does, what it owns, what it doesn't.
-Internal structure if relevant.]
+| Seam | Kind | Direction | Sync/Async | Idempotency | Delivery | Semantic notes |
+|---|---|---|---|---|---|---|
+| | | | | | | |
 
-## Integration Points
-<!-- A2: Integration points. All interfaces — internal and external.
-     Protocols, data formats, auth, error handling, rate limits. -->
+## State Ownership
+<!-- A3: State ownership and topology. For each distinct KIND of state:
+     who is the single writer; source of truth for the LIVE value
+     (distinguished from historical query); justification vs the
+     derived/queried alternative; directionality of any derived/cached/
+     replicated relationship. NO storage technology, NO schemas. -->
 
-| Interface | From → To | Protocol | Auth | Data Format |
+| State (kind) | Single writer | Live source of truth | Justification (vs derived) | Derived/cached relationships |
 |---|---|---|---|---|
 | | | | | |
 
-[For each non-trivial integration, describe the contract: request/response
-format, error codes, timeout behaviour, retry policy.]
+## Invariants
+<!-- A4: Invariants. System-level properties that must always or never hold,
+     in three categories: always-true, decision-precedence, sacred. Every
+     new mechanism in this design must declare which invariant it preserves
+     or extends — mechanisms without an invariant attached are a Bug. -->
 
-## Data Model
-<!-- A3: Data model. What's persisted, transient, cached, derived.
-     Schema changes, migration paths, data lifecycle. -->
+**Always-true:**
+- [e.g., "every order has exactly one charge"]
 
-### Entities
+**Decision-precedence:**
+- [e.g., "user twist > schedule override > schedule baseline > frost"]
 
-| Entity | Storage | Lifecycle | Notes |
-|---|---|---|---|
-| | | | |
+**Sacred:**
+- [e.g., "a user's dial twist is sacred within its TTL"]
 
-### Schema Changes
+## Quality Properties
+<!-- A5: Quality properties. Latency / throughput / availability / scale
+     as ARCHITECTURAL CONSTRAINTS with topology implications stated. Not
+     bare numerical targets. -->
 
-[New tables, modified columns, migration approach. If no schema changes,
-state that explicitly.]
-
-## Error Handling
-<!-- A4: Error handling strategy. What's caught, propagated, retried,
-     surfaced. Error categories. What happens when things don't work. -->
-
-| Layer | Error Category | Handling | Surfaced To |
-|---|---|---|---|
-| | | | |
-
-## Technology Choices
-<!-- A5: Technology choices justified. State each choice with rationale.
-     Fit, not habit. -->
-
-| Choice | Rationale | Alternatives Rejected |
+| Property | Constraint | Architectural implication |
 |---|---|---|
 | | | |
 
-## Performance and Capacity
-<!-- A6: Performance and capacity. Expected load, response time targets,
-     data volumes, resource limits, scaling approach. -->
+## Failure and Recovery
+<!-- A6: Failure and recovery posture. For each major failure mode: what's
+     tolerated, surfaced, healed automatically, operator-required. Decisions,
+     not error-handling code. -->
 
-| Metric | Target | Current Baseline | Breaking Point |
+| Failure mode | Tolerated | Surfaced | Auto-healed | Operator action |
+|---|---|---|---|---|
+| | | | | |
+
+## Temporal Stance
+<!-- A7: Temporal stance. For each significant flow: sync request, eventual
+     consistency, scheduled batch, event-driven, polled. Deliberate vs
+     default recorded. -->
+
+| Flow | Time discipline | Deliberate or default? | Trade-off |
 |---|---|---|---|
 | | | | |
 
-## Deployment and Environment
-<!-- A7: Deployment and environment. How it's deployed, infrastructure
-     dependencies, configuration, secrets, environment-specific behaviour. -->
+## Trust Zones
+<!-- A8: Trust zones. Where security boundaries sit; what's trusted vs
+     untrusted at each boundary; auth/identity propagation at the
+     architectural level. "Not applicable" must be stated, not omitted. -->
 
-[Deployment process. Environments required. Configuration management.
-Secrets handling. What differs between environments.]
+[Trust zone description. Or: "Not applicable — single-tenant single-process system." with reason.]
 
-## Migration Path
-<!-- A8: Migration path. Current state to target state without breaking
-     existing functionality. Feature flags, backward compatibility, rollback. -->
+## Implementation Handoff
+<!-- A9: Implementation handoff. Three explicit sub-sections: what's
+     constrained (must), what's left open (may — at least one named area),
+     what's reversible vs locked-in (be careful). -->
 
-[How to get from here to there. Rollback procedure if deployment fails.
-Backward compatibility window. Data migration steps if applicable.]
+**Constrained (the coding session must respect):**
+- [boundary / contract / invariant / performance budget]
 
-## Constraints and Boundaries
-<!-- A9: Constraints and boundaries. Hard limits on what the implementation
-     must not do. Guardrails for the implementer. -->
+**Left open (the coding session chooses):**
+- [at least one named area where the implementer chooses, justified by "this is a coding-session decision"]
 
-- [Must not: security boundary, data access restriction, API limitation,
-  performance budget]
+**Reversible vs locked-in:**
+- [public contracts, data formats, identifier schemes flagged when locking in]
 
-## Coding Agent Brief
-<!-- A10: Coding agent readiness. Everything an AI coding agent needs
-     to implement without asking clarifying questions. -->
+## Transition Strategy
+<!-- A10: Transition strategy. Only when transitioning from an existing
+     system. Strangler / side-by-side / cutover / dual-write. "Greenfield,
+     no transition" is a valid entry if applicable. -->
 
-**Acceptance criteria:**
-- [Specific, testable conditions that define "done"]
-
-**File and module structure:**
-- [Where new code goes, naming conventions, module boundaries]
-
-**Implementation boundaries:**
-- [What the agent should and should not change]
-
-**Naming conventions:**
-- [Variable, function, file naming patterns to follow]
+[Transition strategy description, or "Greenfield, no transition."]
 
 ---
 

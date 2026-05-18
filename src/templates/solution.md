@@ -7,7 +7,7 @@ What this is:
   we're solving) and the Tech Design (how we build it).
 
 Rubric criteria:
-  Core Rubric (C1–C12) — applied to every artifact. Core criteria are
+  Core Rubric (C1–C13) — applied to every artifact. Core criteria are
   cross-cutting: you address them through the sections below, not in
   separate sections. In particular:
     C1  Alignment to goals — every element traces to a Problem goal
@@ -22,8 +22,10 @@ Rubric criteria:
     C10 Internal consistency — consistent terminology
     C11 No duplication — reference the Problem, don't restate it
     C12 Single unit of work — one coherent solution
+    C13 Implementation neutrality at the right altitude — Solution prose
+        names no tools/vendors/schemas/libraries unless pre-existing constraints
 
-  Solution Rubric (S1–S10) — discipline-specific criteria:
+  Solution Rubric (S1–S9) — discipline-specific criteria:
     S1  Conceptual coherence → Solution Overview
     S2  Workflow completeness → Workflows
     S3  Edge cases → Edge Cases
@@ -33,7 +35,6 @@ Rubric criteria:
     S7  Migration and transition → Migration and Transition
     S8  Actor identification → Actors
     S9  Constraint compliance → Constraint Compliance
-    S10 Implementation neutrality → cross-cutting (no single section; applies across the whole artifact)
 
 Coherence check:
   The Solution is audited against the Problem artifact. Every goal in the
@@ -63,6 +64,18 @@ Scaling depth:
 [High-level description of the solution. How the pieces fit together
 and why this approach was chosen.]
 
+## Scope Boundary
+<!-- CONDITIONAL: include only when adjacent responsibilities could be
+     confused with this one. The line that says "this is X, NOT Y" — a
+     responsibility boundary distinct from Non-Goals (which exclude
+     features). Use when readers might reasonably assume this Solution
+     owns territory it doesn't. -->
+
+[Statement of what this is NOT, beyond the Non-Goals list. Example: "This
+is for local developer iteration and AI cloud containers only. Live
+environments are provisioned by INFRA bicep templates, not by compose.
+The two patterns are separate by design."]
+
 ## Actors
 <!-- S8: Actor identification. Who and what interacts with the solution.
      Frequency, skill expectations where human action is required. -->
@@ -91,6 +104,9 @@ and why this approach was chosen.]
 | E1 | | | |
 
 ## Alternatives Considered
+<!-- CONDITIONAL: include only when a genuine fork in the road was rejected
+     with rationale. Omit when there was no real alternative (the obvious
+     approach was the right one). -->
 <!-- S5: Alternatives considered. At least one alternative evaluated.
      The chosen approach is justified, not just the first idea. -->
 
@@ -108,6 +124,8 @@ and why this approach was chosen.]
 | DEP1 | | | | |
 
 ## Migration and Transition
+<!-- CONDITIONAL: include only when there's a real cutover from a previous
+     state. Omit for greenfield work. -->
 <!-- S7: Migration and transition. How to get from current state to
      proposed state. Cutover, backward compatibility, rollback. -->
 
@@ -116,6 +134,8 @@ from one to the other. What happens if the transition needs to be
 reversed.]
 
 ## Constraint Compliance
+<!-- CONDITIONAL: include only when external constraints actually bite the
+     design. Omit when constraints are already implicitly satisfied. -->
 <!-- S9: Constraint compliance. Map each constraint from the Problem
      to how this solution respects it. Flag gaps explicitly. -->
 

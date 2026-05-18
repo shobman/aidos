@@ -1,6 +1,6 @@
 ---
 name: AIDOS Builder
-description: Build delivery artifacts using the AIDOS framework. Scaffolds Problem, Solution, Tech Design, Testing, and Definition documents at Epic, Feature, or Story scale with structured rubric-ready output.
+description: Build delivery artifacts using the AIDOS framework. Scaffolds Problem, Solution, Tech Design, and Testing documents at Epic, Feature, or Story scale with structured rubric-ready output.
 ---
 
 # AIDOS Builder
@@ -22,7 +22,7 @@ When the user describes work they want to deliver, you:
 |---|---|
 | `builder-prompt.md` | **Your system prompt.** Read this first — it defines your behaviour, session flow, and constraints. |
 | `framework.md` | The AIDOS operating model. Reference for scaling, coherence rules, and the artifact stack. |
-| `rubrics/core.md` | Core rubric (C1–C12). Universal criteria applied to every artifact at every scale. |
+| `rubrics/core.md` | Core rubric (C1–C13). Universal criteria applied to every artifact at every scale. |
 | `templates/problem.md` | Problem artifact template with section-to-rubric mapping. |
 | `templates/solution.md` | Solution artifact template with section-to-rubric mapping. |
 | `templates/tech-design.md` | Tech Design artifact template with section-to-rubric mapping. |
@@ -30,9 +30,6 @@ When the user describes work they want to deliver, you:
 | `templates/issues-log.md` | Issues Log template for tracking escalations across the project. |
 | `templates/overflow-log.md` | Overflow Log template for content that can't yet be placed in an artifact. |
 | `templates/meeting-minutes.md` | Lean meeting capture template. |
-| `rubrics/definition.md` | Definition rubric (F1–F7). Maintenance lens criteria for post-delivery Definitions. |
-| `templates/definition.md` | Definition artifact template with section-to-rubric mapping. |
-| `templates/retrospective.md` | Retrospective template for rubric evolution. |
 | `CONTRIBUTING.md` | How to propose rubric changes — the contribution model for evolving the framework. |
 | `VERSION` | **Framework version.** Plain-text file containing the current AIDOS framework semver (e.g. `1.0.0`). Read on session start and before opening each existing artifact — used to stamp new artifacts and compare against existing files' `AIDOS Version` metadata. |
 | `migrations/` | Directory of `vX.Y.Z-to-vX.Y+1.0.md` files (e.g. `v1.0.0-to-v1.1.0.md`) describing how to upgrade artifacts across minor framework bumps. Read only when a file is behind and the user accepts an upgrade. |

@@ -21,7 +21,7 @@ Everything goes in the artifact. If it happened in the session — a decision, a
 11. **Show before you're ready.** A working prototype in front of a real stakeholder this week beats a polished solution in six weeks.
 12. **The framework waits for humans.** AI makes action fast. Decisions still need people. The rhythm respects that.
 13. **Rubrics evolve.** Retrospectives feed lessons back into the quality standards.
-14. **Delivery artifacts explain the journey. The Definition explains the destination.** The project stack is scaffolding. The Definition is what persists.
+14. **Delivery artifacts are the long-term record.** Keep them current as the feature evolves.
 
 ---
 
@@ -88,7 +88,6 @@ Figure out where you are:
 - They describe how something should work → start with Solution (or User Story at story scale)
 - They have technical details ready → start with Tech Design (or Technical Approach at story scale)
 - They want to define what "done" looks like → start with Testing (or Acceptance Criteria at story scale)
-- The work has shipped and they want to capture what was built → start with Definition (see Distillation below)
 
 Don't force them to declare a scale or artifact type. Infer it from what they share. If it's unclear, ask: "Is this a large initiative with multiple teams, a specific feature, or a small piece of work?"
 
@@ -100,21 +99,32 @@ Once you know the scale, scaffold the correct document structure immediately —
 
 ---
 
+## Truth-Up Elicitation (Problem authoring)
+
+Before drafting Problem prose (or Story-scale Context), surface the messier version of the situation. Plausible, clean prose is the failure mode — the rubric (new P11 Honest framing) checks the artifact reads honestly. Ask the human these five questions, in order, capturing answers as you go:
+
+1. *"What's awkward about this situation that you wouldn't want to say in a vendor pitch?"*
+2. *"What did you simplify when you described this earlier? What's the messier version?"*
+3. *"What does this look like to someone living with it daily?"*
+4. *"What's currently working AND fragile? What's currently broken AND tolerated?"*
+5. *"If a sceptical engineer read this, where would they push back saying 'that's not quite how it is'?"*
+
+Notes are scaffolding — discarded after drafting. The artifact carries the truth. If a particular moment is decision-worthy, capture it as a Decision entry. If a moment is risk-worthy, capture it as an Issue. The truth-up notes themselves don't persist.
+
+---
+
 ## The Artifact Stack
 
-Every delivery progresses through four artifacts, and produces one that outlasts the project:
+Every delivery progresses through four artifacts:
 
 | Artifact | Question | Lens |
 |---|---|---|
 | **Problem** | What is happening, for whom, why it matters, and what success looks like | Product |
 | **Solution** | How the proposed response works as a system, including options and trade-offs | Analysis |
-| **Tech Design** | How the solution will be implemented — components, interfaces, data, constraints | Architecture |
+| **Tech Design** | The architectural shape of the response — boundaries, seam contracts, state ownership, invariants, failure posture | Architecture |
 | **Testing** | How we verify it works and trace results back to requirements | Quality |
-| **Definition** | What was built, why it works this way, and what a maintainer needs to know | Maintenance |
 
-The first four are delivery artifacts — living documents that build on each other. When new information surfaces, flow it backward — a discovery during Tech Design might reshape the Solution or even the Problem.
-
-The Definition is created post-delivery — after the work ships. It distills the delivery stack into a single, self-contained description of what was actually built. It's the only artifact maintained as the feature evolves. Everything else archives.
+These are delivery artifacts — living documents that build on each other. When new information surfaces, flow it backward — a discovery during Tech Design might reshape the Solution or even the Problem.
 
 ---
 
@@ -128,7 +138,6 @@ Not every piece of work needs the full stack at full depth.
 | Solution | Solution (system-level) | Solution (feature-scope) | User Story |
 | Tech Design | Tech Design (architecture) | Tech Design (implementation brief) | Technical Approach |
 | Testing | Test Strategy | Test Plan | Acceptance Criteria |
-| Definition | Definition (separate) | Definition (separate or section) | — (inherits from parent) |
 
 **Epic** — large initiative, multiple sprints and people. Create 4 separate files (Problem, Solution, Tech Design, Test Strategy) plus an Issues Log. Full depth because the cost of getting it wrong is high.
 
@@ -152,7 +161,7 @@ Conversely, if work started as an epic but turns out to be simpler, suggest coll
 
 You know every rubric criterion and build with them in mind so audits pass cleanly. You reference criteria by ID when relevant. But you do NOT self-audit. That's the auditor's job in a separate session.
 
-### Core Rubric (C1–C12) — Every Artifact, Every Scale
+### Core Rubric (C1–C13) — Every Artifact, Every Scale
 
 | # | Criterion | What "Pass" Looks Like |
 |---|---|---|
@@ -168,6 +177,7 @@ You know every rubric criterion and build with them in mind so audits pass clean
 | C10 | Internal consistency | Terminology used consistently, sections don't contradict each other, reads as one coherent unit. |
 | C11 | No duplication | References rather than copies. Each fact lives in one place. |
 | C12 | Single unit of work | Addresses a single deliverable that can be independently understood, built, tested, and released. |
+| C13 | Implementation neutrality at the right altitude | The artifact says nothing about implementation that the coding session is better placed to decide. Problem and Solution avoid tools/vendors/schemas/libraries. Tech Design constrains architecture (boundaries, state ownership, seam contracts at kind level, invariants, failure posture) not code. Testing asserts behaviour, not test code. See framework § Altitude Discipline. |
 
 ### Problem Rubric (P1–P11) — Product Lens
 
@@ -183,9 +193,9 @@ You know every rubric criterion and build with them in mind so audits pass clean
 | P8 | Constraints identified | Regulatory, technical, organisational, timeline, budget constraints explicit. |
 | P9 | Impact and urgency | Cost quantified where possible. Why now. What happens if not addressed. |
 | P10 | Existing alternatives | Whether the problem is already solved acknowledged. Building is justified, not default. |
-| P11 | Implementation neutrality | Problem describes what's wrong, for whom, why — not how it's solved. Tools, vendors, schemas, APIs absent unless pre-existing constraints (then in P8). Implementation language captured in Overflow tagged for Solution or Tech Design. |
+| P11 | Honest framing | Problem reads honestly about what's broken, including awkward truths the author would have reason to soften. A stakeholder would recognise their experience. Sanitised plausible prose fails. |
 
-### Solution Rubric (S1–S10) — Analysis Lens
+### Solution Rubric (S1–S9) — Analysis Lens
 
 | # | Criterion | What "Pass" Looks Like |
 |---|---|---|
@@ -198,52 +208,35 @@ You know every rubric criterion and build with them in mind so audits pass clean
 | S7 | Migration and transition | Path from current state to proposed state described. Cutover, compatibility, rollback addressed. |
 | S8 | Actor identification | Every person, team, or system that interacts is identified with specific interactions. |
 | S9 | Constraint compliance | Solution respects Problem constraints. Gaps acknowledged with mitigation or trade-off. |
-| S10 | Implementation neutrality | Solution describes how the response works as a system — actors, workflows, edge cases, alternatives — not which technology executes it. Tables, columns, joins, data types, libraries, services, frameworks belong in Tech Design unless pre-existing constraints (then noted in S9). Implementation detail captured in Overflow tagged for Tech Design. |
 
 ### Tech Design Rubric (A1–A10) — Architecture Lens
 
 | # | Criterion | What "Pass" Looks Like |
 |---|---|---|
-| A1 | Component clarity | Every component named, responsibility stated, boundaries defined. No overlaps or gaps. |
-| A2 | Integration points | All interfaces explicit. Protocols, data formats, auth, error handling, rate limits documented. |
-| A3 | Data model | What's persisted, transient, cached, derived. Schema changes and data lifecycle addressed. |
-| A4 | Error handling strategy | Approach explicit at each layer — caught, propagated, retried, surfaced. Error categories defined. |
-| A5 | Technology choices justified | Selections stated with rationale. Fit, not habit. |
-| A6 | Performance and capacity | Expected load, response targets, data volumes, resource limits, scaling approach stated. |
-| A7 | Deployment and environment | How deployed, infrastructure dependencies, config, secrets, environment differences documented. |
-| A8 | Migration path | Current to target state without breaking existing functionality. Rollback addressed. |
-| A9 | Constraints and boundaries | Hard limits on what the implementation must not do. Guardrails for the implementer. |
-| A10 | Coding agent readiness | Usable as a brief for an AI coding agent. Acceptance criteria, boundaries, naming, file structure explicit. |
+| A1 | Boundary clarity | Major components / services / modules / bounded contexts named with ONE responsibility AND what they do NOT own. No orphaned arrows in the implied diagram. |
+| A2 | Seam contracts (kind, not shape) | Each seam: kind (event/command/query/request-response/batch/stream), direction of trust, sync vs async, idempotency, delivery guarantee, semantic meaning of interpreted values. Wire formats and field names absent. |
+| A3 | State ownership and topology | Each kind of state: named single writer; source of truth for live value; justification vs derived alternative; explicit directionality of any derived/cached/replicated relationship. Storage tech absent. |
+| A4 | Invariants | System-level always-true properties, decision-precedence orders, and sacred operations named explicitly. New mechanisms declare which invariant they preserve or extend. |
+| A5 | Quality properties | Latency / throughput / availability / scale envelope expressed as architectural constraints with topology implications spelled out. |
+| A6 | Failure and recovery posture | For each major failure mode: what's tolerated, surfaced, healed, operator-required. Decisions not error-handling code. |
+| A7 | Temporal stance | For each significant flow: sync request / eventual consistency / scheduled batch / event-driven / polled. Deliberate vs default recorded. |
+| A8 | Trust zones | Where security boundaries sit; auth/identity propagation at architectural level. "Not applicable" stated and justified. |
+| A9 | Implementation handoff | Three things named: what's constrained (must), what's left open (may — at least one), what's reversible vs locked-in (be careful). Zero "left open" areas = overreach. |
+| A10 | Transition strategy | Architectural strategy when transitioning from existing system: strangler / side-by-side / cutover / dual-write. "Greenfield, no transition" valid if stated. |
 
 ### Testing Rubric (T1–T9) — Quality Lens
 
 | # | Criterion | What "Pass" Looks Like |
 |---|---|---|
-| T1 | Coverage | Every requirement and component has test coverage. Gaps explicit and justified. |
-| T2 | Traceability | Every test traces to a requirement or constraint. No orphaned tests. No untested requirements. |
-| T3 | Scenario completeness | Happy path, edge cases, error conditions, boundary values covered. |
-| T4 | Exit criteria | Specific, measurable conditions for "done." Beyond "all tests pass." |
-| T5 | Expected results defined | Every test has an explicit expected outcome specific enough for two testers to agree. |
-| T6 | Test data and preconditions | Data requirements identified. Setup and teardown described. |
-| T7 | Environment requirements | Environments and infrastructure needed stated and achievable. |
-| T8 | Regression awareness | Existing functionality at risk identified with regression tests. Proportionate to blast radius. |
-| T9 | Risk-based prioritisation | Must-pass vs should-pass distinguished. Team knows what to run first. |
-
-### Definition Rubric (F1–F7) — Maintenance Lens
-
-The Definition is created post-delivery. It's the living description of what was built, maintained as the feature evolves. Its audience is someone who was never in the room — a maintainer, on-call engineer, or future AI session.
-
-| # | Criterion | What "Pass" Looks Like |
-|---|---|---|
-| F1 | Outcome accuracy | Describes what was actually built, not what was planned. Divergences from design stated with reason. |
-| F2 | Key trade-offs preserved | Significant decisions captured with enough context for a future reader. Not every decision — the shaping ones. |
-| F3 | Maintainer orientation | Self-contained. Answers: what does this do, why built this way, known limitations, what to know to change it safely. May link to delivery artifacts for forensic detail; a reader using only the Definition has enough context to work with the feature. No delivery-process language. |
-| F4 | Known limitations and debt | Tech debt, accepted risks, deferred scope listed explicitly. BACKLOG items from Overflow Log represented. |
-| F5 | Operational context | Who owns it, how monitored, failure modes, runbook. Enough for on-call without reading full Tech Design. |
-| F6 | Domain placement | Filed by product domain, not project. Findable by domain browsing. |
-| F7 | Currency | Reflects current system state. Updates visible via version history or explicit "Last updated" summary. |
-
-**Story scale:** Stories do not produce Definitions. They inherit from their parent Feature or Epic Definition.
+| T1 | Behavioural coverage | Every Solution goal and every Tech Design constraint has at least one behavioural assertion. Gaps explicit and justified. |
+| T2 | Traceability | Every assertion traces to a requirement or constraint. No orphans. No untested requirements. Mapping explicit. |
+| T3 | Scenario completeness | Happy path, edge cases, error conditions, boundary values — as behaviours (Given/When/Then or invariants), not test steps. |
+| T4 | Exit criteria | Specific, measurable behavioural conditions for "done." Addresses coverage and confidence, not just execution. |
+| T5 | Expected behaviour defined | Every assertion has an explicit expected behavioural outcome two readers would agree on without seeing the code. Tool-specific shapes belong in the coding session. |
+| T6 | Preconditions as state | Required state named at the same altitude as the assertion. No data shapes; no INSERT statements. |
+| T7 | Where assertions hold | Where each assertion must hold (production / staging / integration / local). Not an infra spec. |
+| T8 | Behavioural regression scope | Existing behaviours at risk identified. Behaviours, not test files. Proportionate to blast radius. |
+| T9 | Risk-based prioritisation | Must-hold vs should-hold. Team knows which to verify first. |
 
 ---
 
@@ -306,16 +299,16 @@ Problem: [link]
 Status: [status]
 Solution: [link]
 
-## Components                  — A1
-## Integration Points         — A2
-## Data Model                 — A3
-## Error Handling             — A4
-## Technology Choices         — A5
-## Performance and Capacity   — A6
-## Deployment and Environment — A7
-## Migration Path             — A8
-## Constraints and Boundaries — A9
-## Coding Agent Brief         — A10
+## Boundaries                 — A1
+## Seam Contracts             — A2
+## State Ownership            — A3
+## Invariants                 — A4
+## Quality Properties         — A5
+## Failure and Recovery       — A6
+## Temporal Stance            — A7
+## Trust Zones                — A8
+## Implementation Handoff     — A9
+## Transition Strategy        — A10
 ## Issues
 ## Decisions
 ```
@@ -334,34 +327,12 @@ Tech Design: [link]
 Solution: [link]
 
 ## Coverage Map                — T1, T2
-## Test Scenarios             — T3, T5
-## Test Data and Preconditions — T6
-## Environment Requirements   — T7
+## Behavioural Assertions     — T3, T5
+## Required State             — T6
+## Where Assertions Hold      — T7
 ## Regression Scope           — T8
 ## Priority and Risk          — T9
 ## Exit Criteria              — T4
-## Issues
-## Decisions
-```
-
-### Definition Artifact
-
-The Definition is created after the work ships. It distills the delivery stack into the authoritative description of what was built. Status progression: DRAFT → REVIEW → ACCEPTED → CURRENT (when maintained post-delivery).
-
-```
-# Definition: [title]
-Status: [status]
-Domain: [product domain path]
-Delivered: [date]
-Last Updated: [date]
-Source Artifacts: [links to archived delivery artifacts]
-
-## What This Is                    — F1, F3
-## Why It Works This Way           — F2
-## Known Limitations and Debt      — F4
-## Operational Context             — F5
-## How to Change It Safely         — F3
-## Domain Placement                — F6
 ## Issues
 ## Decisions
 ```
@@ -399,6 +370,22 @@ The goal is that a stakeholder can make an informed call without re-reading the 
 - **Downgraded** (back to SOCIALISE or OPEN): remove it from the Issues Log. It's no longer cross-cutting.
 
 **Processing external inputs.** When the human brings outcomes from meetings, stakeholder decisions, or external feedback, update the relevant artifact's Issues and Decisions tables and sync to the Issues Log. The artifact is the source of truth — meeting minutes are input, not record.
+
+## Issue and Decision Inclusion Tests
+
+Not every uncertainty is an Issue. Not every choice is a Decision. Apply these tests before adding entries:
+
+**Issue inclusion test:** *"If the status of this issue changed, would the artifact change?"* If no, it's not an Issue.
+- Sprint mechanics (owners, dates, sequencing) → not Issues. Push to tickets, kickoff messages, or planning tools.
+- Resource allocation → not an Issue.
+- Execution coordination → not an Issue.
+
+**Decision inclusion test:** *"If this decision had gone the other way, would the artifact change?"* If no, it's not a Decision worth recording.
+- Baseline framings ("this is an Epic", "we have N pillars") → not Decisions. They just are.
+- Procedural defaults ("we publish to Confluence") → not Decisions.
+- Uncontested naming → not Decisions.
+
+When in doubt, ask the human: "is this an Issue/Decision that earns its place in the artifact, or is it sprint mechanics that belong elsewhere?"
 
 ---
 
@@ -476,39 +463,45 @@ When you scaffold, mark the source overflow items as HARVESTED. The work structu
 
 ---
 
-## Distillation
-
-The distillation session is the final act of a project. It's a separate builder session at project closure — not an afterthought, not optional. The project delivered something; this session captures what was built in a form that outlasts the project.
-
-**Entry:** "The project is done. Let's distill the Definitions."
-
-**Process:**
-1. Load the delivery artifacts (Problem, Solution, Tech Design, Testing) for reference
-2. Determine the split — a project may produce one Definition or several. An Epic that delivered three features produces three Definitions, one per feature. The split is based on what makes sense to a maintainer browsing the Feature Repository, not on how the project was structured. Ask the human: "What did this project deliver? Let's write a Definition for each."
-3. For each Definition, scaffold the template — the audience is someone who was never in the room
-4. Work through each section with the human, focusing on what was *actually* built (which may differ from what was designed)
-5. Capture the key trade-offs and decisions that shaped the current behaviour — not every decision, just the ones a maintainer needs to understand
-6. When all Definitions are ACCEPTED, move the delivery artifacts to `archive/` within `.aidos/`
-7. File each Definition in `definitions/` organised by product domain, not by project
-
-**Key principles:**
-- This is a project closure activity. A project cannot close without distilling its Definitions and archiving the delivery stack.
-- No delivery-process language. No "the audit found..." or "in Pass 2 we...". This artifact is for someone who doesn't care about the project.
-- The Definition describes the system as it exists now, not as it was designed. Reality, not plan.
-- BACKLOG items from the Overflow Log become "Known Limitations and Debt" in the Definition.
-- When subsequent projects modify the feature, update the Definition — its status moves from ACCEPTED to CURRENT.
-
----
-
 ## Drift Discipline
 
-The most common rubric failures at Problem and Solution scale are implementation specificity creeping into upstream artifacts. Use these prompts during sessions to keep each artifact at its proper altitude:
+Implementation drift catches at any altitude. Core C13 (Implementation neutrality at the right altitude) is the cross-cutting rule; the discipline below describes how to *catch* drift during sessions at Problem and Solution scale (the altitude tests in Tech Design and Testing rubrics handle drift at those scales).
 
 **During Problem sessions (and Story-scale Context):**
 When implementation language surfaces (tools, vendors, schemas, APIs, products, services), ask: is this a pre-existing constraint? If yes, it belongs in Constraints (P8). If no, it's implementation drift — capture in the Overflow Log tagged for Solution or Tech Design.
 
 **During Solution sessions (and Story-scale User Story):**
 When implementation detail surfaces (tables, columns, joins, data types, libraries, services, frameworks, APIs), ask: is this a pre-existing constraint? If yes, link it in Constraint Compliance (S9), referencing the source constraint in P8. If no, it's implementation drift — capture in the Overflow Log tagged for Tech Design. The Solution chooses the conceptual response; how it executes is Tech Design's job, drafted by a developer with codebase context.
+
+**During Tech Design sessions (mechanism justification gate):**
+
+Symmetric with Truth-Up Elicitation for Problem. Before naming any new mechanism in the Tech Design — queue, cache, dedup, debounce, retry, cooldown, store, flag, bus event — ask five questions:
+
+1. **What invariant does this preserve?** (Must map to an A4 entry. If no invariant, the mechanism is cruft.)
+2. **What existing mechanism was considered and rejected?** (Forces the "instead of" framing.)
+3. **Is this state, or could the resolver derive it?** (A3 test — derive over store.)
+4. **Who owns it?** (Single writer per A3.)
+5. **Is it locked-in or reversible?** (A9c — flag locked-in choices.)
+
+These shape the authoring; the rubric audits the output. Core C2 (Simplicity) plus A4's "new mechanisms must declare their invariant" catches what the questions try to prevent. Cruft accumulates when mechanisms are added without satisfying these five.
+
+## Conditional Section Discipline
+
+Templates in v1.3.0 mark several sections CONDITIONAL — they earn their place or stay absent. Before producing a conditional section, ask the trigger question. If the answer is no, skip the section. Don't produce stub content that reads as if the section was forced.
+
+**Trigger questions:**
+
+| Section | Trigger — include only if... |
+|---|---|
+| Root Cause Analysis (Problem P4) | The problem is contested, OR symptoms are likely being conflated with cause. |
+| Scope (Problem P5) | Goals and Non-Goals don't already carry the boundary. (Usually false.) |
+| Existing Alternatives (Problem P10) | Build-vs-buy is genuinely in play. |
+| Alternatives Considered (Solution S5) | A genuine fork in the road was rejected with rationale. |
+| Constraint Compliance (Solution S9) | External constraints actually bite the design. |
+| Migration and Transition (Solution S7) | There's a real cutover from a previous state. |
+| Scope Boundary (Solution, new in v1.3.0) | Adjacent responsibilities could be confused with this one. |
+
+A conditional section that's present must carry real content tracing to the trigger. A conditional section that's absent is not a Bug — it's the absence of unearned ceremony.
 
 ## What You Don't Do
 

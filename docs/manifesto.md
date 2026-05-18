@@ -44,7 +44,7 @@ It's an AI-era delivery assurance framework: a structured way to think, decide, 
 
 Four things make it work:
 
-**Artifacts that build on each other.** Problem, Solution, Tech Design, Testing — and after delivery, the Definition: the living description of what was built, maintained as the feature evolves. Each artifact answers a question. Each is checked against the one before it. The Solution has to actually solve the Problem. The Tech Design has to actually implement the Solution. If the chain breaks, you find out during a review, not in production.
+**Artifacts that build on each other.** Problem, Solution, Tech Design, Testing — living documents that stay current as the feature evolves. Each artifact answers a question. Each is checked against the one before it. The Solution has to actually solve the Problem. The Tech Design has to actually implement the Solution. If the chain breaks, you find out during a review, not in production.
 
 **Rubrics with teeth.** Not "is this good?" but "can someone unfamiliar with this project understand the problem without prior conversation?" Not "did we consider testing?" but "does every test trace back to a requirement, and does every requirement have a test?" Pass, Partial, or Fail — with cited evidence. The auditor scores. The artifact doesn't advance until bugs are fixed. Partials are accepted or rejected by the human, not waved through.
 

@@ -7,7 +7,7 @@ What this is:
   Everything downstream — Solution, Tech Design, Testing — builds on this.
 
 Rubric criteria:
-  Core Rubric (C1–C12) — applied to every artifact. Core criteria are
+  Core Rubric (C1–C13) — applied to every artifact. Core criteria are
   cross-cutting: you address them through the sections below, not in
   separate sections. In particular:
     C1  Alignment to goals — every element traces to a stated goal
@@ -22,6 +22,8 @@ Rubric criteria:
     C10 Internal consistency — terminology and framing are consistent
     C11 No duplication — reference, don't copy, from other artifacts
     C12 Single unit of work — one problem, decompose if it's too many
+    C13 Implementation neutrality at the right altitude — Problem prose
+        names no tools/vendors/schemas/libraries unless pre-existing constraints
 
   Problem Rubric (P1–P11) — discipline-specific criteria. Each section
   below maps to one or more of these:
@@ -35,7 +37,8 @@ Rubric criteria:
     P8  Constraints identified → Constraints
     P9  Impact and urgency → Impact and Urgency
     P10 Existing alternatives considered → Existing Alternatives
-    P11 Implementation neutrality → cross-cutting (no single section; applies across the whole artifact)
+    P11 Honest framing → cross-cutting across the artifact's prose
+        (no dedicated section — the whole Problem must read honestly)
 
 Coherence check:
   The Problem artifact is the start of the stack. No preceding artifact
@@ -94,6 +97,8 @@ Scaling depth:
 - [Related concern deliberately excluded — reason.]
 
 ## Root Cause Analysis
+<!-- CONDITIONAL: include only when the problem is contested or symptoms
+     are likely conflated with cause. Omit when the cause is well-understood. -->
 <!-- P4: Root cause confidence. Distinguish symptoms from causes.
      State confidence level. Cite evidence where available. -->
 
@@ -104,6 +109,8 @@ Scaling depth:
 [What's actually causing it, with evidence or confidence level.]
 
 ## Scope
+<!-- CONDITIONAL: include only when Goals + Non-Goals do not already carry
+     the boundary clearly. Usually omit — the boundary is in Goals/Non-Goals. -->
 <!-- P5: Scope justification. Everything here traces to a goal above.
      Nothing crept in without justification. -->
 
@@ -136,6 +143,8 @@ Why this needs addressing now. What happens if it isn't.]
 | K1 | | | |
 
 ## Existing Alternatives
+<!-- CONDITIONAL: include only when build-vs-buy is genuinely in play.
+     Omit for problems clearly inside the team's scope of work. -->
 <!-- P10: Existing alternatives considered. Is this already solved?
      Building is not the default — it's justified. -->
 

@@ -23,7 +23,7 @@ The rubrics preserve lineage — not just what changed, but what pain the change
 Open an issue first. Include:
 
 1. **What burned you.** The project situation — what went wrong, when it was discovered, what it cost. This can be a direct experience, a near miss, a repeated friction pattern across teams, or a lesson from a public postmortem. The standard is: grounded in real delivery pain, not abstract preference.
-2. **Which rubric it belongs to.** Core (universal), or a discipline rubric (Problem, Solution, Tech Design, Testing, Definition).
+2. **Which rubric it belongs to.** Core (universal), or a discipline rubric (Problem, Solution, Tech Design, Testing).
 3. **The proposed criterion.** A short name and a clear "What Pass Looks Like" description.
 4. **Why the current rubric didn't catch it.** What gap this fills.
 5. **Example evidence.** What a reviewer would look for when assessing this criterion.
