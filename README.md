@@ -24,7 +24,7 @@ Four delivery artifacts that build on each other:
 |---|---|
 | **Problem** | What is happening, for whom, why it matters, and what success looks like |
 | **Solution** | How the proposed response works as a system, including options and trade-offs |
-| **Tech Design** | How the solution will be implemented — components, interfaces, data, constraints |
+| **Tech Design** | How the response is shaped architecturally — boundaries, state ownership, contracts at seams, invariants, failure posture |
 | **Testing** | How we verify it works and trace results back to requirements |
 
 These are delivery artifacts — living documents that stay current as the feature evolves. They are the long-term record.
@@ -61,7 +61,7 @@ A team needs to improve how warehouse staff track inventory across multiple loca
 |---|---|
 | **Problem** | Warehouse staff can't get accurate stock counts without checking three separate systems, taking ~20 min per lookup. Affects 150+ operators making daily restocking decisions. |
 | **Solution** | Add a unified stock dashboard to the warehouse management interface. Pull live counts from existing inventory sources, surface inline. |
-| **Tech Design** | Query inventory APIs, cache counts with 15-minute refresh, expose via existing service layer. Component renders stock levels with fallback to "data unavailable." |
+| **Tech Design** | Architectural shape: one boundary owns stock-count reads with a stated freshness window. State ownership: the existing inventory source is the single source of truth per item; the dashboard caches a derivation. Failure posture: stale data surfaces with a "data unavailable" indicator rather than blocking the page. |
 | **Testing** | Validate data freshness, permissions, rendering across devices, fallback states. Every test traces to a requirement in the Solution. |
 
 The Problem artifact gets audited: is the stakeholder impact clear? Are the goals measurable? Is the scope bounded? Then the Solution gets audited against the Problem: does it actually address the stated goals? Then the Tech Design against the Solution. The chain holds or it breaks at an identifiable point.

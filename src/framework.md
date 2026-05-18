@@ -303,11 +303,11 @@ Add a unified stock dashboard to the warehouse management interface. Pull live c
 
 ### Tech Design
 
-Query inventory APIs, cache counts with 15-minute refresh, expose via the existing service layer. Component renders stock levels with fallback to "data unavailable." Error handling: stale cache serves last-known-good; API timeout after 3 seconds triggers fallback. No new database tables required.
+**Boundaries:** one stock-dashboard component owns reads from the existing inventory sources; it does not own write-paths. **State ownership:** for each item, the inventory source is the single source of truth; the dashboard caches a derivation with a stated freshness window. **Failure posture:** if a source is unavailable, stale data surfaces with a "data unavailable" indicator — the user is never blocked. **Invariant:** every displayed count is attributable to exactly one source.
 
 ### Testing
 
-Validate data freshness (counts update within 15 minutes), permissions (only authorised stock data surfaces), rendering across devices, fallback states (API down, no data exists, stale cache). Every test traces to a requirement in the Solution.
+Behavioural assertions cover: counts displayed update within the stated freshness window; only authorised stock data surfaces; the "data unavailable" indicator appears when a source is unavailable; the dashboard renders across the supported device classes. Every assertion traces to a requirement in the Solution or a constraint in the Tech Design.
 
 ### Audit Finding (Example)
 
@@ -315,9 +315,9 @@ On Pass 1, the auditor flagged the Tech Design against the Problem:
 
 | Criterion | Assessment | Evidence | Classification |
 |---|---|---|---|
-| A2: Integration points | Partial | API rate limits not addressed. 150+ operators hitting cached endpoint simultaneously at shift changeover — is the cache refresh strategy sufficient? | Risk |
+| A6: Failure and recovery posture | Partial | At shift changeover, 150+ operators hit the dashboard simultaneously. If the freshness window has just elapsed, every operator triggers a refresh against the inventory source — turning a stated quality property into a failure mode for the upstream source. The architectural posture for this contention isn't named. | Risk |
 
-The builder addressed it by adding a pre-warm cache job 10 minutes before each shift change. Pass 2 cleared.
+The builder addressed it by adding a pre-warm pattern: the dashboard's freshness refresh schedules ahead of each shift changeover, so the source-of-truth fetch happens once before the burst rather than 150 times concurrently. Pass 2 cleared.
 
 ### Escalated Decision (Example)
 
