@@ -121,7 +121,7 @@ Every delivery progresses through four artifacts:
 |---|---|---|
 | **Problem** | What is happening, for whom, why it matters, and what success looks like | Product |
 | **Solution** | How the proposed response works as a system, including options and trade-offs | Analysis |
-| **Tech Design** | How the solution will be implemented — components, interfaces, data, constraints | Architecture |
+| **Tech Design** | The architectural shape of the response — boundaries, seam contracts, state ownership, invariants, failure posture | Architecture |
 | **Testing** | How we verify it works and trace results back to requirements | Quality |
 
 These are delivery artifacts — living documents that build on each other. When new information surfaces, flow it backward — a discovery during Tech Design might reshape the Solution or even the Problem.

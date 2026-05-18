@@ -60,7 +60,7 @@ Every delivery progresses through four questions:
 |---|---|---|
 | **Problem** | What is happening, for whom, why it matters, and what success looks like | Product |
 | **Solution** | How the proposed response works as a system, including options and trade-offs | Analysis |
-| **Tech Design** | How the solution will be implemented — components, interfaces, data, constraints | Architecture |
+| **Tech Design** | The architectural shape of the response — boundaries, seam contracts, state ownership, invariants, failure posture | Architecture |
 | **Testing** | How we verify it works and trace results back to requirements | Quality |
 
 These are delivery artifacts — living documents that build on each other progressively. When new information arrives, it flows backward too — a discovery during Tech Design might reshape the Solution.
@@ -101,9 +101,9 @@ AIDOS depends on separation between artifact creation and artifact audit. The sa
 
 Every artifact is assessed against two rubric layers:
 
-**Core Rubric** — universal criteria that apply to every artifact at every scale. Alignment to goals. Simplicity. Explicit trade-offs. Failure modes. Testability. Observability. Security. Reversibility. Future team readiness. Unit coherence. No duplication. Implementation neutrality at the right altitude.
+**Core Rubric** — universal criteria that apply to every artifact at every scale. Alignment to goals. Simplicity. Explicit trade-offs. Failure modes. Testability. Observability. Security. Reversibility. Future team readiness. Internal consistency. No duplication. Single unit of work. Implementation neutrality at the right altitude.
 
-**Discipline Rubric** — criteria specific to each artifact type. The Problem rubric (P1–P11) checks clarity, stakeholders, measurability, root cause confidence, scope, assumptions, constraints, impact, alternatives, and implementation neutrality. The Solution rubric (S1–S10) checks coherence, workflows, edge cases, alternatives, dependencies, migration, minimum viable slice, and implementation neutrality. The Tech Design rubric (A1–A10) checks components, integration, data model, error handling, technology choices, performance, deployment, and coding agent readiness. The Testing rubric (T1–T9) checks coverage, traceability, scenarios, exit criteria, expected results, test data, environments, regression, and prioritisation.
+**Discipline Rubric** — criteria specific to each artifact type. The Problem rubric (P1–P11) checks clarity, stakeholders, measurability, root cause confidence, scope, non-goals, assumptions, constraints, impact, existing alternatives, and honest framing. The Solution rubric (S1–S9) checks conceptual coherence, workflow completeness, edge cases, minimum viable slice, alternatives, dependencies, migration, actors, and constraint compliance. The Tech Design rubric (A1–A10) checks boundaries, seam contracts, state ownership, invariants, quality properties, failure and recovery posture, temporal stance, trust zones, implementation handoff, and transition strategy. The Testing rubric (T1–T9) checks behavioural coverage, traceability, scenarios, exit criteria, expected behaviour, preconditions as state, where assertions hold, behavioural regression scope, and risk-based prioritisation.
 
 Each criterion has a defined "what pass looks like." The auditor assesses Pass, Partial, or Fail with cited evidence. The evidence requirement is what gives rubrics teeth — you can't hand-wave a Pass. Partials are accepted or rejected by the human directing the audit, not waved through. The artifact doesn't advance until bugs are fixed.
 
@@ -269,7 +269,7 @@ AIDOS captures the thinking BEFORE the code and the assurance ALONGSIDE it. It d
 
 ## For AI Agents
 
-The Tech Design artifact is explicitly designed as a coding agent brief. Components, integration points, data model, error handling, constraints — all explicit. An AI agent receiving a Tech Design that passed audit has context that most developers would spend days building up through conversation and code archaeology.
+The Tech Design artifact is explicitly designed as an architectural brief for the coding session. Boundaries, seam contracts (at kind level), state ownership, invariants, failure posture, trust zones, implementation handoff — all explicit. An AI agent receiving a Tech Design that passed audit has the architectural envelope that most developers would spend days building up through conversation and code archaeology, while still owning the implementation decisions inside it.
 
 The full artifact chain — Problem through Solution through Tech Design — gives an agent something rare: *why* the code exists, not just what it should do. When an agent understands the Problem, it makes better implementation decisions. When it can reference the Solution, it resolves ambiguities without asking.
 

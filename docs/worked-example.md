@@ -171,13 +171,13 @@ Moving to Tech Design (remaining criteria):
 
 > | Criterion | Assessment | Evidence | Classification |
 > |---|---|---|---|
-> | A7: Deployment and environment | Partial | The document specifies monitoring (health endpoint, delivery latency metric) but does not identify who monitors the notification service itself. If notifications silently fail — e.g., the service is down during a deploy — who gets paged? The monitoring observes the service but nobody is named as the operator. | Bug |
+> | A6: Failure and recovery posture | Partial | The document specifies monitoring (health endpoint, delivery latency metric) but does not identify who is on the hook when the notification service itself fails. If notifications silently fail — e.g., the service is down during a deploy — who gets paged? The "operator-required" leg of the failure posture is unstated. | Bug |
 
 The auditor also raises two non-Bug findings:
 
 > | Criterion | Assessment | Evidence | Classification |
 > |---|---|---|---|
-> | A6: Performance and capacity | Pass | Throughput assumption documented (20 events per 5-minute window). In-memory queue justified for current scale. | — |
+> | A5: Quality properties | Pass | Throughput assumption documented (20 events per 5-minute window). In-memory queue justified for current scale. | — |
 > | C6: Observability | Pass (with Idea) | Observability is addressed, but consider adding a metric for notification *delivery confirmation* — did the recipient channel actually accept the message? This would catch silent failures at the channel API level, not just at the HTTP level. | Idea |
 
 Finally, the coherence check:
@@ -198,7 +198,7 @@ The builder addresses the findings:
 >
 > **S6 (Rate limits):** Adding a rate limit section. Slack rate limit is 1 message per second per webhook URL. Each team has its own webhook URL, so twelve teams can send in parallel. The risk is if multiple teams share an alerts channel — but the routing config maps teams to their own channels, not shared ones. I'll add this as a stated constraint: each team must have its own notification channel. If teams want to share a channel, the routing config needs rate-limiting logic. For now, one-team-one-channel keeps us within limits.
 >
-> **A7 (Operational ownership):** The platform team owns the notification service. On-call rotation for the platform team is paged if the health endpoint fails. Adding this explicitly to the Operational Impact section.
+> **A6 (Operator-required failure path):** The platform team owns the notification service. On-call rotation for the platform team is paged if the health endpoint fails. Adding this explicitly to the Failure and Recovery section as the operator-required posture.
 >
 > **Coherence gap (notification service down):** Adding a resilience mechanism. The pipeline webhook delivery should use at-least-once delivery — if the notification service returns a non-200, the pipeline retries three times over five minutes. If still failing, the pipeline logs a warning to its own monitoring, which the platform team already watches. This closes the gap: if the notification service is down, the pipeline's own monitoring surfaces it.
 
@@ -220,7 +220,7 @@ The auditor re-assesses only the criteria that were Partial or Fail in Pass 1.
 > |---|---|---|
 > | S6: Dependency identification | Pass | Rate limits addressed. One-team-one-channel constraint stated. Slack, Teams, and PagerDuty dependencies documented with their limitations. |
 > | A4: Invariants | Pass | Idempotency invariant pinned explicitly. Covered in Pass 1 finding above. |
-> | A7: Deployment and environment | Pass | Platform team named as owner. On-call paging specified for health endpoint failure. |
+> | A6: Failure and recovery posture | Pass | Platform team named as owner for the operator-required failure path. On-call paging specified for health endpoint failure. |
 > | Coherence (Problem → Tech Design) | Pass | Pipeline retry + pipeline monitoring closes the five-minute notification gap for the service-down scenario. |
 
 **Pass 2: All clear.** Artifact status moves to ACCEPTED.

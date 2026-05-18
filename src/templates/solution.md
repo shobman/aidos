@@ -7,7 +7,7 @@ What this is:
   we're solving) and the Tech Design (how we build it).
 
 Rubric criteria:
-  Core Rubric (C1–C12) — applied to every artifact. Core criteria are
+  Core Rubric (C1–C13) — applied to every artifact. Core criteria are
   cross-cutting: you address them through the sections below, not in
   separate sections. In particular:
     C1  Alignment to goals — every element traces to a Problem goal
@@ -22,6 +22,8 @@ Rubric criteria:
     C10 Internal consistency — consistent terminology
     C11 No duplication — reference the Problem, don't restate it
     C12 Single unit of work — one coherent solution
+    C13 Implementation neutrality at the right altitude — Solution prose
+        names no tools/vendors/schemas/libraries unless pre-existing constraints
 
   Solution Rubric (S1–S9) — discipline-specific criteria:
     S1  Conceptual coherence → Solution Overview
