@@ -148,15 +148,15 @@ Then proceed to the audit.
 
 | # | Criterion | What "Pass" Looks Like |
 |---|---|---|
-| T1 | Coverage | Every requirement and component has test coverage. Gaps explicit and justified. |
-| T2 | Traceability | Every test traces to a requirement or constraint. No orphaned tests. No untested requirements. Mapping explicit. |
-| T3 | Scenario completeness | Happy path, edge cases, error conditions, boundary values covered. Upstream failure scenarios have test cases. |
-| T4 | Exit criteria | Specific, measurable conditions for "done." Addresses coverage and confidence, not just execution. |
-| T5 | Expected results defined | Every test has an explicit expected outcome. Specific enough for two testers to agree on pass/fail. |
-| T6 | Test data and preconditions | Data requirements identified with source, setup, teardown. Tests don't assume state without establishing it. |
-| T7 | Environment requirements | Environments and infrastructure needed stated and achievable. |
-| T8 | Regression awareness | Existing functionality at risk identified with regression tests. Proportionate to blast radius. |
-| T9 | Risk-based prioritisation | Must-pass vs should-pass distinguished. Priority clear when time is short. |
+| T1 | Behavioural coverage | Every Solution goal and every Tech Design constraint has at least one behavioural assertion. Gaps explicit and justified. |
+| T2 | Traceability | Every assertion traces to a requirement or constraint. No orphans. No untested requirements. Mapping explicit. |
+| T3 | Scenario completeness | Happy path, edge cases, error conditions, boundary values — as behaviours (Given/When/Then or invariants), not test steps. |
+| T4 | Exit criteria | Specific, measurable behavioural conditions for "done." Addresses coverage and confidence, not just execution. |
+| T5 | Expected behaviour defined | Every assertion has an explicit expected behavioural outcome two readers would agree on without seeing the code. Tool-specific shapes belong in the coding session. |
+| T6 | Preconditions as state | Required state named at the same altitude as the assertion. No data shapes; no INSERT statements. |
+| T7 | Where assertions hold | Where each assertion must hold (production / staging / integration / local). Not an infra spec. |
+| T8 | Behavioural regression scope | Existing behaviours at risk identified. Behaviours, not test files. Proportionate to blast radius. |
+| T9 | Risk-based prioritisation | Must-hold vs should-hold. Team knows which to verify first. |
 
 ### Definition Rubric (F1–F7) — Maintenance Lens
 
@@ -207,10 +207,11 @@ After the rubric audit, check coherence with the preceding artifact. This is as 
 - **Seam discipline.** Implementation decisions visible in the Tech Design that should be in the coding session (specific schemas, function signatures, framework choices) signal a coherence break — the architecture has leaked past its altitude.
 
 **Testing** — audited against the Tech Design and the Solution:
-- Every test case traces to a requirement in the Solution or a technical scenario in the Tech Design
-- No requirement exists without a corresponding test
-- No test exists without a corresponding requirement or design constraint
-- If a requirement is deliberately untested, that gap is stated and justified
+- Every behavioural assertion traces to a requirement in the Solution or a constraint in the Tech Design
+- No requirement exists without a corresponding assertion
+- No assertion exists without a corresponding requirement or design constraint
+- If a requirement is deliberately unasserted, the gap is stated and justified
+- **Altitude.** Assertions phrased in test-code terms (specific HTTP codes, payload shapes, tool/framework names) signal a coherence break — Testing has leaked past its altitude.
 
 **Definition** — audited against the Solution and Tech Design (and the actual deployed system where observable):
 - What the Definition describes matches what was actually built, not what was originally planned

@@ -2,74 +2,47 @@
 TESTING ARTIFACT TEMPLATE
 
 What this is:
-  The Testing artifact answers: how do we verify it works and trace
-  results back to requirements? It closes the artifact stack — every
-  test traces backward through the Tech Design and Solution to the
-  Problem's goals.
+  The Testing artifact answers: what behavioural assertions must hold
+  for this system to work? It does not implement tests — it specifies
+  what the running system must do (or never do). Implementation of the
+  assertions is the coding session's job.
+
+  Altitude test (apply to every assertion): "Could this assertion remain
+  true if the implementation changed completely?" If yes, right altitude.
+  If no, push to the coding session.
 
 Three depths, one template:
-  This template supports three levels of depth. The builder scales by
-  emphasising or skipping sections based on the work. The Testing
-  Rubric (T1–T9) applies at all levels — the audit is lighter at
-  story scale, but the criteria still hold.
-
   Test Strategy (epic level):
-    The overall testing approach for a large initiative. Emphasise
-    Coverage Map, Environment Requirements, Priority and Risk, and
-    Exit Criteria. Test Scenarios stay high-level — describe what
-    will be tested and at what level (unit, integration, e2e), not
-    individual test cases. Detailed scenarios live in Feature-level
-    test plans.
+    Behavioural assertions at system scope. Categories, priorities,
+    where assertions hold. Individual assertions stay high-level.
 
   Test Plan (feature level):
     The primary testing document. Full depth across all sections.
-    Test Scenarios have specific steps and expected results. Coverage
-    Map links every requirement to test cases. Test Data and
-    Regression Scope are thorough. This is where most testing work
-    happens.
+    Behavioural assertions are concrete: Given/When/Then or invariants.
 
   Acceptance Criteria (story level):
-    What "done" looks like for a small piece of work. Focus on
-    Coverage Map (brief — which requirements are verified) and
-    Test Scenarios (specific test cases with expected results).
-    Other sections can be one line or skipped if inherited from
-    the parent Feature test plan. Keep it lean — if it needs more,
-    the work has outgrown story scale.
+    At least one behavioural assertion. "Inherits, nothing new" is NOT
+    permitted — the story needs a checkable behavioural outcome.
 
 Rubric criteria:
-  Core Rubric (C1–C12) — applied to every artifact. Core criteria are
-  cross-cutting: you address them through the sections below.
-    C1  Alignment to goals — every test traces to a requirement
-    C2  Simplicity — test approach is proportionate to the risk
-    C3  Explicit trade-offs — coverage gaps are justified
-    C4  Failure modes — failure scenarios from upstream are tested
-    C5  Testability — this artifact is the proof of testability
-    C6  Observability — post-deployment verification is addressed
-    C7  Security — security-relevant scenarios are tested
-    C8  Reversibility — test cleanup and data rollback
-    C9  Future team readiness — tests are understandable and maintainable
-    C10 Internal consistency — consistent structure and terminology
-    C11 No duplication — reference requirements, don't restate them
-    C12 Single unit of work — testing scope matches one deliverable
+  Core Rubric (C1–C13) — applied to every artifact, cross-cutting.
+  C13 (Implementation neutrality at the right altitude) is the cross-
+  cutting altitude rule.
 
-  Testing Rubric (T1–T9) — discipline-specific criteria:
-    T1  Coverage → Coverage Map
-    T2  Traceability → Coverage Map (requirement ↔ test mapping)
-    T3  Scenario completeness → Test Scenarios
-    T4  Exit criteria → Exit Criteria
-    T5  Expected results defined → Test Scenarios (expected outcome)
-    T6  Test data and preconditions → Test Data and Preconditions
-    T7  Environment requirements → Environment Requirements
-    T8  Regression awareness → Regression Scope
-    T9  Risk-based prioritisation → Priority and Risk
+  Testing Rubric (T1–T9):
+    T1 Behavioural coverage → Coverage Map
+    T2 Traceability → Coverage Map
+    T3 Scenario completeness → Behavioural Assertions
+    T4 Exit criteria → Exit Criteria
+    T5 Expected behaviour defined → Behavioural Assertions
+    T6 Preconditions as state → Required State
+    T7 Where assertions hold → Where Assertions Hold
+    T8 Behavioural regression scope → Regression Scope
+    T9 Risk-based prioritisation → Priority and Risk
 
 Coherence check:
   The Testing artifact is audited against the Tech Design and the
-  Solution. Every test case traces to a requirement in the Solution
-  or a technical scenario in the Tech Design. No requirement exists
-  without a corresponding test. No test exists without a corresponding
-  requirement or design constraint. Deliberate gaps are stated and
-  justified.
+  Solution. Every assertion traces to a requirement or constraint.
 -->
 
 # Testing: [title]
@@ -82,100 +55,84 @@ Coherence check:
 ---
 
 ## Coverage Map
-<!-- T1: Coverage. Every requirement and component has test coverage.
-     T2: Traceability. Explicit mapping between requirements and tests.
-     At strategy level: map requirement areas to test levels (unit,
-     integration, e2e). At plan level: map to specific test cases.
-     At story level: brief list of what's verified. -->
+<!-- T1: Behavioural coverage. T2: Traceability. Every Solution goal and
+     Tech Design constraint has at least one behavioural assertion. -->
 
-| Requirement / Component | Source | Test Case(s) | Coverage Gap? |
+| Requirement / Constraint | Source | Behavioural Assertion(s) | Coverage Gap? |
 |---|---|---|---|
-| [Goal from Solution] | Solution G1 | TC1, TC2 | |
-| [Component from Tech Design] | Tech Design | TC3 | |
-| [Integration point] | Tech Design A2 | TC4 | |
+| [Goal from Solution] | Solution G1 | BA1, BA2 | |
+| [Invariant from Tech Design] | Tech Design A4 | BA3 | |
+| [Seam contract from Tech Design] | Tech Design A2 | BA4 | |
 
-## Test Scenarios
-<!-- T3: Scenario completeness. Happy path, edge cases, error conditions,
-     boundary values.
-     T5: Expected results defined. Every test has a specific expected outcome.
-     At strategy level: describe categories of scenarios and test levels,
-     not individual cases. At plan level: full detail. At story level:
-     specific cases with expected results, lean format. -->
+## Behavioural Assertions
+<!-- T3: Scenario completeness. T5: Expected behaviour defined.
+     Phrase as Given/When/Then or as invariants. Each has an explicit
+     expected behavioural outcome two readers would agree on without
+     seeing the code. -->
 
-### [Scenario group name]
+### [Group name]
 
-| # | Scenario | Preconditions | Steps | Expected Result | Priority |
-|---|---|---|---|---|---|
-| TC1 | | | | | Must-pass / Should-pass |
-| TC2 | | | | | |
-
-### Error and Failure Scenarios
-
-| # | Scenario | Trigger | Expected Behaviour | Priority |
+| # | Given | When | Then (expected behaviour) | Priority |
 |---|---|---|---|---|
-| TC-E1 | | | | |
+| BA1 | | | | Must-hold / Should-hold |
+| BA2 | | | | |
 
-## Test Data and Preconditions
-<!-- T6: Test data and preconditions. What data is needed, where it
-     comes from, how it's set up and torn down.
-     At strategy level: data strategy and sourcing approach.
-     At plan level: specific data sets. At story level: skip if
-     inherited from parent, or one line. -->
+### Invariants (always or never)
 
-| Data Set | Description | Source | Setup | Teardown |
-|---|---|---|---|---|
-| | | | | |
+| # | Invariant | Notes |
+|---|---|---|
+| BA-I1 | [e.g., "An unauthenticated request is refused, with no state change"] | |
 
-## Environment Requirements
-<!-- T7: Environment requirements. What environments and infrastructure
-     are needed to execute the test plan.
-     At strategy level: environment strategy, shared infrastructure,
-     tool selection. At plan level: specific environments for this
-     feature. At story level: skip if inherited. -->
+### Failure scenarios
 
-| Environment | Purpose | Dependencies | Available? |
+| # | Trigger | Expected behaviour | Priority |
 |---|---|---|---|
-| | | | |
+| BA-F1 | | | |
+
+## Required State
+<!-- T6: Preconditions as state. Name the state each assertion requires
+     at the same altitude as the assertion. No data shapes. -->
+
+| State | Description | Applies to |
+|---|---|---|
+| [e.g., "a user with an active subscription"] | | BA1, BA3 |
+
+## Where Assertions Hold
+<!-- T7: Where assertions hold. Production / staging / integration / local
+     — as a constraint on the assertion, not an infra spec. -->
+
+| Assertion | Environment(s) | Why |
+|---|---|---|
+| BA1 | | |
 
 ## Regression Scope
-<!-- T8: Regression awareness. What existing functionality could break.
-     Proportionate to the blast radius of the change.
-     At strategy level: regression approach for the initiative.
-     At plan level: specific areas and tests. At story level: note
-     what might break, or skip if the parent plan covers it. -->
+<!-- T8: Behavioural regression scope. Existing behaviours that could be
+     affected. Behaviours, not test files. -->
 
-| Area | Risk | Regression Tests |
+| Existing behaviour | Risk | Regression assertion |
 |---|---|---|
 | | | |
 
 ## Priority and Risk
-<!-- T9: Risk-based prioritisation. Must-pass vs should-pass.
-     When time is short, the team knows what to run first.
-     Relevant at all levels — the granularity changes but the
-     distinction between blocking and non-blocking always matters. -->
+<!-- T9: Risk-based prioritisation. -->
 
-**Must-pass (blocking release):**
-- [Test cases or test areas that must pass before deployment]
+**Must-hold (blocking release):**
+- [Behavioural assertions or groups that must hold before deployment]
 
-**Should-pass (important, not blocking):**
-- [Test cases or test areas that should pass but can be accepted with known risk]
+**Should-hold (important, not blocking):**
+- [Behavioural assertions or groups that should hold but can be accepted with known risk]
 
 ## Exit Criteria
-<!-- T4: Exit criteria. Specific, measurable conditions for "done."
-     Beyond "all tests pass."
-     At strategy level: entry and exit criteria for the initiative.
-     At plan level: conditions for this feature to be considered
-     verified. At story level: what done looks like. -->
+<!-- T4: Exit criteria. Specific, measurable behavioural conditions. -->
 
-- [ ] [Coverage condition — e.g., all must-pass scenarios executed and passing]
-- [ ] [Traceability condition — e.g., every Solution goal has at least one passing test]
-- [ ] [Regression condition — e.g., no regressions in identified areas]
-- [ ] [Environment condition — e.g., tested in staging with production-like data]
+- [ ] All must-hold assertions executed and holding
+- [ ] Every Solution goal has at least one passing assertion
+- [ ] No regressions in identified behaviours
+- [ ] Assertions verified in their stated environment(s)
 
 ---
 
 ## Issues
-<!-- Source: where this issue was first identified — an artifact name, session, meeting, or external input. -->
 
 | # | Source | Issue | Status |
 |---|---|---|---|
