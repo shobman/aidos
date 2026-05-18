@@ -100,6 +100,20 @@ Once you know the scale, scaffold the correct document structure immediately —
 
 ---
 
+## Truth-Up Elicitation (Problem authoring)
+
+Before drafting Problem prose (or Story-scale Context), surface the messier version of the situation. Plausible, clean prose is the failure mode — the rubric (new P11 Honest framing) checks the artifact reads honestly. Ask the human these five questions, in order, capturing answers as you go:
+
+1. *"What's awkward about this situation that you wouldn't want to say in a vendor pitch?"*
+2. *"What did you simplify when you described this earlier? What's the messier version?"*
+3. *"What does this look like to someone living with it daily?"*
+4. *"What's currently working AND fragile? What's currently broken AND tolerated?"*
+5. *"If a sceptical engineer read this, where would they push back saying 'that's not quite how it is'?"*
+
+Notes are scaffolding — discarded after drafting. The artifact carries the truth. If a particular moment is decision-worthy, capture it as a Decision entry. If a moment is risk-worthy, capture it as an Issue. The truth-up notes themselves don't persist.
+
+---
+
 ## The Artifact Stack
 
 Every delivery progresses through four artifacts, and produces one that outlasts the project:
@@ -170,7 +184,7 @@ You know every rubric criterion and build with them in mind so audits pass clean
 | C12 | Single unit of work | Addresses a single deliverable that can be independently understood, built, tested, and released. |
 | C13 | Implementation neutrality at the right altitude | The artifact says nothing about implementation that the coding session is better placed to decide. Problem and Solution avoid tools/vendors/schemas/libraries. Tech Design constrains architecture (boundaries, state ownership, seam contracts at kind level, invariants, failure posture) not code. Testing asserts behaviour, not test code. See framework § Altitude Discipline. |
 
-### Problem Rubric (P1–P10) — Product Lens
+### Problem Rubric (P1–P11) — Product Lens
 
 | # | Criterion | What "Pass" Looks Like |
 |---|---|---|
@@ -184,6 +198,7 @@ You know every rubric criterion and build with them in mind so audits pass clean
 | P8 | Constraints identified | Regulatory, technical, organisational, timeline, budget constraints explicit. |
 | P9 | Impact and urgency | Cost quantified where possible. Why now. What happens if not addressed. |
 | P10 | Existing alternatives | Whether the problem is already solved acknowledged. Building is justified, not default. |
+| P11 | Honest framing | Problem reads honestly about what's broken, including awkward truths the author would have reason to soften. A stakeholder would recognise their experience. Sanitised plausible prose fails. |
 
 ### Solution Rubric (S1–S9) — Analysis Lens
 
@@ -524,6 +539,18 @@ When implementation language surfaces (tools, vendors, schemas, APIs, products, 
 
 **During Solution sessions (and Story-scale User Story):**
 When implementation detail surfaces (tables, columns, joins, data types, libraries, services, frameworks, APIs), ask: is this a pre-existing constraint? If yes, link it in Constraint Compliance (S9), referencing the source constraint in P8. If no, it's implementation drift — capture in the Overflow Log tagged for Tech Design. The Solution chooses the conceptual response; how it executes is Tech Design's job, drafted by a developer with codebase context.
+
+**During Tech Design sessions (mechanism justification gate):**
+
+Symmetric with Truth-Up Elicitation for Problem. Before naming any new mechanism in the Tech Design — queue, cache, dedup, debounce, retry, cooldown, store, flag, bus event — ask five questions:
+
+1. **What invariant does this preserve?** (Must map to an A4 entry. If no invariant, the mechanism is cruft.)
+2. **What existing mechanism was considered and rejected?** (Forces the "instead of" framing.)
+3. **Is this state, or could the resolver derive it?** (A3 test — derive over store.)
+4. **Who owns it?** (Single writer per A3.)
+5. **Is it locked-in or reversible?** (A9c — flag locked-in choices.)
+
+These shape the authoring; the rubric audits the output. Core C2 (Simplicity) plus A4's "new mechanisms must declare their invariant" catches what the questions try to prevent. Cruft accumulates when mechanisms are added without satisfying these five.
 
 ## Conditional Section Discipline
 

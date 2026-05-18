@@ -18,8 +18,9 @@ Discipline-specific criteria for assessing Problem artifacts through the **Produ
 | P8 | Constraints identified | Regulatory, technical, organisational, timeline, and budget constraints that bound the solution space are explicit. The artifact doesn't leave the Solution author to discover constraints that were known during problem framing. |
 | P9 | Impact and urgency | The cost or impact of the problem is quantified where possible — time lost, revenue at risk, users affected, manual effort consumed. Urgency is stated: why now, and what happens if this isn't addressed. The case for action is evidence-based, not assertion-based. |
 | P10 | Existing alternatives considered | The artifact acknowledges whether this problem is already solved — by a vendor product, an internal tool, a manual workaround, or a competing initiative. If alternatives exist, the reason they're insufficient is stated. Building is not the default; it's justified. |
+| P11 | Honest framing | The Problem reads honestly about what's broken, including awkward truths the author would have reason to soften. A stakeholder living with the problem would recognise their experience in the description. "Standards have drifted from convention" fails when the truth is "standards literally only existed in some developers' heads." Plausible-sounding sanitised prose fails. The artifact carries the messier version. |
 
-**Note on P11.** The "Implementation neutrality" criterion previously at P11 retires in v1.3.0 — its concern is subsumed by Core C13 (Implementation neutrality at the right altitude). The P11 slot is reused in v1.3.0 for **Honest framing** (added in a later phase of this refactor; see migration file). When auditing Problem artifacts post-v1.3.0, apply C13 for implementation-neutrality enforcement.
+**Note on P11.** In v1.2.x, P11 was "Implementation neutrality" — that criterion retires in v1.3.0 because its concern is subsumed by Core C13 (Implementation neutrality at the right altitude). The P11 slot is reused in v1.3.0 for **Honest framing** (above). Old and new P11 are different criteria; the migration file v1.2.0-to-v1.3.0 makes this explicit.
 
 ## Assessment
 

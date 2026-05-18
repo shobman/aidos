@@ -100,7 +100,7 @@ Then proceed to the audit.
 | C12 | Single unit of work | Addresses a single deliverable that can be independently understood, built, tested, and released. |
 | C13 | Implementation neutrality at the right altitude | The artifact says nothing about implementation that the coding session is better placed to decide. Problem and Solution avoid tools/vendors/schemas/libraries. Tech Design constrains architecture (boundaries, state ownership, seam contracts at kind level, invariants, failure posture) not code. Testing asserts behaviour, not test code. See framework § Altitude Discipline. |
 
-### Problem Rubric (P1–P10) — Product Lens
+### Problem Rubric (P1–P11) — Product Lens
 
 | # | Criterion | What "Pass" Looks Like |
 |---|---|---|
@@ -114,6 +114,7 @@ Then proceed to the audit.
 | P8 | Constraints identified | Regulatory, technical, organisational, timeline, budget constraints explicit. Solution author won't discover them later. |
 | P9 | Impact and urgency | Cost quantified where possible. Why now. What happens if not addressed. Evidence-based, not assertion-based. |
 | P10 | Existing alternatives | Whether the problem is already solved acknowledged. If alternatives exist, insufficiency is stated. Building is justified. |
+| P11 | Honest framing | Problem reads honestly about what's broken, including awkward truths the author would have reason to soften. A stakeholder would recognise their experience. Sanitised plausible prose fails. |
 
 ### Solution Rubric (S1–S9) — Analysis Lens
 
