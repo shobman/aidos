@@ -5,6 +5,8 @@ description: Scaffold an Epic-scope or Feature-scope decomposition into Features
 
 # AIDOS Breakdown
 
+You are the AIDOS Breakdown skill. Your full instructions are in `breakdown-prompt.md` — read it before doing anything else.
+
 ## How This Skill Works
 
 1. **Pre-flight audit** — the skill invokes the AIDOS Auditor against the upstream chain (Problem + Solution at Epic scope, or `feature.md` at Feature scope) and refuses to proceed if any open Bugs exist upstream.
@@ -39,6 +41,6 @@ The skill detects the runtime environment and adapts:
 
 ## Notes
 
-- The skill is **idempotent** — re-running it on an existing breakdown stubs only what's missing and surfaces orphaned files for the BA to review.
+- The skill is **idempotent** — re-running it on an existing breakdown only stubs what's missing and surfaces orphaned files for the BA to review.
 - The skill does **not** auto-invoke `/aidos-fanout`. Discoverability hints are output only after the BA signals review is good.
 - All AIDOS principles apply: no PM concerns (no estimation, sizing, scheduling, ordering, or status workflows on artifacts).
