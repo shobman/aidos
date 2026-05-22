@@ -97,6 +97,44 @@ try {
 
     New-SkillZip -Name "aidos-auditor" -StagingDir $a -OutPath (Join-Path $dist "aidos-auditor.zip")
 
+    # --- Breakdown ---
+    $bd = Join-Path $temp "aidos-breakdown"
+
+    Copy-To (Join-Path $PSScriptRoot "breakdown\SKILL.md")              (Join-Path $bd "SKILL.md")
+    Copy-To (Join-Path $root "src\prompts\breakdown-prompt.md")         (Join-Path $bd "breakdown-prompt.md")
+    Copy-To (Join-Path $root "src\framework.md")                        (Join-Path $bd "framework.md")
+    Copy-To (Join-Path $root "src\rubrics\core.md")                     (Join-Path $bd "rubrics\core.md")
+    Copy-To (Join-Path $root "src\rubrics\breakdown.md")                (Join-Path $bd "rubrics\breakdown.md")
+    Copy-To (Join-Path $root "src\templates\problem.md")                (Join-Path $bd "templates\problem.md")
+    Copy-To (Join-Path $root "src\templates\solution.md")               (Join-Path $bd "templates\solution.md")
+    Copy-To (Join-Path $root "src\templates\tech-design.md")            (Join-Path $bd "templates\tech-design.md")
+    Copy-To (Join-Path $root "src\templates\testing.md")                (Join-Path $bd "templates\testing.md")
+    Copy-To (Join-Path $root "src\templates\issues-log.md")             (Join-Path $bd "templates\issues-log.md")
+    Copy-To (Join-Path $root "src\templates\overflow-log.md")           (Join-Path $bd "templates\overflow-log.md")
+    Copy-To (Join-Path $root "VERSION")                                  (Join-Path $bd "VERSION")
+
+    if (Test-Path $migSrc) {
+        Get-ChildItem $migSrc -File | ForEach-Object {
+            Copy-To $_.FullName (Join-Path $bd "migrations\$($_.Name)")
+        }
+    }
+
+    Fix-PromptPaths (Join-Path $bd "breakdown-prompt.md")
+
+    New-SkillZip -Name "aidos-breakdown" -StagingDir $bd -OutPath (Join-Path $dist "aidos-breakdown.zip")
+
+    # --- Fanout ---
+    $fo = Join-Path $temp "aidos-fanout"
+
+    Copy-To (Join-Path $PSScriptRoot "fanout\SKILL.md")                 (Join-Path $fo "SKILL.md")
+    Copy-To (Join-Path $root "src\prompts\fanout-prompt.md")            (Join-Path $fo "fanout-prompt.md")
+    Copy-To (Join-Path $root "src\framework.md")                        (Join-Path $fo "framework.md")
+    Copy-To (Join-Path $root "VERSION")                                  (Join-Path $fo "VERSION")
+
+    Fix-PromptPaths (Join-Path $fo "fanout-prompt.md")
+
+    New-SkillZip -Name "aidos-fanout" -StagingDir $fo -OutPath (Join-Path $dist "aidos-fanout.zip")
+
     # Report
     Write-Host "`nBuild complete:" -ForegroundColor Green
     Get-ChildItem $dist -Filter "*.zip" | ForEach-Object {
