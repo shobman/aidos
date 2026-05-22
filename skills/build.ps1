@@ -124,6 +124,10 @@ try {
     New-SkillZip -Name "aidos-breakdown" -StagingDir $bd -OutPath (Join-Path $dist "aidos-breakdown.zip")
 
     # --- Fanout ---
+    # Fanout bundles minimally (no rubrics/templates/migrations) because the skill
+    # never writes artifacts — it only dispatches sub-agents that invoke Builder,
+    # which carries the full rubric/template/migration set. Adding them to Fanout
+    # would create a silent duplication, not fix a real gap.
     $fo = Join-Path $temp "aidos-fanout"
 
     Copy-To (Join-Path $PSScriptRoot "fanout\SKILL.md")                 (Join-Path $fo "SKILL.md")
