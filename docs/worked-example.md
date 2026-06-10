@@ -2,6 +2,8 @@
 
 *A Feature-scale walkthrough showing the human–AI workflow, not just the finished artifacts.*
 
+> **For Epic-scale multi-agent flows** — where parallel sub-agents fill out per-Story artifacts across a larger initiative — see `/aidos-breakdown` and `/aidos-fanout` (introduced in v1.4.0).
+
 ---
 
 This example follows a platform engineer and an AI builder through a realistic delivery session. It shows the interaction pattern: how problems get framed, where assumptions surface, what happens when the auditor finds gaps, and how decisions get escalated when they can't be resolved in the session.

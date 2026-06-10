@@ -77,7 +77,7 @@ AIDOS is four independent pieces. Pick the ones you need — each has its own RE
 | Component | What it is | README |
 |---|---|---|
 | **Framework** | The operating model, rubrics, templates, and prompts. Pure markdown, no build. Usable as-is with any AI that accepts a system prompt. | [`src/README.md`](src/README.md) |
-| **Skills** | The framework packaged as Claude Skills (Builder, Auditor). Built from the framework, published as ZIPs, installable in Claude.ai and Claude Code. | [`skills/README.md`](skills/README.md) |
+| **Skills** | The framework packaged as four Claude Skills: Builder and Auditor for direct artifact work; Breakdown for decomposing an Epic or Feature into a stub tree; Fanout for coordinating parallel sub-agent build-out of that tree. Published as ZIPs, installable in Claude.ai and Claude Code. | [`skills/README.md`](skills/README.md) |
 | **GitHub MCP Connector** | A local MCP server for Claude Desktop. Lets non-coders read, edit, and publish `.aidos/` artifacts in GitHub repos without touching Git. | [`src/connectors/github/README.md`](src/connectors/github/README.md) |
 | **Confluence Publish Connector** | A reusable GitHub Actions workflow that publishes `.aidos/` folders to Confluence on every push. Markdown-to-Confluence translation, content hashing, idempotent. | [`src/connectors/confluence/README.md`](src/connectors/confluence/README.md) |
 
@@ -90,10 +90,10 @@ Each component is optional and independent. Use one, two, three, or all four.
 Pick the path that matches how you want to try AIDOS.
 
 **I just want to try it in an AI chat, no install**
-Copy [`src/prompts/builder-prompt.md`](src/prompts/builder-prompt.md) into a Claude / ChatGPT / Gemini session and describe what you're delivering. That's it. Audit a different session with [`src/prompts/auditor-prompt.md`](src/prompts/auditor-prompt.md).
+Copy [`src/prompts/builder-prompt.md`](src/prompts/builder-prompt.md) into a Claude / ChatGPT / Gemini session and describe what you're delivering. That's it. Audit a different session with [`src/prompts/auditor-prompt.md`](src/prompts/auditor-prompt.md). For Epic decomposition, use [`src/prompts/breakdown-prompt.md`](src/prompts/breakdown-prompt.md) (auditor checks the stub tree against [`src/rubrics/breakdown.md`](src/rubrics/breakdown.md)), then hand off to [`src/prompts/fanout-prompt.md`](src/prompts/fanout-prompt.md) to drive parallel build-out.
 
 **I use Claude and want a proper skill**
-Download [`aidos-builder.zip`](https://shobman.github.io/aidos/skills/aidos-builder.zip) and [`aidos-auditor.zip`](https://shobman.github.io/aidos/skills/aidos-auditor.zip), upload to Claude.ai (Settings → Customize → Skills) or extract into `.claude/skills/` in a Claude Code project. Invoke with `/aidos-builder` and `/aidos-auditor`. See [`skills/README.md`](skills/README.md).
+Download all four ZIPs — [`aidos-builder.zip`](https://shobman.github.io/aidos/skills/aidos-builder.zip), [`aidos-auditor.zip`](https://shobman.github.io/aidos/skills/aidos-auditor.zip), [`aidos-breakdown.zip`](https://shobman.github.io/aidos/skills/aidos-breakdown.zip), and [`aidos-fanout.zip`](https://shobman.github.io/aidos/skills/aidos-fanout.zip) — upload to Claude.ai (Settings → Customize → Skills) or extract into `.claude/skills/` in a Claude Code project. Use `/aidos-builder` and `/aidos-auditor` for direct artifact work. For Epic-scale decomposition, use `/aidos-breakdown` to produce a stub tree, audit it, then use `/aidos-fanout` to coordinate parallel sub-agent build-out. See [`skills/README.md`](skills/README.md).
 
 **I'm a non-coder and want Claude to author artifacts directly in a GitHub repo**
 Set up the GitHub MCP Connector in Claude Desktop: [`src/connectors/github/README.md`](src/connectors/github/README.md). Then install the Skills above. Claude will open a repo, create your personal `aidos/{username}` branch, and publish PRs per your project's write policy.
@@ -136,7 +136,8 @@ src/
 │   ├── problem.md                ← Problem criteria (P1–P11) — Product lens
 │   ├── solution.md               ← Solution criteria (S1–S9) — Analysis lens
 │   ├── tech-design.md            ← Tech Design criteria (A1–A10) — Architecture lens
-│   └── testing.md                ← Testing criteria (T1–T9) — Quality lens
+│   ├── testing.md                ← Testing criteria (T1–T9) — Quality lens
+│   └── breakdown.md              ← Breakdown criteria (B1–B5 Bugs, R1–R3 Risks) — audits decomposition shape
 ├── templates/
 │   ├── problem.md                ← Problem artifact template
 │   ├── solution.md               ← Solution artifact template
@@ -147,10 +148,14 @@ src/
 │   └── meeting-minutes.md        ← Lean meeting capture
 └── prompts/
     ├── builder-prompt.md         ← Self-contained AI builder session prompt
-    └── auditor-prompt.md         ← Self-contained AI auditor session prompt
+    ├── auditor-prompt.md         ← Self-contained AI auditor session prompt
+    ├── breakdown-prompt.md       ← Self-contained AI decomposition session prompt
+    └── fanout-prompt.md          ← Self-contained AI fanout coordinator prompt
 skills/
 ├── builder/SKILL.md              ← AIDOS Builder skill for Claude
 ├── auditor/SKILL.md              ← AIDOS Auditor skill for Claude
+├── breakdown/SKILL.md            ← /aidos-breakdown skill — Epic/Feature decomposition into stub tree
+├── fanout/SKILL.md               ← /aidos-fanout skill — parallel sub-agent coordinator
 └── build.ps1                     ← Assembles and ZIPs skills for distribution
 site/                             ← Framework Explorer (GitHub Pages)
 ```

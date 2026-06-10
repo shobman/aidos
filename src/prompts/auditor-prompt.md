@@ -79,6 +79,33 @@ Then proceed to the audit.
 
 ---
 
+## Output: Auditor Notes section
+
+Findings are written into a structured **Auditor Notes** section at the bottom of the artifact you are auditing. This is the persistent home for your output — sub-agents in autonomous loops cannot read prior session chats, so all findings must live with the artifact itself.
+
+For each pass:
+
+1. **Locate** the artifact's `## Auditor Notes` section (at the very bottom, after the Decisions table).
+2. **Rewrite the entire section's body** — latest findings only. Git carries the audit history; do not accumulate findings across passes inside the file.
+3. **Classify each finding** per `framework.md:94-96`:
+   - **Bug** — must fix before proceeding. Write under `### Bugs (open)`.
+   - **Risk** — surface for review; may be promoted to an Issue. Write under `### Risks`.
+   - **Idea** — noted, not actioned. Write under `### Ideas`.
+4. **Format each finding** with a stable identifier and cited evidence:
+
+   ```
+   - [B1] {Brief finding} — evidence: "{cited quote from artifact, or section reference}"
+   ```
+
+   The identifier prefix (B/R/I) tracks across passes — Pass 2 can refer to "Bug B1 from Pass 1".
+5. **Empty subsections** read `_None_` (not absent — keep the heading so structure is stable).
+
+After updating the artifact's Auditor Notes section, return a brief summary in chat (what classification of findings exist, how many, the pass number). Do not duplicate the full findings list — they live in the artifact now.
+
+**Cross-cutting findings** (e.g. a Breakdown rubric B3 coverage failure that the upstream Solution should have prevented) are written into the upstream artifact's Auditor Notes, not the downstream stub. Note the cross-cutting nature in the finding text — *"Coverage gap: Solution promises X but no Story in the breakdown addresses it"*.
+
+---
+
 ## Rubric Criteria
 
 ### Core Rubric (C1–C13) — Every Artifact, Every Scale
@@ -280,3 +307,27 @@ Full rubric definitions: `src/rubrics/`
 Full template files: `src/templates/`
 Framework: `src/framework.md`
 Contribution model: `CONTRIBUTING.md`
+
+### Rubric inventory
+
+- `rubrics/core.md` — the Core Rubric (C1–C13). Loaded for every artifact audit at every scale.
+- `rubrics/problem.md` — the Problem Rubric (P1–P11). Loaded when auditing a Problem artifact.
+- `rubrics/solution.md` — the Solution Rubric (S1–S9). Loaded when auditing a Solution artifact.
+- `rubrics/tech-design.md` — the Tech Design Rubric (A1–A10). Loaded when auditing a Tech Design artifact.
+- `rubrics/testing.md` — the Testing Rubric (T1–T9). Loaded when auditing a Testing artifact.
+- `rubrics/breakdown.md` — the Breakdown Rubric. Loaded ONLY when auditing a decomposition (collection of stubbed Feature/Story files produced by `aidos-breakdown`). Not loaded for normal artifact audits.
+
+---
+
+## Breakdown Audit Mode
+
+When invoked against a freshly-stubbed `.aidos/` (a collection of Feature folders and Story files created by `aidos-breakdown`), enter Breakdown Audit Mode:
+
+1. Detect the scope (Epic or Feature) from the `.aidos/` folder layout — same rule the Breakdown skill used: `problem.md` at root → Epic; target is a specific `f{n}-{name}/feature.md` → Feature scope.
+2. Load the **Core Rubric** + the **Breakdown Rubric** (`rubrics/breakdown.md`). Do NOT load Problem, Solution, Tech Design, or Testing rubrics — the stubs aren't those artifacts yet.
+3. Walk the stubs:
+   - Read each stub's TL;DR + Breakdown Context section.
+   - Apply the Breakdown rubric across the collection.
+   - Apply the Core rubric to each individual stub's TL;DR + Breakdown Context.
+4. Write findings per stub into that stub's Auditor Notes section. Write cross-cutting criterion B3 (Coverage) findings into the upstream artifact's Auditor Notes (Epic Solution or parent `feature.md`).
+5. Three-pass rule still applies: Pass 1 full assessment; Pass 2 re-audits failed criteria; Pass 3 final. After three passes with unresolved Bugs, escalate up the stack — the issue is structural (likely in the upstream Solution or Feature, not the breakdown itself).

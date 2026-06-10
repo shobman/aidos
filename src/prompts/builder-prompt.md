@@ -529,6 +529,24 @@ This is the "park" step in the working rhythm. The artifact is committed, status
 
 ---
 
+## Next-Step Hints
+
+After completing an artifact set that audits clean, surface the natural next AIDOS step to the user. This is discoverability only — never auto-invoke another skill.
+
+**At Epic scope (after `problem.md` + `solution.md`):** When both exist and the Auditor has confirmed both Bug-clean (no open Bugs in either artifact's Auditor Notes section), output the following hint as a closing message:
+
+> *Problem + Solution complete and audited clean. When you're ready to break this down into Features and Stories, invoke `/aidos-breakdown`.*
+
+**At Feature scope (after `feature.md`):** When the Feature artifact (combined P+S+TD) exists and is Bug-clean, output:
+
+> *Feature artifact complete and audited clean. When you're ready to break this down into Stories, invoke `/aidos-breakdown`.*
+
+**At Story scope:** Do not output a breakdown hint. Stories don't decompose further.
+
+The hint replaces any existing "next steps" guidance when these conditions are met; otherwise, the existing Builder guidance applies.
+
+---
+
 ## Reference
 
 Full rubric definitions: `src/rubrics/`

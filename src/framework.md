@@ -107,6 +107,8 @@ Every artifact is assessed against two rubric layers:
 
 Each criterion has a defined "what pass looks like." The auditor assesses Pass, Partial, or Fail with cited evidence. The evidence requirement is what gives rubrics teeth — you can't hand-wave a Pass. Partials are accepted or rejected by the human directing the audit, not waved through. The artifact doesn't advance until bugs are fixed.
 
+**Auditor Notes section.** Each artifact has an `## Auditor Notes` section at its bottom — a structured home for the Auditor's per-pass findings, classified as Bug / Risk / Idea. The section is rewritten by the Auditor each pass (latest findings only; git carries the history). This is what makes the autonomy loop work — sub-agents in different sessions cannot read each other's chats, so findings must persist with the artifact.
+
 Full rubric definitions are in `src/rubrics/`.
 
 ### The Artifacts Are the Interface
@@ -163,6 +165,19 @@ An AIDOS project root is identified by a `.aidos/` folder. This is where artifac
 Git is the source of truth. Artifacts are authored, committed, and reviewed through the repository — the same way as code. Publishing to other systems (Confluence, GitHub Pages, etc.) is optional and outbound. The `.aidos/` folder and the repo's version history are the canonical record.
 
 Delivery artifacts live in the `.aidos/` folder and stay current as the feature evolves — they are the long-term record. No archive convention.
+
+---
+
+## Decomposition and Fan-out
+
+For Epic-scale work, AIDOS provides two additional skills beyond Builder and Auditor:
+
+- **`aidos-breakdown`** — interactive scaffolding skill that takes approved Epic-scope Problem + Solution (or Feature-scope `feature.md`) and produces a decomposition into Features and Stories as filesystem stubs, each with a TL;DR and Breakdown Context section. Audited against the Breakdown Rubric (`rubrics/breakdown.md`). The filesystem layout IS the breakdown — no separate manifest.
+- **`aidos-fanout`** — coordinator skill that dispatches sub-agents to fill out the stubbed Feature and Story artifacts. Two-phase at Epic scope (Features first, then Stories); single-phase at Feature scope. Sub-agents are context-isolated and run the autonomous Builder → Auditor → fix loop internally, capped at the three-pass rule.
+
+Both skills run in Claude Code, where sub-agent dispatch primitives exist. PM/PO workflows for upstream artifact authoring continue to work in Claude.ai with the AIDOS Skill + GitHub MCP Connector; the BA persona drives breakdown and fan-out in Claude Code.
+
+Decomposition is not project management. The Breakdown Rubric audits shape (independence, coverage, boundary clarity, sizing-shape, feature scope, naming, dependencies) — not estimation, sequencing, or rollout. Those concerns belong to the team's PM system (Jira, Linear, etc.), not to AIDOS.
 
 ---
 

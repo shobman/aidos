@@ -47,7 +47,7 @@ Scaling depth:
 # Tech Design: [title]
 
 **Status:** DRAFT | REVIEW | ACCEPTED
-**AIDOS Version:** 1.0.0
+**AIDOS Version:** 1.4.0
 **Solution:** [link to Solution artifact]
 
 ---
@@ -168,3 +168,40 @@ Scaling depth:
 | # | Source | Issue | Resolution | Decided By | Date |
 |---|---|---|---|---|---|
 | D1 | | | | | |
+
+## Auditor Notes
+
+<!--
+Populated by the AIDOS Auditor skill. Rewritten on each audit pass — latest
+findings only; git carries the history. Cleared once the artifact is final (no
+open Bugs, no new findings on the latest pass).
+
+Findings are classified per framework.md:94-96:
+- Bug — must fix before proceeding
+- Risk — surface; may become an Issue
+- Idea — noted, not actioned
+-->
+
+### Bugs (open)
+
+<!-- Format per finding:
+- [B1] {Brief finding} — evidence: "{cited quote from artifact, or section reference}"
+-->
+
+_None_
+
+### Risks
+
+<!-- Format per finding:
+- [R1] {Brief finding} — evidence: "{cited quote or section reference}"
+-->
+
+_None_
+
+### Ideas
+
+<!-- Format per finding:
+- [I1] {Brief finding} — evidence: "{cited quote or section reference}"
+-->
+
+_None_

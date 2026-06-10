@@ -147,6 +147,8 @@ export default function App() {
   const footerSkills = [
     { label: "Builder (.zip)", href: "https://shobman.github.io/aidos/skills/aidos-builder.zip" },
     { label: "Auditor (.zip)", href: "https://shobman.github.io/aidos/skills/aidos-auditor.zip" },
+    { label: "Breakdown (.zip)", href: "https://shobman.github.io/aidos/skills/aidos-breakdown.zip" },
+    { label: "Fanout (.zip)", href: "https://shobman.github.io/aidos/skills/aidos-fanout.zip" },
   ];
 
   const base = import.meta.env.BASE_URL;

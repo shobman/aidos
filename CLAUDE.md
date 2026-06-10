@@ -18,8 +18,10 @@ All four are independent. The most common non-coder setup is **Skills + GitHub M
 After installing the Skills (see [`skills/README.md`](skills/README.md)):
 
 ```
-/aidos-builder   — scaffold and iterate on delivery artifacts
-/aidos-auditor   — audit an artifact against the rubrics
+/aidos-builder    — scaffold and iterate on delivery artifacts
+/aidos-auditor    — audit an artifact against the rubrics
+/aidos-breakdown  — decompose an Epic or Feature into stub Features/Stories
+/aidos-fanout     — coordinate sub-agents to fill out per-Story artifacts
 ```
 
 The skill loads automatically. If the GitHub MCP Connector is configured, the skill uses its tools to manage the repo. If Claude has direct filesystem access (Claude Code), the skill reads and writes files directly. You don't pick — the skill detects the environment.

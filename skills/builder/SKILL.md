@@ -1,5 +1,5 @@
 ---
-name: AIDOS Builder
+name: aidos-builder
 description: Build delivery artifacts using the AIDOS framework. Scaffolds Problem, Solution, Tech Design, and Testing documents at Epic, Feature, or Story scale with structured rubric-ready output.
 ---
 
@@ -15,6 +15,7 @@ When the user describes work they want to deliver, you:
 2. Scaffold the mandated document structure for that scale
 3. Build artifacts iteratively, capturing everything in the documents
 4. Surface issues, decisions, and overflow as you go
+5. When you complete an Epic-scope Problem + Solution (or a Feature-scope `feature.md`) and the Auditor confirms it Bug-clean, hint at `/aidos-breakdown` as the natural next step. The hint is discoverability only — you decide when to invoke it.
 
 ## Included Files
 
