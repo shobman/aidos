@@ -26,7 +26,8 @@ Before auditing, read the file's `AIDOS Version` and compare to the skill's `VER
 |---|---|
 | Match | Audit normally. No message. |
 | Behind, patch only | Audit normally. No message. |
-| Behind, minor or more | Before delivering findings, warn: "This file is on AIDOS v<file-version>. Current framework is v<skill-version>. Consider running `/aidos-builder` to upgrade the file before auditing so rubric and file structure align." Then audit. |
+| Behind, minor | Before delivering findings, warn: "This file is on AIDOS v<file-version>. Current framework is v<skill-version>. Consider running `/aidos-builder` to upgrade the file before auditing so rubric and file structure align." Then audit. |
+| Behind, major | Do not audit. Tell the user: "This file is stamped v<file-version>; the framework is now v<skill-version> — a major revision with different rubrics. Run the Builder migration flow (`/aidos-builder` offers it on open) before auditing against v<skill-version> rubrics." Un-migrated artifacts remain valid under the version they were built with — you do not assess them against current rubrics. |
 | Ahead, patch only | Soft warning: "This file was created with a newer patch (v<file-version>). Audit proceeds against v<skill-version> framework." Then audit. |
 | Ahead, minor or more | Hard block. Refuse to audit. Tell the user: "This file requires AIDOS v<file-version>+ to audit accurately. Upgrade your AIDOS skill before auditing." |
 
@@ -108,7 +109,7 @@ After updating the artifact's Auditor Notes section, return a brief summary in c
 
 ## Rubric Criteria
 
-### Core Rubric (C1–C13) — Every Artifact, Every Scale
+### Core Rubric (C1–C14) — Every Artifact, Every Scale
 
 | # | Criterion | What "Pass" Looks Like |
 |---|---|---|
@@ -125,8 +126,9 @@ After updating the artifact's Auditor Notes section, return a brief summary in c
 | C11 | No duplication | References rather than copies. Each fact lives in one place. |
 | C12 | Single unit of work | Addresses a single deliverable that can be independently understood, built, tested, and released. |
 | C13 | Implementation neutrality at the right altitude | The artifact says nothing about implementation that the coding session is better placed to decide. Problem and Solution avoid tools/vendors/schemas/libraries. Tech Design constrains architecture (boundaries, state ownership, seam contracts at kind level, invariants, failure posture) not code. Testing asserts behaviour, not test code. See framework § Altitude Discipline. |
+| C14 | Title altitude | Artifact, Feature, and Story titles read as user-experience or business-outcome statements, not component/module/service/technical-role names. "An open window stops heating the room" passes; "Resolver Service" fails. Pre-existing external system names are not component names. |
 
-### Problem Rubric (P1–P11) — Product Lens
+### Problem Rubric (P1–P13) — Product Lens
 
 | # | Criterion | What "Pass" Looks Like |
 |---|---|---|
@@ -141,8 +143,10 @@ After updating the artifact's Auditor Notes section, return a brief summary in c
 | P9 | Impact and urgency | Cost quantified where possible. Why now. What happens if not addressed. Evidence-based, not assertion-based. |
 | P10 | Existing alternatives | Whether the problem is already solved acknowledged. If alternatives exist, insufficiency is stated. Building is justified. |
 | P11 | Honest framing | Problem reads honestly about what's broken, including awkward truths the author would have reason to soften. A stakeholder would recognise their experience. Sanitised plausible prose fails. |
+| P12 | System purpose grounding | Statement establishes who the system serves, what for, what success looks like in operator/user terms — before implementation pain. At least one Goal is purpose-grounded. |
+| P13 | Epic goal altitude | At Epic scope, every Goal is observed by users/operators/business, not the codebase. Implementation-shaped goals move to Feature scope, Tech Design, or Overflow (tagged destination) — moved, not deleted. Epic scope only. |
 
-### Solution Rubric (S1–S9) — Analysis Lens
+### Solution Rubric (S1–S10) — Analysis Lens
 
 | # | Criterion | What "Pass" Looks Like |
 |---|---|---|
@@ -155,6 +159,7 @@ After updating the artifact's Auditor Notes section, return a brief summary in c
 | S7 | Migration and transition | Path from current to proposed state described. Cutover, compatibility, rollback addressed. |
 | S8 | Actor identification | Every person, team, or system that interacts is identified with specific interactions described. |
 | S9 | Constraint compliance | Solution respects Problem constraints. Gaps acknowledged with explicit mitigation or trade-off. |
+| S10 | Solution altitude discipline | The system under design is one undivided black box. No sentence names an internal component/module/service/technical role of it, in any grammatical position. Observer test: someone who has never seen the code can evaluate every sentence. External/pre-existing systems are legitimate actors; external mechanisms are committed only as constraints or explicit S5-weighed decisions, outcome stated first. |
 
 ### Tech Design Rubric (A1–A10) — Architecture Lens
 
@@ -189,10 +194,10 @@ After updating the artifact's Auditor Notes section, return a brief summary in c
 
 At story scale, audit is lighter but the criteria still apply. Focus on these as the primary assessment:
 
-**Core:** C1, C2, C3, C4, C5, C9, C12
+**Core:** C1, C2, C3, C4, C5, C9, C12, C14
 **Problem (Context):** P1, P5, P11
-**Solution (User Story):** S1, S4
-**Tech Design (Technical Approach):** A1, A2, A4
+**Solution (User Story):** S1, S4, S10
+**Tech Design (Technical Approach, when present):** A1, A2, A4
 **Testing (Acceptance Criteria):** T1, T2, T5
 
 Other criteria can be assessed if relevant, but these are the minimum for a meaningful story-scale audit.
@@ -224,6 +229,11 @@ After the rubric audit, check coherence with the preceding artifact. This is as 
 - If a requirement is deliberately unasserted, the gap is stated and justified
 - **Altitude.** Assertions phrased in test-code terms (specific HTTP codes, payload shapes, tool/framework names) signal a coherence break — Testing has leaked past its altitude.
 
+**Tech Design presence (Feature/Story combined documents, v2.0.0).** Tech Design is optional below Epic, but the slot is never silently absent. Check:
+- The combined document has a `## Tech Design` (or `## Technical Approach`) section that either carries content or carries a one-line recorded omission (`*Omitted — [reasoning]*`). A missing slot, or an omission line with empty/placeholder reasoning, is a Bug (unearned silence — same family as unearned ceremony).
+- **Mechanical floor:** if the Feature has multiple Stories and any cross-Story contract is implied by the Story TL;DRs (one Story reads another's API, event, or schema), an omitted Tech Design is a Bug — cross-Story contracts have nowhere else to live (context-isolated Story sessions cannot read sibling Stories).
+- You check that the recorded reasoning *exists*, not whether you agree with it. Dev pushback, not the audit, litigates the architect's judgment.
+
 ---
 
 ## Issue and Decision Validation
@@ -248,7 +258,7 @@ Every finding is classified:
 - **Risk** — decision required. The human decides: accept, mitigate, or defer. Risks don't block the artifact, but they need explicit disposition.
 - **Idea** — noted, not actioned unless chosen. Ideas do not drive additional audit passes. Table them separately.
 
-**Unearned conditional sections are Bugs.** Several Problem and Solution sections are conditional in v1.3.0 (see template CONDITIONAL markers). If a conditional section is present but its content is stub-only, generic, or doesn't trace to the trigger condition stated in the template, classify as a Bug — remove the section. Absent conditional sections are not Bugs.
+**Unearned conditional sections are Bugs.** Several Problem and Solution sections are conditional (see template CONDITIONAL markers). If a conditional section is present but its content is stub-only, generic, or doesn't trace to the trigger condition stated in the template, classify as a Bug — remove the section. Absent conditional sections are not Bugs.
 
 **C12 failures are always Bugs.** If the artifact is trying to cover too many concerns, recommend decomposition into sibling artifacts at the same scale level.
 
@@ -310,12 +320,12 @@ Contribution model: `CONTRIBUTING.md`
 
 ### Rubric inventory
 
-- `rubrics/core.md` — the Core Rubric (C1–C13). Loaded for every artifact audit at every scale.
-- `rubrics/problem.md` — the Problem Rubric (P1–P11). Loaded when auditing a Problem artifact.
-- `rubrics/solution.md` — the Solution Rubric (S1–S9). Loaded when auditing a Solution artifact.
+- `rubrics/core.md` — the Core Rubric (C1–C14). Loaded for every artifact audit at every scale.
+- `rubrics/problem.md` — the Problem Rubric (P1–P13). Loaded when auditing a Problem artifact.
+- `rubrics/solution.md` — the Solution Rubric (S1–S10). Loaded when auditing a Solution artifact.
 - `rubrics/tech-design.md` — the Tech Design Rubric (A1–A10). Loaded when auditing a Tech Design artifact.
 - `rubrics/testing.md` — the Testing Rubric (T1–T9). Loaded when auditing a Testing artifact.
-- `rubrics/breakdown.md` — the Breakdown Rubric. Loaded ONLY when auditing a decomposition (collection of stubbed Feature/Story files produced by `aidos-breakdown`). Not loaded for normal artifact audits.
+- `rubrics/breakdown.md` — the Breakdown Rubric. Loaded ONLY when auditing a decomposition (collection of stubbed Feature/Story files produced by `aidos-breakdown`). Not loaded for normal artifact audits. Tiered B1–B6 (Bugs) + R1–R2 (Risks).
 
 ---
 
