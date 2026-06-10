@@ -52,7 +52,8 @@ Comparison rules:
 |---|---|---|
 | Match | File 1.2.0, skill 1.2.0 | Silent. Proceed. |
 | Behind, patch only | File 1.0.0, skill 1.0.2 | Silent. Proceed. |
-| Behind, minor or more | File 1.0.0, skill 1.2.0 | Warn the user: "This file is on AIDOS v1.0.0. Current framework is v1.2.0 — a migration may be available. Want me to upgrade this file?" Proceed whether they accept or decline. |
+| Behind, minor | File 1.0.0, skill 1.2.0 | Warn the user: "This file is on AIDOS v1.0.0. Current framework is v1.2.0 — a migration may be available. Want me to upgrade this file?" Proceed whether they accept or decline. |
+| Behind, major | File 1.4.0, skill 2.0.0 | Offer the migration flow as above. If the user declines, warn: "Without migration, the Auditor will not audit this file — it remains valid under its stamped version, but edits made under current conventions may not fit its v1.x rubrics." Then proceed. |
 | Ahead, patch only | File 1.2.1, skill 1.2.0 | Soft warning: "This file was created with a newer patch (v1.2.1). Proceed with caution." Proceed. |
 | Ahead, minor or more | File 1.3.0, skill 1.2.0 | Hard block. Refuse to modify. Tell the user: "This file requires AIDOS v1.3.0+. Upgrade your AIDOS skill before editing." |
 
@@ -60,7 +61,7 @@ If a file has no `AIDOS Version` field, treat it as v1.0.0 and follow the rules 
 
 ### Per-file upgrade flow
 
-When a file is behind (minor or more) and the user accepts the upgrade offer:
+When a file is behind (minor or major) and the user accepts the upgrade offer:
 
 1. Read the migration files from `src/migrations/` in the bundled skill content that sit between the file's version and the current `VERSION`. If any step in the chain has no migration file (e.g. no `v1.0.0-to-v1.1.0.md` exists for the v1.0.0 → v1.1.0 hop), tell the user the automatic upgrade cannot cover that gap and stop. Offer that they upgrade their skill and try again, or migrate manually.
 2. For each migration step, in version order:
@@ -196,7 +197,7 @@ You know every rubric criterion and build with them in mind so audits pass clean
 | P9 | Impact and urgency | Cost quantified where possible. Why now. What happens if not addressed. |
 | P10 | Existing alternatives | Whether the problem is already solved acknowledged. Building is justified, not default. |
 | P11 | Honest framing | Problem reads honestly about what's broken, including awkward truths the author would have reason to soften. A stakeholder would recognise their experience. Sanitised plausible prose fails. |
-| P12 | System purpose grounding | Statement establishes who the system serves, what for, what success looks like in operator/user terms — before implementation pain. At least one Goal is purpose-grounded. |
+| P12 | System purpose grounding | Statement establishes who the system serves, what for, what success looks like in operator/user terms — before implementation pain. At least one Goal is purpose-grounded. At Feature/Story scale, an explicit reference to the parent Epic's purpose satisfies it. |
 | P13 | Epic goal altitude | At Epic scope, every Goal is observed by users/operators/business, not the codebase. Implementation-shaped goals move to Feature scope, Tech Design, or Overflow (tagged destination) — moved, not deleted. Epic scope only. |
 
 ### Solution Rubric (S1–S10) — Analysis Lens

@@ -176,7 +176,7 @@ Populated by the AIDOS Auditor skill. Rewritten on each audit pass — latest
 findings only; git carries the history. Cleared once the artifact is final (no
 open Bugs, no new findings on the latest pass).
 
-Findings are classified per framework.md:94-96:
+Findings are classified per framework.md § Builder / Auditor Separation:
 - Bug — must fix before proceeding
 - Risk — surface; may become an Issue
 - Idea — noted, not actioned

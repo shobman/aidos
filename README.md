@@ -60,7 +60,7 @@ A team needs to improve how warehouse staff track inventory across multiple loca
 | Artifact | What Gets Captured |
 |---|---|
 | **Problem** | Warehouse staff can't get accurate stock counts without checking three separate systems, taking ~20 min per lookup. Affects 150+ operators making daily restocking decisions. |
-| **Solution** | Add a unified stock dashboard to the warehouse management interface. Pull live counts from existing inventory sources, surface inline. |
+| **Solution** | Add a unified stock dashboard to the warehouse management interface. Staff see current counts — accurate within a stated freshness window — inline in the interface they already use. |
 | **Tech Design** | Architectural shape: one boundary owns stock-count reads with a stated freshness window. State ownership: the existing inventory source is the single source of truth per item; the dashboard caches a derivation. Failure posture: stale data surfaces with a "data unavailable" indicator rather than blocking the page. |
 | **Testing** | Validate data freshness, permissions, rendering across devices, fallback states. Every test traces to a requirement in the Solution. |
 

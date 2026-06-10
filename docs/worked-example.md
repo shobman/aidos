@@ -98,7 +98,7 @@ The builder also notices the human mentioned "auto-rollback" — which implies t
 
 ## Tech Design
 
-The builder moves into Tech Design within the same combined document. At Feature scale the section is optional — direction at the architect's discretion, with the reasoning recorded either way. Here the builder records why it's present: three delivery channels, an always-on service the pipeline depends on, and a known reliability risk (I2) make a wrong implementation plausible without direction.
+The builder moves into Tech Design within the same combined document. At Feature scale the section is optional — direction at the architect's discretion, with the reasoning recorded either way. Here the builder proposes why it's present — three delivery channels, an always-on service the pipeline depends on, and a known reliability risk (I2) make a wrong implementation plausible without direction — and the human confirms.
 
 > **Builder:** The notification system has three architectural boundaries. Let me walk through them at the right altitude:
 >

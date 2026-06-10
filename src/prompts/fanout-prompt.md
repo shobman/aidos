@@ -11,7 +11,7 @@ You are NOT a project-management tool. Concurrency is a system resource cap, not
 1. **Two phases at Epic scope, one at Feature scope.** Phase 1 builds Feature artifacts; Phase 2 builds Story artifacts. Phase 2 reads what Phase 1 wrote — that's why ordering matters architecturally. At Feature scope, Phase 1 has nothing to do (feature.md is the input, authored upstream).
 2. **Context isolation is real.** Each sub-agent receives a permission-scoped read set. A Story sub-agent for `f1s2` cannot read `f1s1` or `f1s3` content; cross-Story dependencies must come from the parent `feature.md`. A Feature-1 sub-agent cannot read Feature-2 content; cross-Feature dependencies must come from the Epic chain.
 3. **Bounded parallelism.** Default N=3 concurrent sub-agents per phase. Overridable by the BA via `--concurrency` argument (or conversational override).
-4. **Audit-pass = no open Bugs.** Risks and Issues can be open and Phase 2 still starts. Bug-clean is the AIDOS gate (per `framework.md:108`).
+4. **Audit-pass = no open Bugs.** Risks and Issues can be open and Phase 2 still starts. Bug-clean is the AIDOS gate (per `framework.md § Rubrics`).
 5. **Upstream Issues propagate as Risks downstream.** When Phase 1 leaves an open Issue on a `feature.md`, the Phase 2 Story sub-agents for that Feature receive that Issue as a **Risk** seeded into their stubs' Auditor Notes — *"parent Feature has unresolved Issue X; treat as constraint until resolved"*. Story sub-agents acknowledge it; they do NOT re-raise it as a new Issue.
 6. **Blocked is escalation, not halt.** A blocked sub-agent does NOT stop the fan-out. Other parallel sub-agents continue. Blocked items are surfaced in the final report for the BA to investigate.
 
@@ -26,7 +26,7 @@ To avoid race conditions when multiple sub-agents run concurrently:
 - **Shared-file writes are single-writer:**
   1. You (the Fanout skill) seed Risks into Story stubs sequentially during Phase 2 dispatch before invoking each sub-agent (no concurrency).
   2. You aggregate Issues in the final report for BA visibility — read-only across artifacts, no write to `.aidos/issues-log.md`.
-  3. The BA copies escalated Issues to `.aidos/issues-log.md` during their review step (per `framework.md:194`).
+  3. The BA copies escalated Issues to `.aidos/issues-log.md` during their review step (per `framework.md § Issues and Decisions`).
 
 This removes the concurrent-write race entirely. Sub-agents stay scoped to their own artifact; shared bookkeeping is single-writer (you, or the BA).
 
@@ -62,7 +62,7 @@ For each `f{n}-{name}/feature.md` stub, dispatch a sub-agent via the Agent tool.
 - **Read-access list (read-only):** `.aidos/problem.md`, `.aidos/solution.md`, `.aidos/tech-design.md` (if present), `.aidos/testing.md` (if present)
 - **Read-access denied:** all other Feature folders (`f{≠n}-*/`), all Story files
 - **Scope:** Feature
-- **Instructions:** invoke AIDOS Builder for each artifact section; after each draft, invoke AIDOS Auditor explicitly (prompt-driven, not via a Claude Code hook); read findings from Auditor Notes section; fix Bugs, promote unactionable items to inline Issues, note Risks/Ideas; repeat up to AIDOS's three-pass cap (`framework.md:98`). Return `done` (Bugs cleared) or `blocked` (cap exceeded).
+- **Instructions:** invoke AIDOS Builder for each artifact section; after each draft, invoke AIDOS Auditor explicitly (prompt-driven, not via a Claude Code hook); read findings from Auditor Notes section; fix Bugs, promote unactionable items to inline Issues, note Risks/Ideas; repeat up to AIDOS's three-pass cap (`framework.md § Builder / Auditor Separation`). Return `done` (Bugs cleared) or `blocked` (cap exceeded).
 
 **Cross-Story contract surfacing (mandatory in Phase 1).** When filling out the Feature's Tech Design portion, the sub-agent MUST explicitly enumerate any contract that more than one Story within this Feature depends on — cache API consumed by widget, auth middleware consumed by multiple pages, shared schema, event format, etc. The Feature's Tech Design is the ONLY place these cross-Story contracts can live: Phase 2 Story sub-agents are context-isolated from siblings and cannot read each other's content. Unsurfaced contracts cause integration failures that don't appear until Stories are stitched together. Under v2.0.0 the Feature Tech Design section is optional — but this is the mechanical floor on that optionality: if any cross-Story contract exists, the Feature's Tech Design section MUST exist and enumerate it. A Feature whose Tech Design was omitted at breakdown time but whose Stories turn out to share a seam is a Bug — report it and recommend the BA re-run `/aidos-breakdown` for that Feature. Where the TD section exists, enforcement is the existing **A2 (Seam Contracts)** criterion in `rubrics/tech-design.md`, applied with extra rigor at Feature scope — every cross-Story seam enumerated in the Seam Contracts table, or fail A2.
 
@@ -82,7 +82,7 @@ For each `f{n}s{m}-{name}.md` Story stub (Epic scope: across all Feature folders
 - **Read-access list (read-only):** Epic chain (`.aidos/problem.md`, `solution.md`, `tech-design.md`, `testing.md`) + this Story's Feature folder's `feature.md` and `testing.md`
 - **Read-access denied:** sibling Story files in the same Feature folder; all other Feature folders
 - **Scope:** Story
-- **Instructions:** same Builder → Auditor → fix loop as Phase 1.
+- **Instructions:** same Builder → Auditor → fix loop as Phase 1. For the Technical Approach section: write content, inheriting the parent Feature's Tech Design decision and direction; never write an omission line — omission requires human discretion, which an autonomous sub-agent does not have.
 
 **Upstream Issue propagation.** Before dispatching each Story sub-agent, check the parent Feature's `feature.md` for open Issues. If any exist, seed them as **Risks** in the Story stub's Auditor Notes section under `### Risks` — format:
 
@@ -114,7 +114,7 @@ Stories:
 
 Open Issues:
 - Across {N} artifacts; surfaced for human review. Inline in each artifact's Issues table.
-- Issues remain inline — you do NOT write to .aidos/issues-log.md. The BA escalates appropriate Issues to the Issues Log during their review step (framework.md:194).
+- Issues remain inline — you do NOT write to .aidos/issues-log.md. The BA escalates appropriate Issues to the Issues Log during their review step (framework.md § Issues and Decisions).
 
 Per-blocked-item:
 - {file path} — reason (e.g. "3-pass cap reached on Tech Design; auditor finding 'B3 missing seam contract'"), suggested upstream investigation.
@@ -126,7 +126,7 @@ After the report, do NOT auto-loop. Wait for the BA to act. If a small number of
 
 A sub-agent returns `blocked` when:
 
-- Its autonomous Builder–Auditor loop reaches AIDOS's 3-pass cap without clearing all Bugs. Per `framework.md:98`, "repeated failure at this point usually signals a structural issue upstream" — escalate.
+- Its autonomous Builder–Auditor loop reaches AIDOS's 3-pass cap without clearing all Bugs. Per `framework.md § Builder / Auditor Separation`, "repeated failure at this point usually signals a structural issue upstream" — escalate.
 - It encounters a structural error before audit (e.g. upstream artifact contradicts what the breakdown said; required upstream file missing or empty).
 - It hits an operational failure (crash, timeout) distinct from rubric failure.
 

@@ -88,7 +88,7 @@ For each pass:
 
 1. **Locate** the artifact's `## Auditor Notes` section (at the very bottom, after the Decisions table).
 2. **Rewrite the entire section's body** — latest findings only. Git carries the audit history; do not accumulate findings across passes inside the file.
-3. **Classify each finding** per `framework.md:94-96`:
+3. **Classify each finding** per `framework.md § Builder / Auditor Separation`:
    - **Bug** — must fix before proceeding. Write under `### Bugs (open)`.
    - **Risk** — surface for review; may be promoted to an Issue. Write under `### Risks`.
    - **Idea** — noted, not actioned. Write under `### Ideas`.
@@ -143,7 +143,7 @@ After updating the artifact's Auditor Notes section, return a brief summary in c
 | P9 | Impact and urgency | Cost quantified where possible. Why now. What happens if not addressed. Evidence-based, not assertion-based. |
 | P10 | Existing alternatives | Whether the problem is already solved acknowledged. If alternatives exist, insufficiency is stated. Building is justified. |
 | P11 | Honest framing | Problem reads honestly about what's broken, including awkward truths the author would have reason to soften. A stakeholder would recognise their experience. Sanitised plausible prose fails. |
-| P12 | System purpose grounding | Statement establishes who the system serves, what for, what success looks like in operator/user terms — before implementation pain. At least one Goal is purpose-grounded. |
+| P12 | System purpose grounding | Statement establishes who the system serves, what for, what success looks like in operator/user terms — before implementation pain. At least one Goal is purpose-grounded. At Feature/Story scale, an explicit reference to the parent Epic's purpose satisfies it. |
 | P13 | Epic goal altitude | At Epic scope, every Goal is observed by users/operators/business, not the codebase. Implementation-shaped goals move to Feature scope, Tech Design, or Overflow (tagged destination) — moved, not deleted. Epic scope only. |
 
 ### Solution Rubric (S1–S10) — Analysis Lens
@@ -258,7 +258,7 @@ Every finding is classified:
 - **Risk** — decision required. The human decides: accept, mitigate, or defer. Risks don't block the artifact, but they need explicit disposition.
 - **Idea** — noted, not actioned unless chosen. Ideas do not drive additional audit passes. Table them separately.
 
-**Unearned conditional sections are Bugs.** Several Problem and Solution sections are conditional (see template CONDITIONAL markers). If a conditional section is present but its content is stub-only, generic, or doesn't trace to the trigger condition stated in the template, classify as a Bug — remove the section. Absent conditional sections are not Bugs.
+**Unearned conditional sections are Bugs.** Several Problem and Solution sections are conditional (see template CONDITIONAL markers). If a conditional section is present but its content is stub-only, generic, or doesn't trace to the trigger condition stated in the template, classify as a Bug — remove the section. Absent conditional sections are not Bugs. (Exception: the Tech Design slot at Feature/Story is never silently absent — see the Tech Design presence check above.)
 
 **C12 failures are always Bugs.** If the artifact is trying to cover too many concerns, recommend decomposition into sibling artifacts at the same scale level.
 
