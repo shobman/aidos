@@ -18,7 +18,7 @@ The human opens a builder session.
 
 > **Human:** We need to add deployment notifications to our CI/CD pipeline. When a deploy succeeds or fails, the right people should know — in the right channel, with enough context to act. Right now nobody finds out about a failed deploy until someone notices the service is broken.
 
-The builder recognises this as a Feature — it's a specific deliverable, likely one to two sprints, with a clear scope boundary. It scaffolds a combined document (Problem + Solution + Tech Design) and a separate Test Plan.
+The builder recognises this as a Feature — it's a specific deliverable, likely one to two sprints, with a clear scope boundary. It scaffolds a combined document (Problem + Solution, plus a Tech Design slot — optional at Feature scale, filled or waived with a recorded reason, never silently absent) and a separate Test Plan.
 
 > **Builder:** This looks like Feature scale. I'll set up a combined document and a separate Test Plan. Before we start — is this part of a larger Epic, or is it standalone?
 
@@ -66,19 +66,17 @@ The builder completes the Problem section with goals, non-goals, constraints, an
 
 ## Solution
 
-> **Builder:** Moving to the Solution. The core problem is: get the right notification to the right people in the right channel within five minutes of a deploy event. Three approaches I can see:
+> **Builder:** Moving to the Solution. The core outcome is: the right people learn about each deploy event, in their team's channel, within five minutes. One workflow decision involves the pipeline directly, so it belongs here — how deploy events reach the notification system:
 >
-> **Option A — Webhook-based.** Pipeline emits a webhook on deploy events. A notification service receives it, looks up routing config, formats the message, and sends it to the appropriate channel (Slack, Teams, PagerDuty). Simple, direct, easy to reason about.
+> **Option A — The pipeline pushes.** The pipeline announces each deploy event the moment it happens. Notification can follow within seconds. Requires a small pipeline change.
 >
-> **Option B — Event bus.** Pipeline publishes deploy events to a message queue. Consumers subscribe and handle their own notifications. More flexible, more infrastructure.
->
-> **Option C — Polling.** A service polls the pipeline API for deploy status changes. No pipeline changes needed, but introduces latency and coupling.
+> **Option B — We poll.** The notification system periodically asks the pipeline for status changes. No pipeline changes needed, but every notification lags behind its event — the five-minute window gets tighter.
 
-> **Human:** Option A feels right. We don't need the flexibility of an event bus for this, and polling is fragile. Let's go with the webhook approach.
+> **Human:** Option A feels right. Polling is fragile, and the latency eats into the five minutes. Let's go with push.
 
-> **Builder:** Agreed. I'll document Options B and C as considered-and-rejected with rationale.
+> **Builder:** Agreed. I'll document polling as considered-and-rejected with rationale. One thing I'm deliberately *not* deciding here: how the system is organised internally to do the routing and delivery. That's architecture — it belongs in the Tech Design section, not the Solution.
 
-The builder works through the Solution: notification service receives webhooks, looks up team routing config, formats messages per channel type, delivers. During the workflow mapping:
+The builder works through the Solution: every deploy event results in a notification in the owning team's configured channel — Slack, Teams, or PagerDuty — formatted to suit that channel, within the five-minute window. During the workflow mapping:
 
 > **Builder:** I need to think about the message format. A failed deploy and a successful deploy probably carry different information. Failures need: what failed, which service, which commit, who triggered it, and a link to the pipeline log. Success might just need: service name, environment, version deployed. Does that match what you'd want?
 
@@ -92,15 +90,15 @@ The builder captures issue I2:
 
 The builder also notices the human mentioned "auto-rollback" — which implies the pipeline has rollback behaviour that the notification service needs to know about. This wasn't in the Problem. Rather than expanding scope, the builder captures it:
 
-> **Builder:** You mentioned auto-rollback. Does the pipeline already do this? The notification service needs to know the rollback outcome to include it in the failure message, but the rollback mechanism itself is out of our scope. I'll add an assumption that the pipeline exposes rollback status in its webhook payload.
+> **Builder:** You mentioned auto-rollback. Does the pipeline already do this? The failure notification needs to carry the rollback outcome, but the rollback mechanism itself is out of our scope. I'll add an assumption that the pipeline reports rollback status with each deploy event.
 
-> **Human:** Yes, the pipeline already does auto-rollback on health check failure. And yes, the status is in the webhook payload.
+> **Human:** Yes, the pipeline already does auto-rollback on health check failure. And yes, it reports the rollback status with the event.
 
 ---
 
 ## Tech Design
 
-The builder moves into Tech Design within the same combined document.
+The builder moves into Tech Design within the same combined document. At Feature scale the section is optional — direction at the architect's discretion, with the reasoning recorded either way. Here the builder records why it's present: three delivery channels, an always-on service the pipeline depends on, and a known reliability risk (I2) make a wrong implementation plausible without direction.
 
 > **Builder:** The notification system has three architectural boundaries. Let me walk through them at the right altitude:
 >
@@ -198,7 +196,7 @@ The builder addresses the findings:
 
 > **Builder:** Working through the audit findings.
 >
-> **S6 (Rate limits):** Adding a rate limit section. Slack rate limit is 1 message per second per webhook URL. Each team has its own webhook URL, so twelve teams can send in parallel. The risk is if multiple teams share an alerts channel — but the routing config maps teams to their own channels, not shared ones. I'll add this as a stated constraint: each team must have its own notification channel. If teams want to share a channel, the routing config needs rate-limiting logic. For now, one-team-one-channel keeps us within limits.
+> **S6 (Rate limits):** Adding a rate limit section. Slack rate limit is 1 message per second per webhook URL. Each team has its own webhook URL, so twelve teams can send in parallel. The risk is if multiple teams share an alerts channel — but each team's notifications go to that team's own channel, not a shared one. I'll add this as a stated constraint: each team must have its own notification channel. Sharing a channel would bring rate limits back into play and needs its own design decision first. For now, one-team-one-channel keeps us within limits.
 >
 > **A6 (Operator-required failure path):** The platform team owns the notification service. On-call rotation for the platform team is paged if the health endpoint fails. Adding this explicitly to the Failure and Recovery section as the operator-required posture.
 >

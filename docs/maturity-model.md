@@ -14,7 +14,7 @@ AI capabilities are moving fast. Agents are getting better at proposing next ste
 
 **Near-term** — AI drives, human supervises. The AI proposes what to work on, drafts proactively, and runs audits autonomously. The human steers, disposes Risks, and spot-checks. The rubrics become the contract between the AI builder and the AI auditor.
 
-**v1.4.0 introduces the first Near-term skills.** `aidos-breakdown` (decomposition: AI proposes Features and Stories from upstream Problem + Solution, BA reviews) and `aidos-fanout` (parallel sub-agents that run the autonomous Builder → Auditor → fix loop, capped at the three-pass rule per `framework.md:98`). Today's human-directed Builder/Auditor flow still works; these are additive — Near-term mode for teams ready to use it.
+**v1.4.0 introduced the first Near-term skills.** `aidos-breakdown` (decomposition: AI proposes Features and Stories from upstream Problem + Solution, BA reviews) and `aidos-fanout` (parallel sub-agents that run the autonomous Builder → Auditor → fix loop, capped at the three-pass rule per `framework.md` § Builder / Auditor Separation). Today's human-directed Builder/Auditor flow still works; these are additive — Near-term mode for teams ready to use it.
 
 **Eventually** — autonomous pipelines. AI builder and AI auditor operate independently. Humans intervene on escalations and periodic spot-checks. The rubrics become the specification — the quality bar without a human in every loop.
 
