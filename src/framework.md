@@ -73,6 +73,8 @@ The Solution must visibly solve the Problem. The Tech Design must implement the 
 
 This isn't bureaucracy. It's traceability. When something goes wrong, you can trace backward through the chain. It either holds or it breaks at an identifiable point.
 
+**Change Request or implementation detail?** Problem-anchored artifacts make this distinction literal: *did the problem statement change?* If no — however large the rewrite — it's implementation detail, not a Change Request. Implementation-anchored artifacts collapse the distinction and turn every approach pivot into apparent scope creep. This is one of the most concrete daily payoffs of altitude discipline.
+
 ### Altitude Discipline
 
 AIDOS is for the thinking that happens before the code. Each artifact has an altitude beyond which it must not drift, because the coding session is better placed to decide what lies past it. Three altitude tests anchor the discipline:
@@ -82,6 +84,12 @@ AIDOS is for the thinking that happens before the code. Each artifact has an alt
 - **Testing altitude test:** *"Could this assertion remain true if the implementation changed completely?"* If yes, it's the right altitude. If no, push to the coding session.
 
 These tests are referenced from Core C13 (Implementation neutrality at the right altitude), from the Tech Design rubric, and from the Testing rubric. One discipline, applied at three checkpoints.
+
+### Tech Design is Direction
+
+Tech Design is **direction** — one concept, not "hard constraints" plus "suggestions" as separate registers. The architect writes just enough to get the build started right: decisions, boundaries, invariants, starters. Devs read it and either follow it or push back. Architect-approved pushback updates the direction — the artifact moves, the record stays. Depth varies by project, team, and who's building; "just enough to get started" is the bar, not a rubric tier.
+
+At Epic scale, Tech Design is a separate, mandatory document — and it may drop into implementation guidance to give developers a head start. That's allowed, not a defect. Below Epic, Tech Design is **optional**: included at the architect's discretion, with the reasoning recorded either way — one line is enough (see Scaling).
 
 ### Builder / Auditor Separation
 
@@ -101,9 +109,9 @@ AIDOS depends on separation between artifact creation and artifact audit. The sa
 
 Every artifact is assessed against two rubric layers:
 
-**Core Rubric** — universal criteria that apply to every artifact at every scale. Alignment to goals. Simplicity. Explicit trade-offs. Failure modes. Testability. Observability. Security. Reversibility. Future team readiness. Internal consistency. No duplication. Single unit of work. Implementation neutrality at the right altitude.
+**Core Rubric** — universal criteria that apply to every artifact at every scale. Alignment to goals. Simplicity. Explicit trade-offs. Failure modes. Testability. Observability. Security. Reversibility. Future team readiness. Internal consistency. No duplication. Single unit of work. Implementation neutrality at the right altitude. Title altitude.
 
-**Discipline Rubric** — criteria specific to each artifact type. The Problem rubric (P1–P11) checks clarity, stakeholders, measurability, root cause confidence, scope, non-goals, assumptions, constraints, impact, existing alternatives, and honest framing. The Solution rubric (S1–S9) checks conceptual coherence, workflow completeness, edge cases, minimum viable slice, alternatives, dependencies, migration, actors, and constraint compliance. The Tech Design rubric (A1–A10) checks boundaries, seam contracts, state ownership, invariants, quality properties, failure and recovery posture, temporal stance, trust zones, implementation handoff, and transition strategy. The Testing rubric (T1–T9) checks behavioural coverage, traceability, scenarios, exit criteria, expected behaviour, preconditions as state, where assertions hold, behavioural regression scope, and risk-based prioritisation.
+**Discipline Rubric** — criteria specific to each artifact type. The Problem rubric (P1–P13) checks clarity, stakeholders, measurability, root cause confidence, scope, non-goals, assumptions, constraints, impact, existing alternatives, honest framing, purpose grounding, and Epic goal altitude. The Solution rubric (S1–S10) checks conceptual coherence, workflow completeness, edge cases, minimum viable slice, alternatives, dependencies, migration, actors, constraint compliance, and altitude discipline. The Tech Design rubric (A1–A10) checks boundaries, seam contracts, state ownership, invariants, quality properties, failure and recovery posture, temporal stance, trust zones, implementation handoff, and transition strategy. The Testing rubric (T1–T9) checks behavioural coverage, traceability, scenarios, exit criteria, expected behaviour, preconditions as state, where assertions hold, behavioural regression scope, and risk-based prioritisation.
 
 Each criterion has a defined "what pass looks like." The auditor assesses Pass, Partial, or Fail with cited evidence. The evidence requirement is what gives rubrics teeth — you can't hand-wave a Pass. Partials are accepted or rejected by the human directing the audit, not waved through. The artifact doesn't advance until bugs are fixed.
 
@@ -125,15 +133,15 @@ Not every piece of work needs the full stack at every level of detail.
 
 **Epic** — a large initiative spanning multiple sprints and people. Problem, Solution, Tech Design, and Test Strategy are each a separate document, plus an Issues Log and an Overflow Log. Every artifact gets thorough treatment because the cost of getting them wrong is high and many people depend on them.
 
-**Feature** — a specific deliverable, one to two sprints, typically one builder. Problem, Solution, and Tech Design are combined into one document. Testing is a separate Test Plan. An Overflow Log is optional — overflow items can go into the parent Epic's log or be tracked inline. If a Feature has no parent Epic, it needs its own Overflow Log. The Problem section can be lightweight if the Epic Problem is strong. The Tech Design section carries the most weight — it's the brief for the coding agent.
+**Feature** — a specific deliverable, one to two sprints, typically one builder. Problem, Solution, and Tech Design are combined into one document. Testing is a separate Test Plan. An Overflow Log is optional — overflow items can go into the parent Epic's log or be tracked inline. If a Feature has no parent Epic, it needs its own Overflow Log. The Problem section can be lightweight if the Epic Problem is strong. The Tech Design section is **optional** — included at the architect's discretion as direction (see Tech Design is Direction). Include it only when its absence would make a wrong implementation plausible; record the architect's reasoning either way — one line is enough. One mechanical floor: a Feature whose Stories share any seam (a cache API, an event format, a shared contract) must include Tech Design — it is the only place context-isolated Story work can read cross-Story contracts from. The coding session owns its own implementation brief.
 
-**Story** — a day or less of work. Everything lives in a single document. Lean artifacts that inherit heavily from the parent feature. Overflow goes into the parent Feature's Overflow Log, not a separate document. At story scale, the artifacts compress enough that their form changes, so they take different names: Problem becomes Context, Solution becomes User Story, Tech Design becomes Technical Approach, and Testing becomes Acceptance Criteria. They map directly to the four artifact types and are still assessed against the same rubrics at lighter depth.
+**Story** — a day or less of work. Everything lives in a single document. Lean artifacts that inherit heavily from the parent feature. Overflow goes into the parent Feature's Overflow Log, not a separate document. At story scale, the artifacts compress enough that their form changes, so they take different names: Problem becomes Context, Solution becomes User Story, Tech Design becomes Technical Approach, and Testing becomes Acceptance Criteria. Technical Approach is optional on the same recorded-discretion terms as the Feature Tech Design section. They map directly to the four artifact types and are still assessed against the same rubrics at lighter depth.
 
 | Artifact | Epic | Feature | Story |
 |---|---|---|---|
 | Problem | Problem (full depth) | Problem (focused) | Context |
 | Solution | Solution (system-level) | Solution (feature-scope) | User Story |
-| Tech Design | Tech Design (architecture) | Tech Design (implementation brief) | Technical Approach |
+| Tech Design | Tech Design (direction — architecture) | Tech Design (direction, optional) | Technical Approach (direction, optional) |
 | Testing | Test Strategy | Test Plan | Acceptance Criteria |
 
 ### Document Structure by Scale
@@ -143,7 +151,7 @@ The scale of the work determines the document structure. This is not a suggestio
 | Scale | Document Structure |
 |---|---|
 | **Epic** | 4 separate documents (Problem, Solution, Tech Design, Test Strategy) + Issues Log + Overflow Log. |
-| **Feature** | 1 combined document (Problem + Solution + Tech Design) + 1 separate Test Plan. |
+| **Feature** | 1 combined document (Problem + Solution + optional Tech Design — the slot is never silently absent: it carries content or a one-line recorded omission) + 1 separate Test Plan. |
 | **Story** | 1 document containing everything. |
 
 ### Artifact Naming
@@ -152,7 +160,7 @@ At Epic and Feature scale, Problem, Solution, and Tech Design keep their names �
 
 At Story scale, all four artifacts compress enough that they become something different in kind, not just in depth. They take familiar names that reflect their compressed form: Context, User Story, Technical Approach, Acceptance Criteria. The rubrics still apply — the mapping is one-to-one — but the names signal that the builder should think in the compressed form, not try to write a shallow version of the full artifact.
 
-The templates in `src/templates/` provide maximum structure. The builder scales down based on the work — keeping sections brief or skipping them, not switching to a different template. A one-line Assumptions section is better than no Assumptions section.
+The templates in `src/templates/` provide maximum structure. The builder scales down based on the work — keeping sections brief or skipping them, not switching to a different template. (One named exception: the Feature/Story Tech Design slot is never skipped silently — it carries content or a one-line recorded omission.) A one-line Assumptions section is better than no Assumptions section.
 
 Scale determines document structure; which artifacts to instantiate is always a human judgment call.
 
@@ -177,7 +185,7 @@ For Epic-scale work, AIDOS provides two additional skills beyond Builder and Aud
 
 Both skills run in Claude Code, where sub-agent dispatch primitives exist. PM/PO workflows for upstream artifact authoring continue to work in Claude.ai with the AIDOS Skill + GitHub MCP Connector; the BA persona drives breakdown and fan-out in Claude Code.
 
-Decomposition is not project management. The Breakdown Rubric audits shape (independence, coverage, boundary clarity, sizing-shape, feature scope, naming, dependencies) — not estimation, sequencing, or rollout. Those concerns belong to the team's PM system (Jira, Linear, etc.), not to AIDOS.
+Decomposition is not project management. The Breakdown Rubric audits shape (independence, coverage, boundary clarity, sizing-shape, feature scope, title altitude, feature coherence, dependencies) — not estimation, sequencing, or rollout. Those concerns belong to the team's PM system (Jira, Linear, etc.), not to AIDOS.
 
 ---
 
@@ -211,7 +219,11 @@ The artifacts preserve state across parallel work. When Project A is parked wait
 
 ### Who Can Build
 
-AI has expanded who can productively draft artifacts. A developer can frame a Problem. A product owner can sketch a Tech Design. An analyst can spike a prototype. The framework reduces dependence on role-based document production, but not on role-based judgment. Stakeholder synthesis, decision hygiene, system coherence — those skills still matter. They just don't have to bottleneck the production of every artifact.
+AI has expanded who *can* draft artifacts — that doesn't change. A developer can frame a Problem. An analyst can spike a prototype. The framework reduces dependence on role-based document production, but not on role-based judgment.
+
+What AIDOS now names is the default pattern that keeps artifacts at problem altitude: **a Business Analyst — or whoever wears the analyst hat — holds the pen, writing after interviewing the architect or lead. The architect steps in directly when needed. Devs review and push back.** The BA is a hat, not a headcount: a solo builder switches hats deliberately — frame the problem as the analyst, then design as the architect, and notice which one is writing. The pattern exists because "whoever opens the AI session" defaults to developer-flavored artifacts, and developer-flavored artifacts bake the implementation into the spec.
+
+**Dev pushback is the system working.** Two outcomes are both fine: devs accept the direction (the architect's judgment held), or devs push back and the direction updates (devs are thinking like architects). The wrong outcome is silent compliance. Pushback on Tech Design is the everyday vehicle by which developers build the architect muscle — it is encouraged, expected, and recorded in the artifact when it lands.
 
 The counter-risk is real: AI enables people to produce plausible first passes outside their specialty, which can create false confidence. That's exactly why the auditor role exists. Anyone can build. But the work must survive a structured audit by someone who didn't create it.
 
@@ -284,7 +296,7 @@ AIDOS captures the thinking BEFORE the code and the assurance ALONGSIDE it. It d
 
 ## For AI Agents
 
-The Tech Design artifact is explicitly designed as an architectural brief for the coding session. Boundaries, seam contracts (at kind level), state ownership, invariants, failure posture, trust zones, implementation handoff — all explicit. An AI agent receiving a Tech Design that passed audit has the architectural envelope that most developers would spend days building up through conversation and code archaeology, while still owning the implementation decisions inside it.
+At Epic scale, the Tech Design artifact is the architectural envelope for everything beneath it. Boundaries, seam contracts (at kind level), state ownership, invariants, failure posture, trust zones, implementation handoff — all explicit. An AI agent receiving an Epic Tech Design that passed audit has the envelope that most developers would spend days building up through conversation and code archaeology, while still owning the implementation decisions inside it. Below Epic, Tech Design is direction and may be deliberately absent — the agent reads the artifact chain and the recorded discretion, and the coding session owns its own implementation brief.
 
 The full artifact chain — Problem through Solution through Tech Design — gives an agent something rare: *why* the code exists, not just what it should do. When an agent understands the Problem, it makes better implementation decisions. When it can reference the Solution, it resolves ambiguities without asking.
 
@@ -366,3 +378,4 @@ Stakeholder decided Option B. Issue moved to Decisions table.
 12. **The framework waits for humans.** AI makes action fast. Decisions still need people. The rhythm respects that.
 13. **Rubrics evolve.** Retrospectives feed lessons back into the quality standards. The framework improves with use.
 14. **Delivery artifacts are the long-term record.** Keep them current as the feature evolves.
+15. **Solutions say WHAT, direction guides HOW.** The Solution never names the system's internal parts. Tech Design offers direction; devs follow it or push back. Silent compliance is the only wrong response.
