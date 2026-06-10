@@ -1,6 +1,6 @@
 # Tech Design Rubric
 
-Discipline-specific criteria for assessing Tech Design artifacts through the **Architecture lens**. This rubric checks whether the design is *architectural* — boundaries, state ownership, seam contracts at kind level, invariants, failure posture — rather than implementation-in-disguise.
+Discipline-specific criteria for assessing Tech Design artifacts through the **Architecture lens**. This rubric checks whether the design is *architectural* — boundaries, state ownership, seam contracts at kind level, invariants, failure posture — rather than implementation-in-disguise. Tech Design is **direction** (see `framework.md` § Tech Design is Direction): one register, not "hard constraints" plus "suggestions". The rubric audits the direction's architectural quality; dev pushback, not the rubric, litigates whether the direction is the right call.
 
 **Altitude test:** *"Could this sentence only be written by someone looking at code?"* If yes, the artifact has drifted past the architectural seam and into the coding session's territory. See `framework.md` § Altitude Discipline.
 
