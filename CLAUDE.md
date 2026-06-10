@@ -91,6 +91,6 @@ When modifying templates, rubrics, naming conventions, or artifact structure in 
 4. Update the `**AIDOS Version:** X.Y.Z` placeholder in any affected template to keep it in sync with `VERSION`.
 5. If the change is wording-only with no structural impact (rubric clarifications, prompt tweaks), it's a **patch** bump — increment the last segment of `VERSION`. No migration file needed.
 
-Major version bumps (e.g. `1.x.x` → `2.0.0`) are reserved for fundamental redesigns where automated migration may not be feasible. If you think you're looking at a major bump, stop and discuss it before proceeding — major bumps are not in scope for the current framework generation.
+Major version bumps (e.g. `1.x.x` → `2.0.0`) are reserved for fundamental redesigns. They require an explicit user decision before work starts — never infer one — plus a migration file even when it can only be best-effort (structural steps automated; content-level steps written as agent instructions with human confirmation gates; un-migrated artifacts stay valid under their stamped version, and the Auditor declines to assess them against newer-major rubrics). Precedent: v2.0.0 (June 2026), the altitude-structure redesign — migration file `src/migrations/v1.4.0-to-v2.0.0.md`.
 
 After a version bump, tag the repo with an annotated tag (see "Development workflow" → step 7).
