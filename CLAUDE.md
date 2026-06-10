@@ -94,3 +94,7 @@ When modifying templates, rubrics, naming conventions, or artifact structure in 
 Major version bumps (e.g. `1.x.x` → `2.0.0`) are reserved for fundamental redesigns. They require an explicit user decision before work starts — never infer one — plus a migration file even when it can only be best-effort (structural steps automated; content-level steps written as agent instructions with human confirmation gates; un-migrated artifacts stay valid under their stamped version, and the Auditor declines to assess them against newer-major rubrics). Precedent: v2.0.0 (June 2026), the altitude-structure redesign — migration file `src/migrations/v1.4.0-to-v2.0.0.md`.
 
 After a version bump, tag the repo with an annotated tag (see "Development workflow" → step 7).
+
+## Cross-reference convention
+
+When prompts, templates, or docs cite `framework.md`, reference sections (`framework.md § Builder / Auditor Separation`), never line numbers (`framework.md:98`). Line anchors have drifted twice (docs/maturity-model.md pre-v2; six prompt anchors plus four template comments during v2, fixed in PR #29). Section headings are stable; line numbers are not.

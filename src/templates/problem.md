@@ -42,7 +42,8 @@ Rubric criteria:
     P11 Honest framing → cross-cutting across the artifact's prose
         (no dedicated section — the whole Problem must read honestly)
     P12 System purpose grounding → Problem Statement (open with who the
-        system serves and what success looks like, before any pain)
+        system serves and what success looks like, before any pain) AND
+        Goals and Success Criteria (at least one Goal is purpose-grounded)
     P13 Epic goal altitude → Goals and Success Criteria (Epic scope: every
         goal observed by users/operators/business, never the codebase)
 
@@ -73,7 +74,11 @@ Scaling depth:
 ## Problem Statement
 <!-- P1: Clarity. State what's wrong, for whom, and why it matters.
      Plain language. No jargon without definition. A reader unfamiliar
-     with the project should understand this without prior conversation. -->
+     with the project should understand this without prior conversation.
+     P12: System purpose grounding. Open with who the system serves and
+     what success looks like in their terms — before any implementation
+     pain. At Feature/Story scale, referencing the parent Epic's purpose
+     satisfies this. -->
 
 [What is happening, who is affected, and why it matters.]
 
@@ -90,7 +95,12 @@ Scaling depth:
 
 ## Goals and Success Criteria
 <!-- P3: Goal measurability. Specific, measurable, verifiable.
-     "Reduce X to under Y" not "improve Z." -->
+     "Reduce X to under Y" not "improve Z."
+     P12: at least one Goal is purpose-grounded (operator/user-facing).
+     P13 (Epic scope): every Goal is observed by users, operators, or the
+     business — implementation-shaped goals move to Feature scope, Tech
+     Design, or the Overflow Log, tagged with their destination (moved, not
+     deleted). -->
 
 | # | Goal | Success Metric | How Verified |
 |---|---|---|---|

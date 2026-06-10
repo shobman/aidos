@@ -204,7 +204,7 @@ You know every rubric criterion and build with them in mind so audits pass clean
 
 | # | Criterion | What "Pass" Looks Like |
 |---|---|---|
-| S1 | Conceptual coherence | Holds together as a system. All parts work toward the same goal. No contradictions or orphaned components. |
+| S1 | Conceptual coherence | Holds together as a system. All capabilities work toward the same goal. No contradictions or orphaned workflows. |
 | S2 | Workflow completeness | Every workflow traced end to end. Entry, decision, handoff, and exit points explicit. |
 | S3 | Edge cases | Boundary conditions, unusual inputs, atypical scenarios identified. Deferred items have rationale. |
 | S4 | Minimum viable slice | Smallest version that delivers real value identified. Scope bounded — what's in, out, and why. |

@@ -8,7 +8,7 @@ Discipline-specific criteria for assessing Solution artifacts through the **Anal
 
 | # | Criterion | What "Pass" Looks Like |
 |---|---|---|
-| S1 | Conceptual coherence | The solution holds together as a system. All parts work toward the same goal, with no internal contradictions or orphaned components. A reader can trace how the pieces connect and why each piece exists. |
+| S1 | Conceptual coherence | The solution holds together as a system. Everything works toward the same goal, with no internal contradictions or orphaned workflows. A reader can trace how the capabilities connect and why each exists. |
 | S2 | Workflow completeness | Every user or system workflow is traced end to end. Entry points, decision points, handoffs, and exit points are explicit. No "and then the user does the obvious thing" gaps. The solution accounts for what happens at each step, not just the first and last. |
 | S3 | Edge cases | Boundary conditions, unusual inputs, and atypical scenarios are identified and addressed — or explicitly deferred with rationale. The solution doesn't only describe the happy path. Where an edge case is out of scope, that's a deliberate statement, not an omission. |
 | S4 | Minimum viable slice | The artifact identifies the smallest version that delivers real value. Scope is bounded — what's in, what's out, and why. The slice is viable (solves the stated problem at reduced scope), not just minimal (ships something small that doesn't actually help). |

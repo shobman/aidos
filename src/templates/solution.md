@@ -68,9 +68,9 @@ Scaling depth:
 
 ## Solution Overview
 <!-- S1: Conceptual coherence. How the solution works as a system.
-     All parts connect, no contradictions, no orphaned pieces. -->
+     Capabilities connect, no contradictions, no orphaned workflows. -->
 
-[High-level description of the solution. How the pieces fit together
+[High-level description of the solution. How the capabilities fit together
 and why this approach was chosen.]
 
 ## Scope Boundary
@@ -81,9 +81,9 @@ and why this approach was chosen.]
      owns territory it doesn't. -->
 
 [Statement of what this is NOT, beyond the Non-Goals list. Example: "This
-is for local developer iteration and AI cloud containers only. Live
-environments are provisioned by INFRA bicep templates, not by compose.
-The two patterns are separate by design."]
+solution covers notifying teams about deploy events. Acting on those
+events — rollback, re-deploy, incident response — belongs to the existing
+operations workflows. The two responsibilities are separate by design."]
 
 ## Actors
 <!-- S8: Actor identification. Who and what interacts with the solution.
