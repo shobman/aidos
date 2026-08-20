@@ -53,7 +53,7 @@ Once installed, invoke the skills in a Claude session:
 
 **Builder session flow:** the skill asks what you're working on, infers scale (Epic / Feature / Story), scaffolds the right document structure, and iterates with you to build artifacts. It captures decisions, assumptions, and issues inline.
 
-**Auditor session flow:** the skill runs a three-pass audit against Core and discipline rubrics, checks coherence with preceding artifacts, and classifies findings as Bug / Risk / Idea. It then runs the Readership pass — a separate, cheap check with its own verdict, never conflated with the rubric one.
+**Auditor session flow:** the skill audits against the Core and discipline rubrics, iterating up to the three-pass limit, checks coherence with preceding artifacts, and classifies findings as Bug / Risk / Idea. It then runs the Readership pass — a separate, cheap check with its own verdict, never conflated with the rubric one.
 
 **Environment awareness.** The skills detect whether they have filesystem access. With it (Claude Code, or any environment with file read/write) they read and write artifact files directly; without it they work with the artifacts in the conversation.
 

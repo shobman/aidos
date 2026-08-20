@@ -13,6 +13,12 @@ What this is:
   curated onto the work item itself. Do not copy them into this file —
   that duplication is what drifts.
 
+  One exception, and it is not a contradiction: at Story scale the
+  artifact and the work item converge, so the Story's Acceptance Criteria
+  section IS the projection written down rather than a copy of one. That
+  is why it carries at least one behavioural assertion where a Test
+  Strategy or a Test Plan does not.
+
   Altitude test (apply to every assertion): "Could this assertion remain
   true if the implementation changed completely?" If yes, right altitude.
   If no, push to the coding session.
@@ -55,8 +61,8 @@ Rubric criteria:
     T9 Risk-based prioritisation → Priority and Risk
     T10 Evidence standard and independence → Evidence Standard
 
-  The Auditor also runs a second readership pass (rubrics/readership.md,
-  R1–R4) with its own verdict: can this survive being read by the people
+  The Auditor also runs a second readership pass (R1–R4) with its own
+  verdict: can this survive being read by the people
   who must act on it.
 
 Coherence check:
@@ -74,6 +80,16 @@ Coherence check:
 **Solution:** [link to Solution artifact]
 **Reconciled to:** [the decision this artifact is current as of, e.g. D14 — or "—" if none yet]
 **Walked through:** [who explained this artifact back in their own words, and when — or "—" if not yet]
+
+## Latest Updates
+<!-- Readership R3: a returning reader must be able to see what moved without
+     diffing the file. Newest first. Two or three rows is right — this is a
+     pointer to what changed and where to look, not a changelog. Retire a row
+     once it is no longer among the most recent things a reader needs. -->
+
+| Date | What moved |
+|---|---|
+| [date] | [what changed, and which section to read] |
 
 ---
 
@@ -203,8 +219,9 @@ Coherence check:
 |---|---|---|---|---|---|
 | D1 | [one line] | confirmed | none | [who] | [date] |
 
-<!-- One detail block per decision. REQUIRED when Basis is "inferred" or
-     "partly inferred", or when Test impact is anything other than "none". -->
+<!-- One detail block per decision. REQUIRED for any decision whose Basis is
+     anything other than `confirmed`, or whose Test impact is anything other
+     than `none`. A `confirmed` decision with no test impact needs only its row. -->
 
 **D1 — [title]**
 - **Rationale:** [why]
@@ -229,8 +246,11 @@ Findings are classified per framework.md § Builder / Auditor Separation:
 
 ### Bugs (open)
 
-<!-- Format per finding:
-- [B1] {Brief finding} — evidence: "{cited quote from artifact, or section reference}"
+<!-- Format per finding — every finding names the pass and the criterion it
+     came from. Never leave one unattributed: a builder must be able to tell
+     at a glance whether the artifact is unsound or unreadable.
+- [B1] (rubric — C11) {Brief finding} — evidence: "{cited quote from artifact, or section reference}"
+- [B4] (readership — R4) {Brief finding} — evidence: "{cited quote, or section reference}"
 -->
 
 _None_
@@ -238,7 +258,7 @@ _None_
 ### Risks
 
 <!-- Format per finding:
-- [R1] {Brief finding} — evidence: "{cited quote or section reference}"
+- [R1] (rubric — C8) {Brief finding} — evidence: "{cited quote or section reference}"
 -->
 
 _None_
@@ -246,7 +266,7 @@ _None_
 ### Ideas
 
 <!-- Format per finding:
-- [I1] {Brief finding} — evidence: "{cited quote or section reference}"
+- [I1] (readership — R1) {Brief finding} — evidence: "{cited quote or section reference}"
 -->
 
 _None_

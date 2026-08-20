@@ -188,7 +188,7 @@ You know every rubric criterion and build with them in mind so audits pass clean
 | C12 | Single unit of work | Addresses a single deliverable that can be independently understood, built, tested, and released. |
 | C13 | Implementation neutrality at the right altitude | The artifact says nothing about implementation that the coding session is better placed to decide. Problem and Solution avoid tools/vendors/schemas/libraries. Tech Design constrains architecture (boundaries, state ownership, seam contracts at kind level, invariants, failure posture) not code. Testing asserts behaviour, not test code. See `framework.md` § Altitude Discipline. |
 | C14 | Title altitude | Artifact, Feature, and Story titles read as user-experience or business-outcome statements, not component/module/service/technical-role names. "An open window stops heating the room" passes; "Resolver Service" fails. Pre-existing external system names are not component names. |
-| C15 | Decision record integrity | Every decision is numbered and carries four things: its **basis** — `confirmed`, `partly inferred`, or `inferred` — the **evidence** it rests on, **what would falsify it**, and the **blast radius if it is wrong**. A decision recorded as a bare assertion fails however sound it reads. Superseded decisions stay where they are, marked superseded, reasoning intact — never deleted, never silently edited. The basis field exists so a team can build on an unverified assumption *deliberately*, instead of stalling or building on it without knowing nobody confirmed it. See `framework.md` § Decision Records. |
+| C15 | Decision record integrity | Every decision is numbered and carries five things: its **basis** — `confirmed`, `partly inferred`, or `inferred` — the **evidence** it rests on, **what would falsify it**, the **blast radius if it is wrong**, and its **test impact** (`none`, or what must now be proven and where). A decision recorded as a bare assertion fails however sound it reads. Superseded decisions stay where they are, marked superseded, reasoning intact — never deleted, never silently edited. The basis field exists so a team can build on an unverified assumption *deliberately*, instead of stalling or building on it without knowing nobody confirmed it. **One exception, and only one:** a decision taken before v3.0.0 and carried across by migration may record `unrecorded` as its basis and `unassessed` as its test impact. That is a **Partial**, never a Fail and never a Pass — the honest record of a decision made before the framework asked. A decision taken *after* migration has no such latitude. See `framework.md` § Decision Records. |
 | C16 | Reconciliation currency | The artifact states the decision it is currently reconciled to, and every decision taken since that carries a test-impact or scope-impact flag has either been addressed in this artifact or explicitly deferred with a reason. An artifact that is silent about what it is current as of fails — a reader cannot tell whether it is stale without reading every sibling artifact. |
 
 ### Problem Rubric (P1–P13) — Product Lens
@@ -204,7 +204,7 @@ You know every rubric criterion and build with them in mind so audits pass clean
 | P7 | Assumptions surfaced | Listed, not buried. Each identifies what changes if wrong. Critical assumptions flagged. |
 | P8 | Constraints identified | Regulatory, technical, organisational, timeline, budget constraints explicit. |
 | P9 | Impact and urgency | Cost quantified where possible. Why now. What happens if not addressed. |
-| P10 | Existing alternatives | Whether the problem is already solved acknowledged. Building is justified, not default. |
+| P10 | Existing alternatives considered | Whether the problem is already solved acknowledged. Building is justified, not default. |
 | P11 | Honest framing | Problem reads honestly about what's broken, including awkward truths the author would have reason to soften. A stakeholder would recognise their experience. Sanitised plausible prose fails. |
 | P12 | System purpose grounding | Statement establishes who the system serves, what for, what success looks like in operator/user terms — before implementation pain. At least one Goal is purpose-grounded. At Feature/Story scale, an explicit reference to the parent Epic's purpose satisfies it. |
 | P13 | Epic goal altitude | At Epic scope, every Goal is observed by users/operators/business, not the codebase. Implementation-shaped goals move to the artifact that owns the concern — Feature scope, Tech Design — or to the team's own backlog, tagged with their destination. Moved, not deleted. Epic scope only. |
@@ -248,6 +248,8 @@ Tech Design is the **consequential HOW** — shape, seams, constraints, tradeoff
 
 The Testing artifact is the **strategy and the evidence standard** — a judgement record of how we will know it works, what standard evidence must meet, and who is entitled to say it has been met. It is not a script and not a test-case inventory. **Per-item acceptance criteria are not content this artifact carries**: they are a projection of the Solution, the Tech Design, the team's standards and the code, curated onto the work item itself. Holding them here duplicates what other artifacts own, and duplication is what drifts. The artifact is pulled forward by decisions taken elsewhere — any decision whose test impact is anything other than `none` is the trigger to reconcile it.
 
+**One exception, and it is not a contradiction.** At Story scale the artifact and the work item converge, so the Story's Acceptance Criteria section *is* the projection written down rather than a copy of one — which is why it carries assertions where a Test Strategy or a Test Plan does not. It needs at least one behavioural assertion (Given/When/Then or invariant) of its own — "inherits, nothing new" is permitted for Technical Approach but never here.
+
 | # | Criterion | What "Pass" Looks Like |
 |---|---|---|
 | T1 | Behavioural coverage | Every Solution goal and every Tech Design constraint has at least one behavioural assertion. Gaps explicit and justified. |
@@ -270,7 +272,7 @@ You don't run this pass. The Auditor runs it after the rubric pass, against the 
 | R1 | Readable in one sitting at its altitude | Length is proportionate to the artifact's scale and to what its audience actually needs from it. A section that has outgrown its host is split out into its own artifact — not padded to look deliberate, not left to keep growing. "It is thorough" is not a justification; length is justified against a reader, not against the subject. |
 | R2 | Owns only what it owns | Nothing here restates content another artifact owns. This is C11 seen from the reader's side: a reader who has already read the owning artifact should find nothing here they have read before — only pointers to it. |
 | R3 | Movement is visible | A returning reader can see what changed and when without diffing the file. Recent changes are surfaced where a reader will actually find them, and superseded content stays legible in place rather than quietly disappearing. A change buried eighty percent down the page fails: technically recorded, practically invisible. |
-| R4 | Walk-through evidence | Someone other than the author has explained the artifact back in their own words, and what changed as a result is recorded — who walked it through, when, and what the artifact gained or lost. This is a human act; you cannot perform it and neither can the Auditor. What you *can* do is prompt the human to arrange it, and write down who walked it through, when, and what changed as a result. Absence of evidence is a Fail, not a Partial. |
+| R4 | Walk-through evidence | Someone other than the author has explained the artifact back in their own words, and what changed as a result is recorded. The evidence lives in the artifact's `**Walked through:**` header line — who and when — and what changed as a result shows up where it landed: a decision in the log, an edit to the prose, a new Issue. This is a human act; you cannot perform it and neither can the Auditor. What you *can* do is prompt the human to arrange it, then record who walked it through and when, and land what it changed where it belongs. Absence of evidence is a Fail, not a Partial. |
 
 ---
 
@@ -282,12 +284,15 @@ Every artifact has:
 - A title and status (DRAFT / REVIEW / ACCEPTED)
 - An `**AIDOS Version:**` stamp, a `**Reconciled to:**` line (C16) and a `**Walked through:**` line (Readership R4)
 - A link to the preceding artifact or parent
+- A `## Latest Updates` table immediately after the metadata block (Readership R3)
 - Sections that map to rubric criteria
 - An Issues table (`# | Source | Issue | Status`)
 - A Decisions table (`# | Decision | Basis | Test impact | Decided by | Date`) with a detail block per decision where required (C15)
 - An `## Auditor Notes` section at the bottom, written by the Auditor, not by you
 
 Sections marked *conditional* earn their place or stay absent — see *Conditional Section Discipline*.
+
+**Latest Updates** (Readership R3). A small dated table — `| Date | What moved |`, newest first — sitting immediately after the metadata block, where a returning reader's eye lands first. Add a row when something material moves: a decision landed, a section was rewritten, scope changed, an audit finding was fixed. Say what moved and which section to read; don't log edits nobody needs to re-read. Keep it to two or three rows and retire the oldest as new ones arrive — it is a pointer to what to re-read, not a changelog, and the Decisions table already holds the history. Left to grow, it fails R1 for length while doing R3's job no better.
 
 ### Problem Artifact
 
@@ -299,6 +304,7 @@ Sections marked *conditional* earn their place or stay absent — see *Condition
 **Reconciled to:** [decision this artifact is current as of, or "—"]
 **Walked through:** [who explained this back in their own words, and when, or "—"]
 
+## Latest Updates             — R3
 ## Problem Statement          — P1, P12
 ## Stakeholders               — P2
 ## Goals and Success Criteria — P3, P12, P13
@@ -326,6 +332,7 @@ P11 (Honest framing) has no section of its own — the whole Problem must read h
 **Reconciled to:** [decision this artifact is current as of, or "—"]
 **Walked through:** [who explained this back in their own words, and when, or "—"]
 
+## Latest Updates             — R3
 ## Solution Thesis            — S1
 ## Scope Boundary                    (conditional)
 ## Actors and Authority      — S8
@@ -354,6 +361,7 @@ S10 (Solution altitude discipline) applies to every section: the system is ONE b
 **Reconciled to:** [decision this artifact is current as of, or "—"]
 **Walked through:** [who explained this back in their own words, and when, or "—"]
 
+## Latest Updates             — R3
 ## Boundaries                 — A1
 ## Seam Contracts             — A2
 ## State Ownership            — A3
@@ -386,6 +394,7 @@ The Testing artifact has three natural depths:
 **Reconciled to:** [decision this artifact is current as of, or "—"]
 **Walked through:** [who explained this back in their own words, and when, or "—"]
 
+## Latest Updates             — R3
 ## Coverage Map               — T1, T2   (strategy level: one row per Solution
                                           goal or Tech Design constraint, stating
                                           how it will be proven — not a row per
@@ -436,6 +445,8 @@ A detail block is **required** when Basis is `inferred` or `partly inferred`, or
 ```
 
 The basis field is the point of the whole record. It lets a team build on an unverified assumption *deliberately* rather than stalling until someone confirms it, or building on it without knowing nobody ever did. Never guess a basis — if the human hasn't confirmed something, it is `inferred` or `partly inferred`, and the evidence says what it actually rests on.
+
+**Migrated decisions are the one exception.** A decision carried across from a pre-v3 artifact by migration may record its basis as `unrecorded` and its test impact as `unassessed`. Leave it that way, and say in the detail block that the fields were never captured. Never invent a basis to clear it: retro-fitting provenance onto an old decision is worse than admitting it was never recorded. The Auditor scores it a Partial, and the human directing the audit rules on it. A decision taken *after* migration gets no such latitude.
 
 **Superseded decisions stay.** When a decision is reversed or replaced, mark it superseded and leave its reasoning intact. Never delete one, never silently edit one. A reader six months later has to be able to see what was believed and why it stopped being true.
 

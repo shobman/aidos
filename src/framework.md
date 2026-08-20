@@ -39,7 +39,7 @@ AIDOS exists to improve decision quality before implementation speed compounds m
 │   ISSUES           tracked inline, escalated with       │
 │                    decision packets                     │
 │   DECISIONS        numbered, in the artifact that owns  │
-│                    them, with provenance and rationale  │
+│                    them, with basis and rationale       │
 │                                                         │
 ├─────────────────────────────────────────────────────────┤
 │                                                         │
@@ -236,13 +236,15 @@ Decisions are numbered, and every decision record carries:
 
 | Field | What it holds |
 |---|---|
-| **Provenance** | `inferred`, `confirmed`, or `partly inferred` — how the decision came to be believed |
+| **Basis** | `confirmed`, `partly inferred`, or `inferred` — how the decision came to be believed |
 | **Evidence** | What the decision rests on |
 | **Falsifier** | What would show it to be wrong |
 | **Blast radius** | What breaks if it is wrong |
 | **Test impact** | Whether it changes what must be proven |
 
 Superseded decisions stay on the page, marked superseded with their reasoning intact — correct in place, never silently (see *Structural Laws*).
+
+A decision carried across from a pre-v3 artifact by migration may record its basis as `unrecorded` and its test impact as `unassessed`. That is the honest state of a decision made before the framework asked for these fields, and inventing a basis after the fact would be fabricating provenance. Core C15 scores it a Partial. Decisions taken after migration get no such latitude.
 
 Every artifact states the decision it is reconciled to. That is how a reader knows whether what they're looking at has caught up with the decisions taken since it was written, and it is what Core C16 checks.
 
@@ -390,7 +392,7 @@ During the Problem stage, an issue was escalated:
 >
 > **Downstream impact:** If Option A or C, the Tech Design needs merge/conflict logic and the Testing scope expands significantly.
 
-Stakeholder decided Option B. The issue moved to the Decisions table of the Problem artifact, numbered, with its provenance and rationale recorded.
+Stakeholder decided Option B. The issue moved to the Decisions table of the Problem artifact, numbered, with its basis and rationale recorded.
 
 ---
 

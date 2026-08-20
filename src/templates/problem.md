@@ -55,8 +55,8 @@ Rubric criteria:
     P13 Epic goal altitude → Goals and Success Criteria (Epic scope: every
         goal observed by users/operators/business, never the codebase)
 
-  The Auditor also runs a second readership pass (rubrics/readership.md,
-  R1–R4) with its own verdict: can this survive being read by the people
+  The Auditor also runs a second readership pass (R1–R4) with its own
+  verdict: can this survive being read by the people
   who must act on it.
 
 Coherence check:
@@ -82,6 +82,16 @@ Scaling depth:
 **Parent:** [link to Epic problem, if this is Feature or Story scale]
 **Reconciled to:** [the decision this artifact is current as of, e.g. D14 — or "—" if none yet]
 **Walked through:** [who explained this artifact back in their own words, and when — or "—" if not yet]
+
+## Latest Updates
+<!-- Readership R3: a returning reader must be able to see what moved without
+     diffing the file. Newest first. Two or three rows is right — this is a
+     pointer to what changed and where to look, not a changelog. Retire a row
+     once it is no longer among the most recent things a reader needs. -->
+
+| Date | What moved |
+|---|---|
+| [date] | [what changed, and which section to read] |
 
 ---
 
@@ -203,8 +213,9 @@ Why this needs addressing now. What happens if it isn't.]
 |---|---|---|---|---|---|
 | D1 | [one line] | confirmed | none | [who] | [date] |
 
-<!-- A detail block is REQUIRED when Basis is `inferred` or `partly inferred`,
-     or when Test impact is anything other than `none`. -->
+<!-- A detail block is REQUIRED for any decision whose Basis is anything other
+     than `confirmed`, or whose Test impact is anything other than `none`. A
+     `confirmed` decision with no test impact can live on its table row alone. -->
 
 **D1 — [title]**
 - **Rationale:** [why]
@@ -229,8 +240,11 @@ Findings are classified per framework.md § Builder / Auditor Separation:
 
 ### Bugs (open)
 
-<!-- Format per finding:
-- [B1] {Brief finding} — evidence: "{cited quote from artifact, or section reference}"
+<!-- Format per finding — every finding names the pass and the criterion it
+     came from. Never leave one unattributed: a builder must be able to tell
+     at a glance whether the artifact is unsound or unreadable.
+- [B1] (rubric — C11) {Brief finding} — evidence: "{cited quote from artifact, or section reference}"
+- [B4] (readership — R4) {Brief finding} — evidence: "{cited quote, or section reference}"
 -->
 
 _None_
@@ -238,7 +252,7 @@ _None_
 ### Risks
 
 <!-- Format per finding:
-- [R1] {Brief finding} — evidence: "{cited quote or section reference}"
+- [R1] (rubric — C8) {Brief finding} — evidence: "{cited quote or section reference}"
 -->
 
 _None_
@@ -246,7 +260,7 @@ _None_
 ### Ideas
 
 <!-- Format per finding:
-- [I1] {Brief finding} — evidence: "{cited quote or section reference}"
+- [I1] (readership — R1) {Brief finding} — evidence: "{cited quote or section reference}"
 -->
 
 _None_

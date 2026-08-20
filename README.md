@@ -27,7 +27,7 @@ Four delivery artifacts that build on each other:
 | **Tech Design** | How the response is shaped architecturally — boundaries, state ownership, contracts at seams, invariants, failure posture |
 | **Testing** | How we verify it works and trace results back to requirements |
 
-These are delivery artifacts — living documents that stay current as the feature evolves. They are the long-term record.
+These are delivery artifacts — living documents that stay current as the feature evolves. They are the long-term record of the thinking, corrected in place as the work teaches. They are not a complete account of the code; once it is written, the code is the law.
 
 Each artifact is checked against its own quality rubric **and** against the artifact before it. The Solution has to actually solve the Problem. The Tech Design has to actually implement the Solution. The Testing has to actually verify the Tech Design against the Solution's goals. If the chain breaks, you find out in a review — not in production.
 
@@ -44,7 +44,7 @@ Each artifact is checked against its own quality rubric **and** against the arti
 AIDOS uses pulse-based delivery: short bursts of AI-assisted artifact creation, separated by explicit human review checkpoints.
 
 1. **Sprint** — build an artifact with AI in an afternoon that would've taken a sprint.
-2. **Park** — commit, update status, move on.
+2. **Park** — put the artifact down with its status updated, move on.
 3. **Align** — bring humans in. They review, react, decide.
 4. **Feed back** — process their decisions with AI in minutes, not days.
 5. **Sprint again** — or switch to another project while this one waits for the next human checkpoint.

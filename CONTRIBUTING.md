@@ -37,7 +37,7 @@ Open an issue first. Include:
 >
 > **Criterion:** *Operational Ownership* — A named individual or team has accepted responsibility for the outcome in production. "TBD" is not acceptance.
 >
-> **Gap:** C8 (Operational Impact) covers impact on existing systems but doesn't require someone to own the new thing.
+> **Gap:** C8 (Reversibility) covers what can and cannot be undone, but nothing requires someone to own the new thing.
 >
 > **Example evidence:** Auditor checks for a named owner in the artifact. If the owner field says "TBD," "to be confirmed," or is missing, it's a Fail.
 >
@@ -105,7 +105,7 @@ Examples don't need to be large. A single-feature walkthrough is often more usef
 1. **Open an issue first** for rubric changes, template proposals, and framework discussion. PRs without prior discussion may be closed.
 2. **One criterion or one template per PR.** Keep contributions focused.
 3. **Include a changelog entry** for any rubric change. Format: what changed, why, and what project or pattern motivated it.
-4. **Worked examples** can be submitted directly as PRs to an `examples/` folder.
+4. **Worked examples** can be submitted directly as PRs, alongside the rubric or template they illustrate.
 
 ---
 
