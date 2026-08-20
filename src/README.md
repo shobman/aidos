@@ -50,25 +50,20 @@ Read [`framework.md`](framework.md) to understand the operating model, then run 
 framework.md                 ← The full operating model — start here
 prompts/
 ├── builder-prompt.md        ← Self-contained system prompt for building artifacts
-├── auditor-prompt.md        ← Self-contained system prompt for auditing artifacts
-├── breakdown-prompt.md      ← System prompt for decomposing Epics/Features into stubs
-└── fanout-prompt.md         ← System prompt for orchestrating per-stub sub-agent builds
+└── auditor-prompt.md        ← Self-contained system prompt for auditing artifacts
 rubrics/
-├── core.md                  ← Universal criteria (C1–C14)
+├── core.md                  ← Universal criteria (C1–C16)
 ├── problem.md               ← Product lens (P1–P13)
 ├── solution.md              ← Analysis lens (S1–S10)
-├── tech-design.md           ← Architecture lens (A1–A10)
-├── testing.md               ← Quality lens (T1–T9)
-└── breakdown.md             ← Decomposition shape (B1–B6 Bugs, R1–R2 Risks)
+├── tech-design.md           ← Architecture lens (A1–A11)
+├── testing.md               ← Quality lens (T1–T10)
+└── readership.md            ← The second audit pass (R1–R4)
 templates/
 ├── problem.md               ← Problem artifact template
 ├── solution.md              ← Solution artifact template
 ├── tech-design.md           ← Tech Design artifact template
-├── testing.md               ← Testing artifact template
-├── issues-log.md            ← Centralised escalation register
-├── overflow-log.md          ← Captures ideas that don't belong in the current artifact
-└── meeting-minutes.md       ← Lean meeting capture
-connectors/                  ← See src/connectors/*/README.md
+└── testing.md               ← Testing artifact template
+migrations/                  ← Version-to-version artifact migration instructions
 ```
 
 ## Develop

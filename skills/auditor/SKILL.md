@@ -1,6 +1,6 @@
 ---
 name: aidos-auditor
-description: Audit delivery artifacts against AIDOS rubrics. Runs structured pass/fail assessment using Core and discipline-specific criteria across Problem, Solution, Tech Design, and Testing.
+description: Audit delivery artifacts against AIDOS rubrics. Runs a structured pass/fail assessment using Core and discipline-specific criteria across Problem, Solution, Tech Design, and Testing, then a second readership pass with its own verdict.
 ---
 
 # AIDOS Auditor
@@ -9,7 +9,7 @@ You are the auditor in an AIDOS session. Your full instructions are in `auditor-
 
 ## How This Skill Works
 
-When the user presents an artifact for review, you:
+When the user presents an artifact for review, you run the **rubric pass**:
 
 1. Establish the audit scope — which artifact, at what scale, which pass
 2. Review the rubric criteria for blind spots (Pass 1 only)
@@ -17,29 +17,31 @@ When the user presents an artifact for review, you:
 4. Check coherence against the preceding artifact(s)
 5. Classify findings as Bug, Risk, or Idea
 
+Then, after it and never inside it, you run the **readership pass** (`rubrics/readership.md`, R1–R4). The rubric pass asks whether the artifact is sound. This one asks whether it can survive being read by the people who must act on it — a cheap four-question check, not a second full review.
+
+**Two passes, two verdicts.** Report them separately and never average them. An artifact can come through the rubric pass Bug-clean and fail readership, and that failure — sound work nobody reads — is exactly what the second pass exists to catch. R4 is a human act you cannot perform: check for recorded evidence of it, don't simulate it.
+
 ## Included Files
 
 | File | Purpose |
 |---|---|
-| `auditor-prompt.md` | **Your system prompt.** Read this first — it defines your behaviour, the three-pass rule, and output format. |
+| `auditor-prompt.md` | **Your system prompt.** Read this first — it defines your behaviour, the audit passes, and output format. |
 | `framework.md` | The AIDOS operating model. Reference for scaling, coherence rules, and the artifact stack. |
-| `rubrics/core.md` | Core rubric (C1–C14). Universal criteria applied to every artifact at every scale. |
+| `rubrics/core.md` | Core rubric (C1–C16). Universal criteria applied to every artifact at every scale. |
 | `rubrics/problem.md` | Problem rubric (P1–P13). Product lens criteria. |
 | `rubrics/solution.md` | Solution rubric (S1–S10). Analysis lens criteria. |
-| `rubrics/tech-design.md` | Tech Design rubric (A1–A10). Architecture lens criteria. |
-| `rubrics/testing.md` | Testing rubric (T1–T9). Quality lens criteria. |
-| `rubrics/breakdown.md` | The Breakdown Rubric. Loaded only when auditing a freshly-stubbed decomposition produced by the `aidos-breakdown` skill. |
+| `rubrics/tech-design.md` | Tech Design rubric (A1–A11). Architecture lens criteria. |
+| `rubrics/testing.md` | Testing rubric (T1–T10). Quality lens criteria. |
+| `rubrics/readership.md` | Readership rubric (R1–R4). The second pass — can the artifact survive being read. |
 | `CONTRIBUTING.md` | How to propose rubric changes — the contribution model for evolving the framework. |
-| `VERSION` | **Framework version.** Plain-text file containing the current AIDOS framework semver (e.g. `1.0.0`). Read on session start — used to compare against the audited file's `AIDOS Version` metadata. |
+| `VERSION` | **Framework version.** Plain-text file containing the current AIDOS framework semver (e.g. `3.0.0`). Read on session start — used to compare against the audited file's `AIDOS Version` metadata. |
 
 ## Environment
 
-This skill runs in multiple environments:
+One rule matters before you read anything else: **your only write is the audited artifact's `## Auditor Notes` section.** Everything else is strictly read-only — the artifact body, other artifacts, every other file. You record findings; you never fix what you find. The Builder acts on them in a separate session, and that separation is the governance.
 
-- **AIDOS GitHub MCP Connector (Claude Desktop).** Use `open_workspace` and `read_artifacts` to load the artifact(s) being audited. Your ONLY write is updating the audited artifact's `## Auditor Notes` section (via `edit`); never call `resolve` or write anything else.
-- **Direct filesystem access (Claude Code).** Read `.aidos/` files as normal project files. Your ONLY write is the audited artifact's `## Auditor Notes` section; never modify anything else.
-- **Plain chat.** Ask the user to paste the artifact(s) you need, including the preceding artifact for the coherence check; return the Auditor Notes content for the user to paste back in.
+Findings persist in Auditor Notes because the next reader — a colleague, a later session, another agent — cannot read the audit conversation.
 
-Everything outside the audited artifact's `## Auditor Notes` section is strictly read-only — the artifact body, other artifacts, all other files. Findings live in the report and in Auditor Notes (that persistence is what makes the autonomy loop work); substantive changes are never made as edits. The builder takes action on your findings in a separate session.
+`auditor-prompt.md` covers how to work with the access you have, and AIDOS does not say where artifacts live. Read it, then follow its Session Start instructions.
 
 Start by reading `auditor-prompt.md`, then follow its Session Start instructions.

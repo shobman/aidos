@@ -48,9 +48,6 @@ jobs:
           cp src/templates/solution.md _staging/aidos-builder/templates/
           cp src/templates/tech-design.md _staging/aidos-builder/templates/
           cp src/templates/testing.md _staging/aidos-builder/templates/
-          cp src/templates/issues-log.md _staging/aidos-builder/templates/
-          cp src/templates/overflow-log.md _staging/aidos-builder/templates/
-          cp src/templates/meeting-minutes.md _staging/aidos-builder/templates/
           cp -r src/migrations/. _staging/aidos-builder/migrations/
           cp CONTRIBUTING.md _staging/aidos-builder/
           sed -i 's|`src/rubrics/|`rubrics/|g; s|`src/templates/|`templates/|g; s|`src/framework\.md`|`framework.md`|g; s|`src/migrations/|`migrations/|g' _staging/aidos-builder/builder-prompt.md
@@ -58,7 +55,7 @@ jobs:
       # Assemble auditor skill
       - name: Assemble auditor skill
         run: |
-          mkdir -p _staging/aidos-auditor/{rubrics,templates}
+          mkdir -p _staging/aidos-auditor/rubrics
           cp skills/auditor/SKILL.md _staging/aidos-auditor/
           cp src/prompts/auditor-prompt.md _staging/aidos-auditor/
           cp src/framework.md _staging/aidos-auditor/
@@ -68,41 +65,9 @@ jobs:
           cp src/rubrics/solution.md _staging/aidos-auditor/rubrics/
           cp src/rubrics/tech-design.md _staging/aidos-auditor/rubrics/
           cp src/rubrics/testing.md _staging/aidos-auditor/rubrics/
-          cp src/rubrics/breakdown.md _staging/aidos-auditor/rubrics/
+          cp src/rubrics/readership.md _staging/aidos-auditor/rubrics/
           cp CONTRIBUTING.md _staging/aidos-auditor/
           sed -i 's|`src/rubrics/|`rubrics/|g; s|`src/templates/|`templates/|g; s|`src/framework\.md`|`framework.md`|g; s|`src/migrations/|`migrations/|g' _staging/aidos-auditor/auditor-prompt.md
-
-      # Assemble breakdown skill
-      - name: Assemble breakdown skill
-        run: |
-          mkdir -p _staging/aidos-breakdown/{rubrics,templates,migrations}
-          cp skills/breakdown/SKILL.md _staging/aidos-breakdown/
-          cp src/prompts/breakdown-prompt.md _staging/aidos-breakdown/
-          cp src/framework.md _staging/aidos-breakdown/
-          cp VERSION _staging/aidos-breakdown/
-          cp src/rubrics/core.md _staging/aidos-breakdown/rubrics/
-          cp src/rubrics/breakdown.md _staging/aidos-breakdown/rubrics/
-          cp src/templates/problem.md _staging/aidos-breakdown/templates/
-          cp src/templates/solution.md _staging/aidos-breakdown/templates/
-          cp src/templates/tech-design.md _staging/aidos-breakdown/templates/
-          cp src/templates/testing.md _staging/aidos-breakdown/templates/
-          cp src/templates/issues-log.md _staging/aidos-breakdown/templates/
-          cp src/templates/overflow-log.md _staging/aidos-breakdown/templates/
-          cp -r src/migrations/. _staging/aidos-breakdown/migrations/
-          sed -i 's|`src/rubrics/|`rubrics/|g; s|`src/templates/|`templates/|g; s|`src/framework\.md`|`framework.md`|g; s|`src/migrations/|`migrations/|g' _staging/aidos-breakdown/breakdown-prompt.md
-
-      # Assemble fanout skill
-      # Fanout bundles minimally (no rubrics/templates/migrations) because the skill
-      # never writes artifacts — it only dispatches sub-agents that invoke Builder,
-      # which carries the full rubric/template/migration set.
-      - name: Assemble fanout skill
-        run: |
-          mkdir -p _staging/aidos-fanout
-          cp skills/fanout/SKILL.md _staging/aidos-fanout/
-          cp src/prompts/fanout-prompt.md _staging/aidos-fanout/
-          cp src/framework.md _staging/aidos-fanout/
-          cp VERSION _staging/aidos-fanout/
-          sed -i 's|`src/rubrics/|`rubrics/|g; s|`src/templates/|`templates/|g; s|`src/framework\.md`|`framework.md`|g; s|`src/migrations/|`migrations/|g' _staging/aidos-fanout/fanout-prompt.md
 
       # Create ZIPs with folder at root
       - name: Create ZIP files
@@ -111,8 +76,6 @@ jobs:
           cd _staging
           zip -r ../skills/dist/aidos-builder.zip aidos-builder/
           zip -r ../skills/dist/aidos-auditor.zip aidos-auditor/
-          zip -r ../skills/dist/aidos-breakdown.zip aidos-breakdown/
-          zip -r ../skills/dist/aidos-fanout.zip aidos-fanout/
           cd ..
           echo "Build complete:"
           ls -lh skills/dist/*.zip

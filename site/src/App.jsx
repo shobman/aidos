@@ -131,24 +131,17 @@ export default function App() {
     { label: "Rubrics", href: "https://github.com/shobman/aidos/tree/main/src/rubrics" },
     { label: "Prompts", href: "https://github.com/shobman/aidos/tree/main/src/prompts" },
     { label: "Manifesto", href: "https://github.com/shobman/aidos/blob/main/docs/manifesto.md" },
-    { label: "Worked Example", href: "https://github.com/shobman/aidos/blob/main/docs/worked-example.md" },
-    { label: "Autonomy Spectrum", href: "https://github.com/shobman/aidos/blob/main/docs/maturity-model.md" },
   ];
   const footerTemplates = [
     { label: "Problem", href: "https://github.com/shobman/aidos/blob/main/src/templates/problem.md" },
     { label: "Solution", href: "https://github.com/shobman/aidos/blob/main/src/templates/solution.md" },
     { label: "Tech Design", href: "https://github.com/shobman/aidos/blob/main/src/templates/tech-design.md" },
     { label: "Testing", href: "https://github.com/shobman/aidos/blob/main/src/templates/testing.md" },
-    { label: "Issues Log", href: "https://github.com/shobman/aidos/blob/main/src/templates/issues-log.md" },
-    { label: "Overflow Log", href: "https://github.com/shobman/aidos/blob/main/src/templates/overflow-log.md" },
-    { label: "Meeting Minutes", href: "https://github.com/shobman/aidos/blob/main/src/templates/meeting-minutes.md" },
   ];
 
   const footerSkills = [
     { label: "Builder (.zip)", href: "https://shobman.github.io/aidos/skills/aidos-builder.zip" },
     { label: "Auditor (.zip)", href: "https://shobman.github.io/aidos/skills/aidos-auditor.zip" },
-    { label: "Breakdown (.zip)", href: "https://shobman.github.io/aidos/skills/aidos-breakdown.zip" },
-    { label: "Fanout (.zip)", href: "https://shobman.github.io/aidos/skills/aidos-fanout.zip" },
   ];
 
   const base = import.meta.env.BASE_URL;

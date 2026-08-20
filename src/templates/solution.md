@@ -2,12 +2,13 @@
 SOLUTION ARTIFACT TEMPLATE
 
 What this is:
-  The Solution artifact answers: how does the proposed response work as a
-  system, including options and trade-offs? It bridges the Problem (what
-  we're solving) and the Tech Design (how we build it).
+  The Solution artifact answers: what becomes possible, for whom, and who
+  holds authority over it? It is the WHAT, in user and business language.
+  It never names technology. It bridges the Problem (why the work is
+  warranted) and the Tech Design (the consequential HOW).
 
 Rubric criteria:
-  Core Rubric (C1–C14) — applied to every artifact. Core criteria are
+  Core Rubric (C1–C16) — applied to every artifact. Core criteria are
   cross-cutting: you address them through the sections below, not in
   separate sections. In particular:
     C1  Alignment to goals — every element traces to a Problem goal
@@ -20,33 +21,52 @@ Rubric criteria:
     C8  Reversibility — what's hard to undo
     C9  Future team readiness — no tribal knowledge
     C10 Internal consistency — consistent terminology
-    C11 No duplication — reference the Problem, don't restate it
+    C11 Cross-reference, never restate — the Solution is the only home of
+        the WHAT; the Tech Design the only home of the HOW. Reference the
+        Problem, don't restate it. A sentence describing mechanism fails
+        here even when it reads cleanly
     C12 Single unit of work — one coherent solution
     C13 Implementation neutrality at the right altitude — Solution prose
         names no tools/vendors/schemas/libraries unless pre-existing constraints
     C14 Title altitude — the title states the problem being solved, not
         the part being built
+    C15 Decision record integrity — decisions numbered, each carrying a
+        basis, the evidence, what would falsify it, the blast radius if
+        wrong, and its test impact. Superseded decisions stay on the page, marked,
+        reasoning intact — never deleted
+    C16 Reconciliation currency — the artifact states the decision it is
+        reconciled to, and every decision since carrying a test-impact or
+        scope-impact flag has been addressed or explicitly deferred
 
   Solution Rubric (S1–S10) — discipline-specific criteria:
-    S1  Conceptual coherence → Solution Overview
-    S2  Workflow completeness → Workflows
-    S3  Edge cases → Edge Cases
+    S1  Conceptual coherence → Solution Thesis
+    S2  Story independence and value → User Stories
+    S3  Scenarios earn their place → Scenarios
     S4  Minimum viable slice → Minimum Viable Slice
     S5  Alternatives considered → Alternatives Considered
     S6  Dependency identification → Dependencies
     S7  Migration and transition → Migration and Transition
-    S8  Actor identification → Actors
+    S8  Actors and authority → Actors and Authority
     S9  Constraint compliance → Constraint Compliance
     S10 Solution altitude discipline → every section. The system is ONE
         black box: no sentence names an internal component, module,
         service, or technical role of it. Observer test: someone who has
         never seen the code can evaluate every sentence.
 
+  Readership pass — after the rubric pass the Auditor runs a second,
+  cheaper pass against the Readership Rubric (R1–R4), with its own
+  verdict. It asks only whether this artifact survives being read by the
+  people who must act on it: readable in one sitting at its altitude,
+  owning only what it owns, movement visible without diffing, and
+  evidence that someone other than the author explained it back.
+
 Coherence check:
   The Solution is audited against the Problem artifact. Every goal in the
   Problem has a corresponding response here. Nothing here addresses a
   problem that wasn't stated. If something in the Problem changed, this
-  artifact reflects that change.
+  artifact reflects that change. The Problem Coverage section states the
+  map explicitly: a Problem need with no story is a Bug, and a story with
+  no Problem need behind it is a Bug.
 
 Scaling depth:
   Epic — full depth. The solution is the system-level design.
@@ -61,17 +81,34 @@ Scaling depth:
 # Solution: [title]
 
 **Status:** DRAFT | REVIEW | ACCEPTED
-**AIDOS Version:** 2.0.0
+**AIDOS Version:** 3.0.0
 **Problem:** [link to Problem artifact]
+**Reconciled to:** [the decision this artifact is current as of, e.g. D14 — or "—" if none yet]
+**Walked through:** [who explained this artifact back in their own words, and when — or "—" if not yet]
+
+## Latest Updates
+<!-- Readership R3: a returning reader must be able to see what moved without
+     diffing the file. Newest first. Two or three rows is right — this is a
+     pointer to what changed and where to look, not a changelog. Retire a row
+     once it is no longer among the most recent things a reader needs. -->
+
+| Date | What moved |
+|---|---|
+| [date] | [what changed, and which section to read] |
 
 ---
 
-## Solution Overview
-<!-- S1: Conceptual coherence. How the solution works as a system.
-     Capabilities connect, no contradictions, no orphaned workflows. -->
+## Solution Thesis
+<!-- S1: Conceptual coherence. A short description of the whole solution
+     in one place: who directs it, what becomes possible, where authority
+     remains. Everything works toward the same goal; a reader can trace
+     how the capabilities connect and why each exists. This is the
+     paragraph someone repeats back after reading the artifact once —
+     if it takes a page, the solution isn't yet coherent. -->
 
-[High-level description of the solution. How the capabilities fit together
-and why this approach was chosen.]
+[Who directs this solution, what becomes possible that wasn't before, and
+where authority remains with people. Why this approach holds together as
+one thing.]
 
 ## Scope Boundary
 <!-- CONDITIONAL: include only when adjacent responsibilities could be
@@ -85,32 +122,99 @@ solution covers notifying teams about deploy events. Acting on those
 events — rollback, re-deploy, incident response — belongs to the existing
 operations workflows. The two responsibilities are separate by design."]
 
-## Actors
-<!-- S8: Actor identification. Who and what interacts with the solution.
-     Frequency, skill expectations where human action is required. -->
+## Actors and Authority
+<!-- S8: Actors and authority. Who and what interacts with the solution,
+     with frequency and skill expectations where human action is required.
+     Then where authority sits: who may originate work, who makes the
+     judgments, who performs execution, who accepts the outcome, and who
+     closes the work. Name only the actors needed to understand the
+     outcomes — not everyone adjacent to the team. -->
 
 | Actor | Type | Interaction | Frequency |
 |---|---|---|---|
 | | Person / Team / System | | |
 
-## Workflows
-<!-- S2: Workflow completeness. Trace every workflow end to end.
-     Entry points, decision points, handoffs, exit points. No gaps. -->
+**Authority:**
 
-### [Workflow name]
+- **Originates work:** [who may start it]
+- **Judges:** [who makes the calls that can't be automated]
+- **Executes:** [who performs the work]
+- **Accepts:** [who decides the outcome is good]
+- **Closes:** [who declares it done]
 
-1. [Entry point]
-2. [Step — what happens, who acts, what's the input/output]
-3. [Decision point — what determines the path]
-4. [Exit point — what state the system is in when done]
+## User Stories
+<!-- S2: Story independence and value. Every capability as an
+     independently valuable user story. Number them. Title each by the
+     user outcome, never by a component or an implementation task
+     ("Approve a supplier before it can be traded", not "Supplier record
+     writer"). Each story must be worth delivering on its own — a story
+     that only makes sense delivered alongside three others is a
+     fragment; collapse it or find the value it carries alone. The
+     "so that" is real justification, not the capability restated. -->
 
-## Edge Cases
-<!-- S3: Edge cases. Boundary conditions, unusual inputs, atypical
-     scenarios. Explicitly deferred items include rationale. -->
+### US1 — [outcome, in the user's words]
 
-| # | Scenario | Handling | In Scope? |
-|---|---|---|---|
-| E1 | | | |
+**As a** [person or role]
+**I can** [capability]
+**So that** [the valuable outcome — why this is worth having]
+
+[Any further description the story needs. Keep it to what a reader needs
+to judge whether the story is worth delivering.]
+
+### US2 — [outcome, in the user's words]
+
+**As a** [person or role]
+**I can** [capability]
+**So that** [the valuable outcome]
+
+## Scenarios
+<!-- S3: Scenarios earn their place. Boundary conditions, unusual inputs,
+     and atypical scenarios belong here — including what used to be
+     called edge cases. Use Given/When/Then ONLY where the behaviour or
+     an authority boundary would otherwise be genuinely ambiguous: a
+     branch, a threshold, a case where who decides isn't obvious. Where
+     there is no branch to specify, plain prose is the better form.
+     Forcing every story into Given/When/Then inflates detail without
+     adding clarity and buries the scenarios that matter. Where a
+     scenario is out of scope, say so deliberately — omission isn't a
+     decision. -->
+
+**[US1 — scenario name]**
+
+> **Given** [the situation that makes the outcome ambiguous]
+> **When** [what happens]
+> **Then** [what the user or business sees, and who decided it]
+
+**[US2 — prose scenario]**
+
+[Where there's no branch, describe the boundary in a sentence. Example:
+"Requests older than the retention window are unavailable; the requester
+is told why rather than shown an empty result."]
+
+**Out of scope:**
+
+- [Scenario deliberately excluded — reason.]
+
+## Problem Coverage
+<!-- Coherence check, stated in the artifact rather than reconstructed by
+     the reader. Each need in the Problem maps to the story or stories
+     that answer it. A Problem need with no story is a Bug. A story with
+     no Problem need behind it is a Bug — capability that entered because
+     it seemed useful, not because the Problem called for it. -->
+
+| Problem need | Answered by |
+|---|---|
+| [Problem G1 / the need in one line] | US1, US3 |
+
+## Minimum Viable Slice
+<!-- S4: Minimum viable slice. The smallest version that delivers
+     real value. Viable, not just minimal. -->
+
+**What's in the first slice:**
+- [Story — traces to a Problem goal]
+
+**What's deferred:**
+- [Story — reason for deferral]
 
 ## Alternatives Considered
 <!-- CONDITIONAL: include only when a genuine fork in the road was rejected
@@ -152,16 +256,6 @@ reversed.]
 |---|---|---|
 | [from Problem K1] | | |
 
-## Minimum Viable Slice
-<!-- S4: Minimum viable slice. The smallest version that delivers
-     real value. Viable, not just minimal. -->
-
-**What's in the first slice:**
-- [Capability — traces to Problem goal]
-
-**What's deferred:**
-- [Capability — reason for deferral]
-
 ---
 
 ## Issues
@@ -172,16 +266,32 @@ reversed.]
 | I1 | | | OPEN / SOCIALISE / ESCALATE |
 
 ## Decisions
+<!-- C15: Decision record integrity. Decisions are numbered within this
+     artifact. Where another artifact cites one, the citation names this
+     artifact as well as the number. A superseded decision stays in
+     place, marked, with its reasoning intact — never deleted. -->
 
-| # | Source | Issue | Resolution | Decided By | Date |
+| # | Decision | Basis | Test impact | Decided by | Date |
 |---|---|---|---|---|---|
-| D1 | | | | | |
+| D1 | [one line] | confirmed | none | [who] | [date] |
+
+<!-- A detail block is REQUIRED for any decision whose Basis is anything other
+     than `confirmed`, or whose Test impact is anything other than `none`. A
+     `confirmed` decision with no test impact can live on its table row alone. -->
+
+**D1 — [title]**
+- **Rationale:** [why]
+- **Basis:** confirmed | partly inferred | inferred — [the evidence it rests on]
+- **Falsified by:** [what would show this is wrong]
+- **Blast radius if wrong:** [what has to change]
+- **Test impact:** none | [what must now be proven, and where]
+- **Superseded by:** — | D[n]
 
 ## Auditor Notes
 
 <!--
 Populated by the AIDOS Auditor skill. Rewritten on each audit pass — latest
-findings only; git carries the history. Cleared once the artifact is final (no
+findings only; the artifact's own history carries the record. Cleared once the artifact is final (no
 open Bugs, no new findings on the latest pass).
 
 Findings are classified per framework.md § Builder / Auditor Separation:
@@ -192,8 +302,11 @@ Findings are classified per framework.md § Builder / Auditor Separation:
 
 ### Bugs (open)
 
-<!-- Format per finding:
-- [B1] {Brief finding} — evidence: "{cited quote from artifact, or section reference}"
+<!-- Format per finding — every finding names the pass and the criterion it
+     came from. Never leave one unattributed: a builder must be able to tell
+     at a glance whether the artifact is unsound or unreadable.
+- [B1] (rubric — C11) {Brief finding} — evidence: "{cited quote from artifact, or section reference}"
+- [B4] (readership — R4) {Brief finding} — evidence: "{cited quote, or section reference}"
 -->
 
 _None_
@@ -201,7 +314,7 @@ _None_
 ### Risks
 
 <!-- Format per finding:
-- [R1] {Brief finding} — evidence: "{cited quote or section reference}"
+- [R1] (rubric — C8) {Brief finding} — evidence: "{cited quote or section reference}"
 -->
 
 _None_
@@ -209,7 +322,7 @@ _None_
 ### Ideas
 
 <!-- Format per finding:
-- [I1] {Brief finding} — evidence: "{cited quote or section reference}"
+- [I1] (readership — R1) {Brief finding} — evidence: "{cited quote or section reference}"
 -->
 
 _None_
