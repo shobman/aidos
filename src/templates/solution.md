@@ -84,6 +84,7 @@ Scaling depth:
 **AIDOS Version:** 3.0.0
 **Problem:** [link to Problem artifact]
 **Reconciled to:** [the decision this artifact is current as of, e.g. D14 — or "—" if none yet]
+**Walked through:** [who explained this artifact back in their own words, and when — or "—" if not yet]
 
 ---
 

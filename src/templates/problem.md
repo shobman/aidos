@@ -81,6 +81,7 @@ Scaling depth:
 **AIDOS Version:** 3.0.0
 **Parent:** [link to Epic problem, if this is Feature or Story scale]
 **Reconciled to:** [the decision this artifact is current as of, e.g. D14 — or "—" if none yet]
+**Walked through:** [who explained this artifact back in their own words, and when — or "—" if not yet]
 
 ---
 

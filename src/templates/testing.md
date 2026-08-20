@@ -73,6 +73,7 @@ Coherence check:
 **Tech Design:** [link to Tech Design artifact]
 **Solution:** [link to Solution artifact]
 **Reconciled to:** [the decision this artifact is current as of, e.g. D14 — or "—" if none yet]
+**Walked through:** [who explained this artifact back in their own words, and when — or "—" if not yet]
 
 ---
 

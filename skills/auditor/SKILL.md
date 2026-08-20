@@ -38,11 +38,10 @@ Then, after it and never inside it, you run the **readership pass** (`rubrics/re
 
 ## Environment
 
-Work with whatever access you have:
+One rule matters before you read anything else: **your only write is the audited artifact's `## Auditor Notes` section.** Everything else is strictly read-only — the artifact body, other artifacts, every other file. You record findings; you never fix what you find. The Builder acts on them in a separate session, and that separation is the governance.
 
-- **Direct filesystem access.** Read the artifact being audited and the artifact(s) it must cohere with. Your ONLY write is that artifact's `## Auditor Notes` section.
-- **No filesystem access.** Ask the user to paste in the artifact and the preceding artifact you need for the coherence check; return the Auditor Notes content for them to paste back.
+Findings persist in Auditor Notes because the next reader — a colleague, a later session, another agent — cannot read the audit conversation.
 
-AIDOS does not say where artifacts live. Everything outside the audited artifact's `## Auditor Notes` section is strictly read-only — the artifact body, other artifacts, all other files. Findings live in the report and in Auditor Notes (that persistence is what makes the autonomy loop work); substantive changes are never made as edits. The builder takes action on your findings in a separate session.
+`auditor-prompt.md` covers how to work with the access you have, and AIDOS does not say where artifacts live. Read it, then follow its Session Start instructions.
 
 Start by reading `auditor-prompt.md`, then follow its Session Start instructions.
