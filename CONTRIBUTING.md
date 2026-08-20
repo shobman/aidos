@@ -80,7 +80,7 @@ Include:
 
 ## Worked Examples
 
-End-to-end examples showing AIDOS applied to a real or realistic project are valuable contributions. See [Worked Example: Deployment Notifications](docs/worked-example.md) for the canonical format — a narrative walkthrough showing the human–AI interaction, not just the finished artifacts. A good example shows:
+End-to-end examples showing AIDOS applied to a real or realistic project are valuable contributions. The format that earns its place is a narrative walkthrough showing the human–AI interaction, not just the finished artifacts. A good example shows:
 
 - The artifact stack (Problem → Solution → Tech Design → Testing) at any scale.
 - At least one audit finding and how it was resolved.

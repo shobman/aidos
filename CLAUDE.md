@@ -7,11 +7,9 @@ AIDOS is agent-agnostic. This file covers Claude-specific setup — the combinat
 | You want to... | Set up |
 |---|---|
 | Use AIDOS as a Claude Skill in Claude.ai or Claude Code | [Skills](skills/README.md) — download the ZIPs, upload or extract |
-| Give Claude Desktop read/write access to `.aidos/` folders in GitHub repos | [GitHub MCP Connector](src/connectors/github/README.md) — local MCP server with Device Flow auth |
-| Auto-publish artifacts to Confluence on merge | [Confluence Publish Connector](src/connectors/confluence/README.md) — GitHub Actions workflow |
 | Use the framework directly without a skill | [Framework](src/README.md) — paste the prompts into any Claude session |
 
-All four are independent. The most common non-coder setup is **Skills + GitHub MCP Connector + Confluence Publish**: author via Claude Desktop, merge opens a PR, merge publishes to Confluence.
+Both are independent.
 
 ## Skill invocation
 
@@ -20,11 +18,9 @@ After installing the Skills (see [`skills/README.md`](skills/README.md)):
 ```
 /aidos-builder    — scaffold and iterate on delivery artifacts
 /aidos-auditor    — audit an artifact against the rubrics
-/aidos-breakdown  — decompose an Epic or Feature into stub Features/Stories
-/aidos-fanout     — coordinate sub-agents to fill out per-Story artifacts
 ```
 
-The skill loads automatically. If the GitHub MCP Connector is configured, the skill uses its tools to manage the repo. If Claude has direct filesystem access (Claude Code), the skill reads and writes files directly. You don't pick — the skill detects the environment.
+The skill loads automatically. If Claude has direct filesystem access (Claude Code), the skill reads and writes files directly; otherwise it works with the artifacts in the conversation. You don't pick — the skill detects the environment.
 
 ## Project-level hints
 
@@ -36,15 +32,13 @@ For any Problem, Solution, Tech Design, or Testing artifact work, use the
 separate session.
 ```
 
-The `.aidos/manifest.json` in your project configures both the GitHub MCP Connector's `write` strategy and the Confluence publish target (if used). See each connector's README for the manifest fields.
-
 ## Development workflow
 
-Multi-step work (new tools, connector changes, framework features) follows a consistent flow. Future sessions should respect this cadence:
+Multi-step work (rubric changes, skill changes, framework features) follows a consistent flow. Future sessions should respect this cadence:
 
 1. **Brainstorm → spec → plan.** Use `superpowers:brainstorming` to turn an idea into a design doc at `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`, then `superpowers:writing-plans` for an implementation plan at `docs/superpowers/plans/YYYY-MM-DD-<topic>.md`. Both directories are gitignored — they're local planning artifacts, not shipped.
 
-2. **Worktree for feature work.** Use `superpowers:using-git-worktrees` to set up an isolated worktree on a branch named `feature/<topic>` (e.g. `feature/github-connector-edit-tool`). Worktrees live as siblings to the main clone.
+2. **Worktree for feature work.** Use `superpowers:using-git-worktrees` to set up an isolated worktree on a branch named `feature/<topic>` (e.g. `feature/decision-provenance`). Worktrees live as siblings to the main clone.
 
 3. **Execute with review checkpoints.** `superpowers:subagent-driven-development` is the preferred executor — fresh implementer subagent per plan task, spec-compliance review first, then code-quality review, fix loops until approved. Final code-reviewer subagent over the whole branch diff before pushing.
 
@@ -91,7 +85,7 @@ When modifying templates, rubrics, naming conventions, or artifact structure in 
 4. Update the `**AIDOS Version:** X.Y.Z` placeholder in any affected template to keep it in sync with `VERSION`.
 5. If the change is wording-only with no structural impact (rubric clarifications, prompt tweaks), it's a **patch** bump — increment the last segment of `VERSION`. No migration file needed.
 
-Major version bumps (e.g. `1.x.x` → `2.0.0`) are reserved for fundamental redesigns. They require an explicit user decision before work starts — never infer one — plus a migration file even when it can only be best-effort (structural steps automated; content-level steps written as agent instructions with human confirmation gates; un-migrated artifacts stay valid under their stamped version, and the Auditor declines to assess them against newer-major rubrics). Precedent: v2.0.0 (June 2026), the altitude-structure redesign — migration file `src/migrations/v1.4.0-to-v2.0.0.md`.
+Major version bumps (e.g. `1.x.x` → `2.0.0`) are reserved for fundamental redesigns. They require an explicit user decision before work starts — never infer one — plus a migration file even when it can only be best-effort (structural steps automated; content-level steps written as agent instructions with human confirmation gates; un-migrated artifacts stay valid under their stamped version, and the Auditor declines to assess them against newer-major rubrics). Precedents: v2.0.0 (June 2026), the altitude-structure redesign — migration file `src/migrations/v1.4.0-to-v2.0.0.md`; and v3.0.0 (August 2026), the windback — migration file `src/migrations/v2.0.0-to-v3.0.0.md`.
 
 After a version bump, tag the repo with an annotated tag (see "Development workflow" → step 7).
 
