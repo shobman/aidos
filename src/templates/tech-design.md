@@ -5,19 +5,21 @@ What this is:
   The Tech Design artifact answers: what is the architectural shape of
   the response? It names boundaries, where state lives, what crosses
   each seam at the kind level, what invariants must hold, what the
-  failure posture looks like. It is deliberately upstream of code —
-  the coding session decides how to implement these constraints.
+  failure posture looks like. It is the consequential HOW — sufficient
+  to get started, not a complete account of what happens in code. Once
+  the build begins the code is the law; where the two disagree, this
+  document is corrected in place, with the deviation and the debt named.
 
   Altitude test (apply to every section): "Could this sentence only
   be written by someone looking at code?" If yes, the section has
   drifted past the architectural seam. Move it to the coding session.
 
 Rubric criteria:
-  Core Rubric (C1–C14) — applied to every artifact. Core criteria are
+  Core Rubric (C1–C16) — applied to every artifact. Core criteria are
   cross-cutting: addressed through the sections below. C13 (Implementation
   neutrality at the right altitude) is the cross-cutting altitude rule.
 
-  Tech Design Rubric (A1–A10) — discipline-specific criteria:
+  Tech Design Rubric (A1–A11) — discipline-specific criteria:
     A1  Boundary clarity → Boundaries
     A2  Seam contracts (kind, not shape) → Seam Contracts
     A3  State ownership and topology → State Ownership
@@ -28,6 +30,14 @@ Rubric criteria:
     A8  Trust zones → Trust Zones
     A9  Implementation handoff → Implementation Handoff
     A10 Transition strategy → Transition Strategy
+    A11 Deviations and debt → Deviations and Debt
+
+  A5, A7 and A8 accept "not consequential here" as a Pass when stated
+  and justified in one line. Silent omission is not a Pass.
+
+  The Auditor also runs a second readership pass (rubrics/readership.md,
+  R1–R4) with its own verdict: can this survive being read by the people
+  who must act on it.
 
 Coherence check:
   The Tech Design is audited against the Solution artifact. Every
@@ -47,8 +57,9 @@ Scaling depth:
 # Tech Design: [title]
 
 **Status:** DRAFT | REVIEW | ACCEPTED
-**AIDOS Version:** 2.0.0
+**AIDOS Version:** 3.0.0
 **Solution:** [link to Solution artifact]
+**Reconciled to:** [the decision this artifact is current as of, e.g. D14 — or "—" if none yet]
 
 ---
 
@@ -154,6 +165,24 @@ Scaling depth:
 
 [Transition strategy description, or "Greenfield, no transition."]
 
+## Deviations and Debt
+<!-- A11: Deviations and debt. The code is the law. Where the build has
+     departed from this design, name the departure here, the decision that
+     authorised it, the debt it created, and whether that debt is scheduled
+     or accepted. Correct the design in place — do not rewrite history and
+     do not leave the page silently wrong.
+
+     Before the build starts: "No deviations; implementation not begun."
+     Once the build has started, an empty section is a Fail — if the build
+     has held to this design, say so and date it. Silence is
+     indistinguishable from drift. -->
+
+| # | Deviation | Authorised by | Debt taken | Scheduled or accepted | Date |
+|---|---|---|---|---|---|
+| V1 | [what the build did instead, and which section of this design it departs from] | [decision reference, e.g. D7 — or the artifact and number if the decision lives elsewhere] | [what is now owed] | scheduled — [where] / accepted — [why] | |
+
+[Or: "No deviations; implementation not begun." Or: "Build has held to this design as at [date]."]
+
 ---
 
 ## Issues
@@ -164,16 +193,33 @@ Scaling depth:
 | I1 | | | OPEN / SOCIALISE / ESCALATE |
 
 ## Decisions
+<!-- Decisions are numbered within this artifact. Where another artifact cites
+     one of these, the citation names this artifact as well as the number.
 
-| # | Source | Issue | Resolution | Decided By | Date |
+     A superseded decision stays in place, marked, with its reasoning intact.
+     Never delete one. This log is where a reversal is recorded — a reader six
+     months later must be able to see why a number or a shape moved. -->
+
+| # | Decision | Basis | Test impact | Decided by | Date |
 |---|---|---|---|---|---|
-| D1 | | | | | |
+| D1 | [one line] | confirmed | none | [who] | [date] |
+
+<!-- A detail block is REQUIRED when Basis is `inferred` or `partly inferred`,
+     or when Test impact is anything other than `none`. -->
+
+**D1 — [title]**
+- **Rationale:** [why]
+- **Basis:** confirmed | partly inferred | inferred — [the evidence it rests on]
+- **Falsified by:** [what would show this is wrong]
+- **Blast radius if wrong:** [what has to change]
+- **Test impact:** none | [what must now be proven, and where]
+- **Superseded by:** — | D[n]
 
 ## Auditor Notes
 
 <!--
 Populated by the AIDOS Auditor skill. Rewritten on each audit pass — latest
-findings only; git carries the history. Cleared once the artifact is final (no
+findings only; the artifact's own history carries the record. Cleared once the artifact is final (no
 open Bugs, no new findings on the latest pass).
 
 Findings are classified per framework.md § Builder / Auditor Separation:

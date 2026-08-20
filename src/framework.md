@@ -18,7 +18,7 @@ AIDOS exists to improve decision quality before implementation speed compounds m
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                    ARTIFACT STACK                        │
+│                    ARTIFACT STACK                       │
 │                                                         │
 │   Problem ──→ Solution ──→ Tech Design ──→ Testing      │
 │                                                         │
@@ -29,14 +29,17 @@ AIDOS exists to improve decision quality before implementation speed compounds m
 │                                                         │
 │   BUILDER          creates artifacts with AI assistance │
 │   AUDITOR          reviews against rubrics + coherence  │
-│                    (never the same person)               │
+│                    (never the same person)              │
 │                                                         │
 ├─────────────────────────────────────────────────────────┤
 │                                                         │
-│   RUBRICS          Pass / Partial / Fail with evidence  │
+│   RUBRIC PASS      Pass / Partial / Fail with evidence  │
+│   READERSHIP PASS  can the artifact survive being read  │
+│                    by the people who must act on it     │
 │   ISSUES           tracked inline, escalated with       │
-│                    decision packets                      │
-│   DECISIONS        captured with rationale and date     │
+│                    decision packets                     │
+│   DECISIONS        numbered, in the artifact that owns  │
+│                    them, with provenance and rationale  │
 │                                                         │
 ├─────────────────────────────────────────────────────────┤
 │                                                         │
@@ -59,11 +62,24 @@ Every delivery progresses through four questions:
 | Artifact | Question | Lens |
 |---|---|---|
 | **Problem** | What is happening, for whom, why it matters, and what success looks like | Product |
-| **Solution** | How the proposed response works as a system, including options and trade-offs | Analysis |
+| **Solution** | How the proposed response behaves for the people who use it, including options and trade-offs | Analysis |
 | **Tech Design** | The architectural shape of the response — boundaries, seam contracts, state ownership, invariants, failure posture | Architecture |
 | **Testing** | How we verify it works and trace results back to requirements | Quality |
 
 These are delivery artifacts — living documents that build on each other progressively. When new information arrives, it flows backward too — a discovery during Tech Design might reshape the Solution.
+
+### Artifact Authority
+
+Each artifact has an authority — the class of statement it is entitled to make. Nothing outside that authority belongs in it, and nothing inside it belongs anywhere else.
+
+| Artifact | Authority — what it may state | What pulls it forward |
+|---|---|---|
+| **Problem** | Why the work is warranted, what must remain true, what success looks like | Evidence changes; scope rulings |
+| **Solution** | The WHAT, in user and business language. Never tech. | De-scope, re-scope, stories collapsing into acceptance criteria |
+| **Tech Design** | The consequential HOW — shape, seams, constraints, tradeoffs, decisions. Deviations and debt named. | Build deviation; debt taken; decision reversal |
+| **Testing** | How we will know it works; the evidence standard | Any decision flagged test-impacting |
+
+Each artifact names a single accountable owner. AIDOS never says who that is — role mapping belongs to the team.
 
 ### The Coherence Rule
 
@@ -75,21 +91,33 @@ This isn't bureaucracy. It's traceability. When something goes wrong, you can tr
 
 **Change Request or implementation detail?** Problem-anchored artifacts make this distinction literal: *did the problem statement change?* If no — however large the rewrite — it's implementation detail, not a Change Request. Implementation-anchored artifacts collapse the distinction and turn every approach pivot into apparent scope creep. This is one of the most concrete daily payoffs of altitude discipline.
 
+### Structural Laws
+
+Two laws hold the artifact set together. Both are audited by the Core rubric.
+
+**Cross-reference, never restate.** The Solution is the only home of the WHAT; the Tech Design is the only home of the HOW. Each fact lives in exactly one artifact; every other artifact points to it. This is what makes one decision change one edit instead of five.
+
+**Correct in place, never silently.** Supersede, don't delete. A superseded decision stays on the page, marked superseded, with its reasoning intact — so a reader six months later understands why something moved. This applies to every artifact, not just decision logs.
+
 ### Altitude Discipline
 
 AIDOS is for the thinking that happens before the code. Each artifact has an altitude beyond which it must not drift, because the coding session is better placed to decide what lies past it. Three altitude tests anchor the discipline:
 
-- **Problem and Solution altitude test:** *"Could a sentence here name a specific tool, vendor, schema, library, or framework?"* If yes, it's implementation drift — capture in the Overflow Log tagged for Tech Design.
+- **Problem and Solution altitude test:** *"Could a sentence here name a specific tool, vendor, schema, library, or framework?"* If yes, it's implementation drift — it moves to the artifact that owns it, or to the team's backlog.
 - **Tech Design altitude test:** *"Could this sentence only be written by someone looking at code?"* If yes, it's the wrong altitude — push to the coding session.
 - **Testing altitude test:** *"Could this assertion remain true if the implementation changed completely?"* If yes, it's the right altitude. If no, push to the coding session.
 
 These tests are referenced from Core C13 (Implementation neutrality at the right altitude), from the Tech Design rubric, and from the Testing rubric. One discipline, applied at three checkpoints.
 
-### Tech Design is Direction
+### Tech Design Authority
 
-Tech Design is **direction** — one concept, not "hard constraints" plus "suggestions" as separate registers. The architect writes just enough to get the build started right: decisions, boundaries, invariants, starters. Devs read it and either follow it or push back. Architect-approved pushback updates the direction — the artifact moves, the record stays. Depth varies by project, team, and who's building; "just enough to get started" is the bar, not a rubric tier.
+Tech Design is written by the lead developer or architect — generally from first principles of solution design and architecture, sometimes informed by a direct read of the codebase or a vendor API. Developers use it as an input to their coding and are welcome to push back; pushback is the system working, not a defect (see *Who Can Build*).
 
-At Epic scale, Tech Design is a separate, mandatory document — and it may drop into implementation guidance to give developers a head start. That's allowed, not a defect. Below Epic, Tech Design is **optional**: included at the architect's discretion, with the reasoning recorded either way — one line is enough (see Scaling).
+It is the **consequential HOW** — shape, seams, constraints, tradeoffs, decisions. It is explicitly **not a complete account of what happens in code**. Its job is getting started: establishing a seam, a baseline, a shared understanding. Depth varies by project, team, and who's building; "enough to start right" is the bar, not a rubric tier.
+
+**The code is the law.** Where the build departs from the Tech Design, the Tech Design is *corrected* — the deviation named, and the debt it created named with it — so the document keeps its integrity as a statement of where the project actually got to. It does not drift, and it is not abandoned once the code exists.
+
+At Epic scale, Tech Design is a separate, mandatory document — and it may drop into implementation guidance to give developers a head start. That's allowed, not a defect. Below Epic, Tech Design is **optional**: included at the lead's discretion, with the reasoning recorded either way — one line is enough (see Scaling).
 
 ### Builder / Auditor Separation
 
@@ -109,13 +137,15 @@ AIDOS depends on separation between artifact creation and artifact audit. The sa
 
 Every artifact is assessed against two rubric layers:
 
-**Core Rubric** — universal criteria that apply to every artifact at every scale. Alignment to goals. Simplicity. Explicit trade-offs. Failure modes. Testability. Observability. Security. Reversibility. Future team readiness. Internal consistency. No duplication. Single unit of work. Implementation neutrality at the right altitude. Title altitude.
+**Core Rubric** — universal criteria that apply to every artifact at every scale (C1–C16). Alignment to goals. Simplicity. Explicit trade-offs. Failure modes. Testability. Observability. Security. Reversibility. Future team readiness. Internal consistency. Cross-reference discipline. Single unit of work. Implementation neutrality at the right altitude. Title altitude. Decision record integrity. Reconciliation currency.
 
-**Discipline Rubric** — criteria specific to each artifact type. The Problem rubric (P1–P13) checks clarity, stakeholders, measurability, root cause confidence, scope, non-goals, assumptions, constraints, impact, existing alternatives, honest framing, purpose grounding, and Epic goal altitude. The Solution rubric (S1–S10) checks conceptual coherence, workflow completeness, edge cases, minimum viable slice, alternatives, dependencies, migration, actors, constraint compliance, and altitude discipline. The Tech Design rubric (A1–A10) checks boundaries, seam contracts, state ownership, invariants, quality properties, failure and recovery posture, temporal stance, trust zones, implementation handoff, and transition strategy. The Testing rubric (T1–T9) checks behavioural coverage, traceability, scenarios, exit criteria, expected behaviour, preconditions as state, where assertions hold, behavioural regression scope, and risk-based prioritisation.
+**Discipline Rubric** — criteria specific to each artifact type. The Problem rubric (P1–P13) checks clarity, stakeholders, measurability, root cause confidence, scope, non-goals, assumptions, constraints, impact, existing alternatives, honest framing, purpose grounding, and Epic goal altitude. The Solution rubric (S1–S10) checks conceptual coherence, story independence and value, scenarios, minimum viable slice, alternatives, dependencies, migration, actors and authority, constraint compliance, and altitude discipline. The Tech Design rubric (A1–A11) checks boundaries, seam contracts, state ownership, invariants, quality properties, failure and recovery posture, temporal stance, trust zones, implementation handoff, transition strategy, and deviations and debt. The Testing rubric (T1–T10) checks behavioural coverage, traceability, scenarios, exit criteria, expected behaviour, preconditions as state, where assertions hold, behavioural regression scope, risk-based prioritisation, and the evidence standard.
 
 Each criterion has a defined "what pass looks like." The auditor assesses Pass, Partial, or Fail with cited evidence. The evidence requirement is what gives rubrics teeth — you can't hand-wave a Pass. Partials are accepted or rejected by the human directing the audit, not waved through. The artifact doesn't advance until bugs are fixed.
 
-**Auditor Notes section.** Each artifact has an `## Auditor Notes` section at its bottom — a structured home for the Auditor's per-pass findings, classified as Bug / Risk / Idea. The section is rewritten by the Auditor each pass (latest findings only; git carries the history). This is what makes the autonomy loop work — sub-agents in different sessions cannot read each other's chats, so findings must persist with the artifact.
+**The readership pass.** A rubric pass measures whether an artifact is *sound* — not whether it can be *read*. So after the rubric pass, the Auditor runs a second, deliberately cheap pass against `rubrics/readership.md` (R1–R4), asking only one question: can this artifact survive being read by the people who must act on it? Two passes, two verdicts, never conflated. An artifact can clear every rubric criterion and still fail contact with the room.
+
+**Auditor Notes section.** Each artifact has an `## Auditor Notes` section at its bottom — a structured home for the Auditor's per-pass findings, classified as Bug / Risk / Idea. The section is rewritten by the Auditor each pass, latest findings only. Findings have to persist with the artifact: a later reader, human or AI, cannot read the audit conversation.
 
 Full rubric definitions are in `src/rubrics/`.
 
@@ -127,21 +157,29 @@ This is especially important for AI-assisted work, where sessions are transient.
 
 ---
 
+## Law and Convention
+
+AIDOS mandates structure and offers practice. The rubrics audit structure — what an artifact must contain, what it may state, whether the chain holds. How a team assigns roles, names its decision series, or runs its ceremonies is theirs.
+
+The test for whether something belongs as law: **does removing it make a team's work-warranting worse, or just shorter?** If it only makes the artifact shorter, it isn't law. It's practice.
+
+---
+
 ## Scaling
 
 Not every piece of work needs the full stack at every level of detail.
 
-**Epic** — a large initiative spanning multiple sprints and people. Problem, Solution, Tech Design, and Test Strategy are each a separate document, plus an Issues Log and an Overflow Log. Every artifact gets thorough treatment because the cost of getting them wrong is high and many people depend on them.
+**Epic** — a large initiative spanning multiple sprints and people. Problem, Solution, Tech Design, and Test Strategy are each a separate document. Every artifact gets thorough treatment because the cost of getting them wrong is high and many people depend on them.
 
-**Feature** — a specific deliverable, one to two sprints, typically one builder. Problem, Solution, and (optionally) Tech Design are combined into one document. Testing is a separate Test Plan. An Overflow Log is optional — overflow items can go into the parent Epic's log or be tracked inline. If a Feature has no parent Epic, it needs its own Overflow Log. The Problem section can be lightweight if the Epic Problem is strong. The Tech Design section is **optional** — included at the architect's discretion as direction (see Tech Design is Direction). Include it only when its absence would make a wrong implementation plausible; record the architect's reasoning either way — one line is enough. One mechanical floor: a Feature whose Stories share any seam (a cache API, an event format, a shared contract) must include Tech Design — it is the only place context-isolated Story work can read cross-Story contracts from. The coding session owns its own implementation brief.
+**Feature** — a specific deliverable, one to two sprints, typically one builder. Problem, Solution, and (optionally) Tech Design are combined into one document. Testing is a separate Test Plan. The Problem section can be lightweight if the Epic Problem is strong. The Tech Design section is **optional** — included at the lead's discretion (see Tech Design Authority). Include it only when its absence would make a wrong implementation plausible; record the reasoning either way — one line is enough. One mechanical floor: a Feature whose Stories share any seam (a cache API, an event format, a shared contract) must include Tech Design — it is the only place Story-scale work can read cross-Story contracts from. The coding session owns its own implementation brief.
 
-**Story** — a day or less of work. Everything lives in a single document. Lean artifacts that inherit heavily from the parent feature. Overflow goes into the parent Feature's Overflow Log, not a separate document. At story scale, the artifacts compress enough that their form changes, so they take different names: Problem becomes Context, Solution becomes User Story, Tech Design becomes Technical Approach, and Testing becomes Acceptance Criteria. Technical Approach is optional on the same recorded-discretion terms as the Feature Tech Design section. They map directly to the four artifact types and are still assessed against the same rubrics at lighter depth.
+**Story** — a day or less of work. Everything lives in a single document. Lean artifacts that inherit heavily from the parent feature. At story scale, the artifacts compress enough that their form changes, so they take different names: Problem becomes Context, Solution becomes User Story, Tech Design becomes Technical Approach, and Testing becomes Acceptance Criteria. Technical Approach is optional on the same recorded-discretion terms as the Feature Tech Design section. They map directly to the four artifact types and are still assessed against the same rubrics at lighter depth.
 
 | Artifact | Epic | Feature | Story |
 |---|---|---|---|
 | Problem | Problem (full depth) | Problem (focused) | Context |
 | Solution | Solution (system-level) | Solution (feature-scope) | User Story |
-| Tech Design | Tech Design (direction — architecture) | Tech Design (direction, optional) | Technical Approach (direction, optional) |
+| Tech Design | Tech Design (architecture) | Tech Design (optional) | Technical Approach (optional) |
 | Testing | Test Strategy | Test Plan | Acceptance Criteria |
 
 ### Document Structure by Scale
@@ -150,7 +188,7 @@ The scale of the work determines the document structure. This is not a suggestio
 
 | Scale | Document Structure |
 |---|---|
-| **Epic** | 4 separate documents (Problem, Solution, Tech Design, Test Strategy) + Issues Log + Overflow Log. |
+| **Epic** | 4 separate documents — Problem, Solution, Tech Design, Test Strategy. |
 | **Feature** | 1 combined document (Problem + Solution + optional Tech Design — the slot is never silently absent: it carries content or a one-line recorded omission) + 1 separate Test Plan. |
 | **Story** | 1 document containing everything. |
 
@@ -168,40 +206,45 @@ Use judgment. A solo developer building a well-understood API might only need a 
 
 ### .aidos/ Convention
 
-An AIDOS project root is identified by a `.aidos/` folder. This is where artifacts live. The folder can sit at a repo root, inside a monorepo package, or anywhere the user needs to anchor their delivery work.
+Teams who keep their delivery artifacts in a repository can anchor them in a `.aidos/` folder — at a repo root, inside a monorepo package, or anywhere the delivery work needs to sit. Tooling that expects the convention finds artifacts there.
 
-Git is the source of truth. Artifacts are authored, committed, and reviewed through the repository — the same way as code. Publishing to other systems (Confluence, GitHub Pages, etc.) is optional and outbound. The `.aidos/` folder and the repo's version history are the canonical record.
-
-Delivery artifacts live in the `.aidos/` folder and stay current as the feature evolves — they are the long-term record. No archive convention.
+It is a convention, not a requirement. AIDOS does not require git and does not say where artifacts live. What it requires is that the artifacts exist, stay current as the work evolves, and are reachable by everyone who has to act on them.
 
 ---
 
-## Decomposition and Fan-out
+## Decomposition
 
-For Epic-scale work, AIDOS provides two additional skills beyond Builder and Auditor:
+Work is decomposed just-in-time, with the team, close to the point where it is picked up — not up-front by a skill. The output goes on the team's own cards or backlog. It does not become AIDOS artifacts.
 
-- **`aidos-breakdown`** — interactive scaffolding skill that takes approved Epic-scope Problem + Solution (or Feature-scope `feature.md`) and produces a decomposition into Features and Stories as filesystem stubs, each with a TL;DR and Breakdown Context section. Audited against the Breakdown Rubric (`rubrics/breakdown.md`). The filesystem layout IS the breakdown — no separate manifest.
-- **`aidos-fanout`** — coordinator skill that dispatches sub-agents to fill out the stubbed Feature and Story artifacts. Two-phase at Epic scope (Features first, then Stories); single-phase at Feature scope. Sub-agents are context-isolated and run the autonomous Builder → Auditor → fix loop internally, capped at the three-pass rule.
-
-Both skills run in Claude Code, where sub-agent dispatch primitives exist. PM/PO workflows for upstream artifact authoring continue to work in Claude.ai with the AIDOS Skill + GitHub MCP Connector; the BA persona drives breakdown and fan-out in Claude Code.
-
-Decomposition is not project management. The Breakdown Rubric audits shape (independence, coverage, boundary clarity, sizing-shape, feature scope, title altitude, feature coherence, dependencies) — not estimation, sequencing, or rollout. Those concerns belong to the team's PM system (Jira, Linear, etc.), not to AIDOS.
+Decomposition is not project management. Estimation, sequencing, and rollout belong to the team's PM system (Jira, Linear, etc.), not to AIDOS.
 
 ---
 
 ## Issues and Decisions
 
-Artifacts accumulate issues and decisions as they're built.
+Artifacts accumulate issues and decisions as they're built. Both live in the artifact they belong to, owned by whoever owns that artifact. There is no central log to drift from.
 
 **Issues** are open questions, risks, or unknowns. They're tracked inline in the artifact with status: OPEN, SOCIALISE (needs discussion), or ESCALATE (needs stakeholder decision). Issues are closed by moving them to the Decisions table with resolution, who decided, and date.
 
-**Decisions** are resolved issues. When an issue resolves, it moves from the Issues table to the Decisions table with rationale and date. Decisions don't disappear — they're the audit trail.
+**Decisions** are resolved issues. Each artifact carries its own decision log, in its own file. Decisions don't disappear — they're the audit trail.
 
 **Decision Packets.** When an issue needs escalation, it gets packaged with: the options available, a recommendation, downstream impact, and who needs to decide. This means a stakeholder can make an informed call without re-reading the entire artifact.
 
-**Issues Log.** Escalated items are copied to a centralised Issues Log that tracks what's waiting for a decision across the project and what's been decided. This prevents decisions from getting lost in meeting notes and Slack threads.
+### Decision Records
 
-**Overflow Log.** Content captured during sessions that can't yet be placed in an artifact — ideas, concerns, design fragments, edge cases that surfaced at the wrong time. Each item is tagged with a probable destination and a status: PARKED (active, waiting), HARVESTED (placed in an artifact or scaffolded), DISCARDED (intentionally killed, rationale recorded), or BACKLOG (out of scope for this iteration, may return). A project cannot close with PARKED items remaining — they must be harvested, discarded, or moved to the backlog.
+Decisions are numbered, and every decision record carries:
+
+| Field | What it holds |
+|---|---|
+| **Provenance** | `inferred`, `confirmed`, or `partly inferred` — how the decision came to be believed |
+| **Evidence** | What the decision rests on |
+| **Falsifier** | What would show it to be wrong |
+| **Blast radius** | What breaks if it is wrong |
+| **Test impact** | Whether it changes what must be proven |
+
+Superseded decisions stay on the page, marked superseded with their reasoning intact — correct in place, never silently (see *Structural Laws*).
+
+Every artifact states the decision it is reconciled to. That is how a reader knows whether what they're looking at has caught up with the decisions taken since it was written, and it is what Core C16 checks.
 
 ---
 
@@ -210,7 +253,7 @@ Artifacts accumulate issues and decisions as they're built.
 AIDOS introduces a pulse-based working rhythm inside whatever broader planning cadence the team uses — sprints, Kanban, or ad hoc project cycles.
 
 1. **Sprint** — the builder works with AI to create or advance an artifact. Fast, focused, captured.
-2. **Park** — the artifact is committed, status updated, ready for review. The builder moves to the next piece of work.
+2. **Park** — the artifact is put down with its status updated, ready for review. The builder moves to the next piece of work.
 3. **Align** — humans review, react, decide. Meetings happen when they're needed.
 4. **Feed back** — meeting outcomes flow into the next builder session. Decisions and corrections are processed with AI in minutes.
 5. **Sprint again** — the next artifact or the next iteration, informed by everything that just happened.
@@ -223,7 +266,7 @@ AI has expanded who *can* draft artifacts — that doesn't change. A developer c
 
 What AIDOS now names is the default pattern that keeps artifacts at problem altitude: **a Business Analyst — or whoever wears the analyst hat — holds the pen, writing after interviewing the architect or lead. The architect steps in directly when needed. Devs review and push back.** The BA is a hat, not a headcount: a solo builder switches hats deliberately — frame the problem as the analyst, then design as the architect, and notice which one is writing. The pattern exists because "whoever opens the AI session" defaults to developer-flavored artifacts, and developer-flavored artifacts bake the implementation into the spec.
 
-**Dev pushback is the system working.** Two outcomes are both fine: devs accept the direction (the architect's judgment held), or devs push back and the direction updates (devs are thinking like architects). The wrong outcome is silent compliance. Pushback on Tech Design is the everyday vehicle by which developers build the architect muscle — it is encouraged, expected, and recorded in the artifact when it lands.
+**Dev pushback is the system working.** Two outcomes are both fine: devs accept the direction (the architect's judgment held), or devs push back and the Tech Design is corrected (devs are thinking like architects). The wrong outcome is silent compliance. Pushback on Tech Design is the everyday vehicle by which developers build the architect muscle — it is encouraged, expected, and recorded in the artifact when it lands.
 
 The counter-risk is real: AI enables people to produce plausible first passes outside their specialty, which can create false confidence. That's exactly why the auditor role exists. Anyone can build. But the work must survive a structured audit by someone who didn't create it.
 
@@ -285,6 +328,7 @@ Even when a session feels like it should produce one of these, push it elsewhere
 |---|---|
 | Sprint shape (owners, dates, branch strategy, parallel execution) | Tickets / sprint planning / channel kickoff message |
 | Project management (timelines, capacity, dependencies, status reports, RAID logs) | Your project tool — Jira, Linear, ADO, etc. |
+| Decomposition output (the cards themselves) | The team's cards or backlog |
 | Implementation design (schemas, function shapes, library choices, deployment infra) | Coding session (Super Powers plan/spec phase) |
 | Test code | Coding session, satisfying the AC |
 | Daily progress notes | Channel updates, standups |
@@ -296,27 +340,15 @@ AIDOS captures the thinking BEFORE the code and the assurance ALONGSIDE it. It d
 
 ## For AI Agents
 
-At Epic scale, the Tech Design artifact is the architectural envelope for everything beneath it. Boundaries, seam contracts (at kind level), state ownership, invariants, failure posture, trust zones, implementation handoff — all explicit. An AI agent receiving an Epic Tech Design that passed audit has the envelope that most developers would spend days building up through conversation and code archaeology, while still owning the implementation decisions inside it. Below Epic, Tech Design is direction and may be deliberately absent — the agent reads the artifact chain and the recorded discretion, and the coding session owns its own implementation brief.
+At Epic scale, the Tech Design artifact is the architectural envelope for everything beneath it. Boundaries, seam contracts (at kind level), state ownership, invariants, failure posture, trust zones, implementation handoff — all explicit. It is the consequential HOW, not a complete account of the code: an agent receiving an Epic Tech Design that passed audit has the envelope most developers spend days building up through conversation and code archaeology, and still owns the implementation decisions inside it. Where the build departs from the design, the agent names the departure and the debt it creates so the Tech Design can be corrected (see Tech Design Authority). Below Epic, Tech Design is optional and may be deliberately absent — the agent reads the artifact chain and the recorded discretion, and the coding session owns its own implementation brief.
 
 The full artifact chain — Problem through Solution through Tech Design — gives an agent something rare: *why* the code exists, not just what it should do. When an agent understands the Problem, it makes better implementation decisions. When it can reference the Solution, it resolves ambiguities without asking.
-
-### Agent Autonomy Spectrum
-
-The rubric-based quality model is deliberately agent-agnostic. The artifact stack, the coherence chain, and the builder/auditor separation work the same way whether both roles are human-directed, AI-driven with human oversight, or fully autonomous.
-
-This isn't a future aspiration — it's a current design property. The rubrics define the quality bar. The audit checks against it. The three-pass rule and escalation mechanism are the safety valves. None of these depend on a human being in the loop for every pass. They depend on the rubric criteria being precise enough to assess consistently.
-
-What changes across the spectrum is who initiates the forward pass, how much human oversight each pass gets, and the precision required from rubric criteria. At the human-directed level, a vague criterion is survivable — the human compensates. At the autonomous level, a vague criterion is a system failure. This is why rubric quality matters now: sharper criteria today are the contract that enables safer delegation tomorrow.
-
-For the full treatment — including what changes, what doesn't, and the practical implications — see [Agent Autonomy Spectrum](../docs/maturity-model.md).
 
 ---
 
 ## Worked Example
 
-> For a full walkthrough showing the human–AI interaction pattern — including assumption surfacing, audit findings, fix cycles, and escalated decisions — see [Worked Example: Deployment Notifications](../docs/worked-example.md).
-
-The condensed example below shows what AIDOS artifacts contain. The full walkthrough shows how they're built.
+The condensed example below shows what AIDOS artifacts contain.
 
 **Scenario:** A team needs to improve how warehouse staff track inventory across multiple locations.
 
@@ -358,7 +390,7 @@ During the Problem stage, an issue was escalated:
 >
 > **Downstream impact:** If Option A or C, the Tech Design needs merge/conflict logic and the Testing scope expands significantly.
 
-Stakeholder decided Option B. Issue moved to Decisions table.
+Stakeholder decided Option B. The issue moved to the Decisions table of the Problem artifact, numbered, with its provenance and rationale recorded.
 
 ---
 
@@ -371,11 +403,13 @@ Stakeholder decided Option B. Issue moved to Decisions table.
 5. **The stack is structure, not sequence.** Work flows forward and backward. Earlier artifacts aren't frozen.
 6. **Separate building from auditing.** The person who built it is not the person who checks it.
 7. **Coherence across artifacts.** Each artifact is checked against its own rubric and the artifact before it.
-8. **Capture decisions inline.** When a decision is made, it goes in the artifact immediately with rationale.
+8. **Capture decisions inline.** When a decision is made, it goes in the artifact that owns it immediately, with rationale.
 9. **Surface issues early.** Unknowns become explicit issues. Escalations get decision packets. Nothing hides.
 10. **Challenge scope before committing.** Every item in scope must trace to a stated need. YAGNI.
 11. **Show before you're ready.** A working prototype in front of a real stakeholder this week beats a polished solution in six weeks.
 12. **The framework waits for humans.** AI makes action fast. Decisions still need people. The rhythm respects that.
 13. **Rubrics evolve.** Retrospectives feed lessons back into the quality standards. The framework improves with use.
-14. **Delivery artifacts are the long-term record.** Keep them current as the feature evolves.
-15. **Solutions say WHAT, direction guides HOW.** The Solution never names the system's internal parts. Tech Design offers direction; devs follow it or push back. Silent compliance is the only wrong response.
+14. **Artifacts are corrected in place as the work teaches.** They are the long-term record, but the Tech Design is not a complete account of the code. Where the build departs, the artifact is corrected and the deviation and debt named — never quietly abandoned.
+15. **Solutions say WHAT, Tech Design says HOW.** The Solution never names the system's internal parts. Tech Design is the consequential HOW; devs follow it or push back. Silent compliance is the only wrong response.
+16. **Cross-reference, never restate.** Each fact lives in exactly one artifact. Everything else points to it. One decision, one edit.
+17. **Supersede, don't delete.** A superseded decision stays on the page with its reasoning intact, so a reader six months later can see why something moved.

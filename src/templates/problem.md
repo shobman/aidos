@@ -7,7 +7,7 @@ What this is:
   Everything downstream — Solution, Tech Design, Testing — builds on this.
 
 Rubric criteria:
-  Core Rubric (C1–C14) — applied to every artifact. Core criteria are
+  Core Rubric (C1–C16) — applied to every artifact. Core criteria are
   cross-cutting: you address them through the sections below, not in
   separate sections. In particular:
     C1  Alignment to goals — every element traces to a stated goal
@@ -20,12 +20,20 @@ Rubric criteria:
     C8  Reversibility — which decisions here are hard to undo
     C9  Future team readiness — no tribal knowledge required
     C10 Internal consistency — terminology and framing are consistent
-    C11 No duplication — reference, don't copy, from other artifacts
+    C11 Cross-reference, never restate — each fact lives in exactly one
+        artifact; the Solution owns the WHAT, the Tech Design owns the HOW,
+        and every other artifact points rather than restates
     C12 Single unit of work — one problem, decompose if it's too many
     C13 Implementation neutrality at the right altitude — Problem prose
         names no tools/vendors/schemas/libraries unless pre-existing constraints
     C14 Title altitude — the title states the problem being solved, not
         the part being built
+    C15 Decision record integrity — every decision numbered, with its basis,
+        the evidence, what would falsify it, and the blast radius if wrong;
+        superseded decisions stay, marked, reasoning intact
+    C16 Reconciliation currency — the artifact states the decision it is
+        reconciled to, and every flagged decision since is addressed or
+        explicitly deferred
 
   Problem Rubric (P1–P13) — discipline-specific criteria. Each section
   below maps to one or more of these:
@@ -47,6 +55,10 @@ Rubric criteria:
     P13 Epic goal altitude → Goals and Success Criteria (Epic scope: every
         goal observed by users/operators/business, never the codebase)
 
+  The Auditor also runs a second readership pass (rubrics/readership.md,
+  R1–R4) with its own verdict: can this survive being read by the people
+  who must act on it.
+
 Coherence check:
   The Problem artifact is the start of the stack. No preceding artifact
   to check against. At Feature or Story scale, verify consistency with
@@ -66,8 +78,9 @@ Scaling depth:
 # Problem: [title]
 
 **Status:** DRAFT | REVIEW | ACCEPTED
-**AIDOS Version:** 2.0.0
+**AIDOS Version:** 3.0.0
 **Parent:** [link to Epic problem, if this is Feature or Story scale]
+**Reconciled to:** [the decision this artifact is current as of, e.g. D14 — or "—" if none yet]
 
 ---
 
@@ -98,9 +111,9 @@ Scaling depth:
      "Reduce X to under Y" not "improve Z."
      P12: at least one Goal is purpose-grounded (operator/user-facing).
      P13 (Epic scope): every Goal is observed by users, operators, or the
-     business — implementation-shaped goals move to Feature scope, Tech
-     Design, or the Overflow Log, tagged with their destination (moved, not
-     deleted). -->
+     business — implementation-shaped goals move to the artifact that owns
+     the concern (Feature scope, Tech Design) or to the team's own backlog,
+     tagged with their destination (moved, not deleted). -->
 
 | # | Goal | Success Metric | How Verified |
 |---|---|---|---|
@@ -178,16 +191,33 @@ Why this needs addressing now. What happens if it isn't.]
 | I1 | | | OPEN / SOCIALISE / ESCALATE |
 
 ## Decisions
+<!-- C15: Decision record integrity. Decisions are numbered within this
+     artifact; where another artifact cites one, the citation names this
+     artifact as well as the number. A superseded decision stays in place,
+     marked, with its reasoning intact — never deleted.
+     C16: the header's "Reconciled to" names the decision this artifact is
+     current as of. -->
 
-| # | Source | Issue | Resolution | Decided By | Date |
+| # | Decision | Basis | Test impact | Decided by | Date |
 |---|---|---|---|---|---|
-| D1 | | | | | |
+| D1 | [one line] | confirmed | none | [who] | [date] |
+
+<!-- A detail block is REQUIRED when Basis is `inferred` or `partly inferred`,
+     or when Test impact is anything other than `none`. -->
+
+**D1 — [title]**
+- **Rationale:** [why]
+- **Basis:** confirmed | partly inferred | inferred — [the evidence it rests on]
+- **Falsified by:** [what would show this is wrong]
+- **Blast radius if wrong:** [what has to change]
+- **Test impact:** none | [what must now be proven, and where]
+- **Superseded by:** — | D[n]
 
 ## Auditor Notes
 
 <!--
 Populated by the AIDOS Auditor skill. Rewritten on each audit pass — latest
-findings only; git carries the history. Cleared once the artifact is final (no
+findings only; the artifact's own history carries the record. Cleared once the artifact is final (no
 open Bugs, no new findings on the latest pass).
 
 Findings are classified per framework.md § Builder / Auditor Separation:
