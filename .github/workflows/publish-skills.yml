@@ -83,18 +83,21 @@ jobs:
       # The publish is only as good as what got assembled. This catches a ZIP
       # whose stamp disagrees with VERSION, and a retired skill still shipping
       # because its assemble step was removed but its zip line was not.
+      # SKILL.md files are CRLF and GNU sed keeps the trailing CR (Git Bash's
+      # strips it), so every extracted value has trailing whitespace removed.
       - name: Verify the assembled bundles
         run: |
           set -e
+          trim="s/[[:space:]]*$//"
           version=$(tr -d '[:space:]' < VERSION)
           expected=$(for d in skills/*/; do
             if [ -f "$d/SKILL.md" ]; then sed -n 's/^name:[[:space:]]*//p' "$d/SKILL.md" | head -1; fi
-          done | sort)
-          shipped=$(for z in skills/dist/*.zip; do basename "$z" .zip; done | sort)
+          done | sed "$trim" | grep . | sort)
+          shipped=$(for z in skills/dist/*.zip; do basename "$z" .zip; done | sed "$trim" | grep . | sort)
           if [ "$expected" != "$shipped" ]; then
             echo "::error::skills/dist does not match the skills in the tree."
-            echo "  expected: $(echo $expected)"
-            echo "  shipped:  $(echo $shipped)"
+            echo 'expected:'; echo "$expected" | cat -A
+            echo 'shipped:';  echo "$shipped"  | cat -A
             exit 1
           fi
           for name in $shipped; do
