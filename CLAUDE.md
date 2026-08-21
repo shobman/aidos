@@ -74,6 +74,19 @@ Multi-step work (rubric changes, skill changes, framework features) follows a co
    git branch -d feature/<topic>
    ```
    If `git branch -d` refuses, something is unmerged — investigate, don't `-D` to force.
+   (A squash merge is a benign reason for it to refuse: the branch commits aren't
+   ancestors of main. Confirm with `git diff main <branch>` before forcing.)
+
+9. **Rebuild `skills/dist/` on main.**
+   ```bash
+   pwsh ./skills/build.ps1
+   ./skills/build.ps1 -Verify   # confirms the stamp and that no retired skill lingers
+   ```
+   `skills/dist/` is gitignored, so it is per-checkout: a build run inside a feature
+   worktree leaves the main clone untouched, and removing that worktree takes the only
+   fresh copy with it. A stale ZIP is indistinguishable from a current one by looking at
+   it — this bit after v3.0.0, where the published ZIPs were correct but a local install
+   picked up a June build. Run `-Verify` before installing from `dist/` anywhere.
 
 ## Migrations
 
